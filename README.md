@@ -1,4 +1,4 @@
 Ludo
 ====
 
-The ludo game written in javascript
+The ludo board game written in javascript
