@@ -11,11 +11,38 @@ define(
     //to this function are the array of dependencies mentioned above.
     function (Player) {
         function Game () {
-            this.playerOne = new Player();
-            this.playerTwo = new Player();
-            this.playerThree = new Player();
-            this.playerFour = new Player();
+            this.players = [];
         }
+
+        Game.prototype.addPlayer = function( player ) {
+            if(this.players.length != 4) {
+                this.players.push(player);
+                return player;
+            }
+            
+            return false;
+        };
+
+        Game.prototype.allReady = function() {
+            var allReady = true;
+
+            for (i = 0; i < 4; i++)
+            {
+                if(this.players[i].status !== 'ready')
+                {
+                    allReady = false;
+                }
+            }
+
+            return allReady;
+        };
+
+        Game.prototype.start = function() {
+            if(this.players.length === 4 && this.allReady())
+                return true;
+
+            return false;
+        };
 
         return Game;
     }

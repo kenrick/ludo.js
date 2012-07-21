@@ -11,8 +11,12 @@ define(
     //to this function are the array of dependencies mentioned above.
     function () {
         function Player () {
-            
+            this.status = 'waiting';
         }
+
+        Player.prototype.ready = function() {
+            this.status = 'ready';
+        };
 
         return Player;
     }

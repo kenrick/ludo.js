@@ -4,13 +4,13 @@
   "author": "Kenrick Beckett <kenrick.beckett@gmail.com>",
   "version": "0.0.1",
   "dependencies": {
-    "requirejs" : ">=2.0.4"
+    "requirejs" : ">=2.0.4",
+    "amdefine": ">=0.0.2"
   },
   "engine": "node >= 0.6.6",
   
   "devDependencies": {
-   "jasmine-node": ">=1.0.26",
-   "amdefine": ">=0.0.2"
+   "jasmine-node": ">=1.0.26"
   },
 
   "scripts" : { 
