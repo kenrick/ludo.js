@@ -1,0 +1,17 @@
+{
+  "name": "Ludo",
+  "description": "The ludo board game written in javascript",
+  "author": "Kenrick Beckett <kenrick.beckett@gmail.com>",
+  "version": "0.0.1",
+  "dependencies": {
+    "requirejs" : ">=2.0.4"
+  },
+  "engine": "node >= 0.6.6",
+  
+  "devDependencies": {
+   "jasmine-node": ">=1.0.26",
+   "amdefine": ">=0.0.2"
+  },
+
+  "scripts" : { "test" : "node ./node_modules/.bin/jasmine-node spec" }
+}
