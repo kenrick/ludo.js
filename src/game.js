@@ -5,13 +5,16 @@ define(
     //"Game",
 
     //The array of dependencies
-    [],
+    ['../src/player'],
 
     //The function to execute when all dependencies have loaded. The arguments
     //to this function are the array of dependencies mentioned above.
-    function () {
+    function (Player) {
         function Game () {
-            this.reports = [];
+            this.playerOne = new Player();
+            this.playerTwo = new Player();
+            this.playerThree = new Player();
+            this.playerFour = new Player();
         }
 
         return Game;
