@@ -13,5 +13,7 @@
    "amdefine": ">=0.0.2"
   },
 
-  "scripts" : { "test" : "node ./node_modules/.bin/jasmine-node spec" }
+  "scripts" : { 
+    "test" : "node ./node_modules/.bin/jasmine-node spec"
+  }
 }

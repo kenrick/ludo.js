@@ -2,7 +2,7 @@ if (typeof define !== 'function') { var define = require('amdefine')(module) }
 
 define(
     //The name of this module
-    "Player",
+    //"Player",
 
     //The array of dependencies
     [],
