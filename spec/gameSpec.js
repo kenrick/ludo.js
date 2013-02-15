@@ -27,7 +27,7 @@ define(['../src/game', '../src/player'], function(Game, Player) {
 	    	game.addPlayer(new Player());
 	    	game.addPlayer(new Player());
 	    	game.addPlayer(new Player());
-	    	game.addPlayer(new Player());
+	    	// game.addPlayer(new Player());
 	    	var nonPlayer = game.addPlayer(new Player());
 	    	expect(nonPlayer).not.toEqual(jasmine.any(Player));
 	    	expect(nonPlayer).toBe(false);
