@@ -62,6 +62,8 @@ define(['../src/game', '../src/player'], function(Game, Player) {
 	    	game.addPlayer(player);
 
 	    	expect(game.start()).toBe(true);
+
+	    	
 		});
 				
 
