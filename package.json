@@ -3,16 +3,15 @@
   "description": "The ludo board game written in javascript",
   "author": "Kenrick Beckett <kenrick.beckett@gmail.com>",
   "version": "0.0.1",
+  "repository": "https://github.com/planimus/Ludo.js",
   "dependencies": {
   },
-  "engine": "node >= 0.6.6",
   "devDependencies": {
-      "should": "*"
-    , "mocha" : "*"
+      "mocha" : "*"
     , "chai" : "*"
   },
 
   "scripts" : {
-    "test" : "node ./node_modules/.bin/jasmine-node spec"
+    "test" : "make test"
   }
 }
