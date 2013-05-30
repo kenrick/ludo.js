@@ -1,4 +1,4 @@
-Ludo [![Build Status](https://drone.io/github.com/planimus/Ludo/status.png)](https://drone.io/github.com/planimus/Ludo/latest)
+Ludo
 ====
 
 The ludo board game written in javascript
