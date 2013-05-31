@@ -1,5 +1,6 @@
 var Ludo = {};
 Ludo.Game = require('../lib/game').Game;
+Ludo.Player = require('../lib/player').Player;
 
 
 global.Ludo = Ludo;
