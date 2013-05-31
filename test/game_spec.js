@@ -40,6 +40,16 @@ describe("Game", function() {
 
   });
 
+  describe("events", function() {
+    it("can listen for and trigger events", function(done) {
+      game.events.on("test", function(data) {
+        data.name.should.equal("ye");
+        done();
+      });
+      game.events.emit('test', {name: "ye"});
+    });
+  });
+
   it("calls turn on the player, when its their turn");
   it("runs a loop of checks after each players turn");
   it("can check to see if the game was won");
