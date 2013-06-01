@@ -9,6 +9,8 @@
   "devDependencies": {
       "mocha" : "*"
     , "chai" : "*"
+    , "sinon": "*"
+    , "sinon-chai": "*"
   },
 
   "scripts" : {

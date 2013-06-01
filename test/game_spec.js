@@ -1,5 +1,5 @@
 describe("Game", function() {
-  var game,
+  var game, emitter,
   player = {name: "A Player"};
 
   beforeEach(function() {
@@ -24,16 +24,15 @@ describe("Game", function() {
     });
 
     it("cant start a new game, when all players are not ready", function() {
-      player = new Ludo.Player();
+      player.isReady = sinon.stub().returns(false);
       game.addPlayer(player);
       game.start();
       game.started.should.equal(false);
     });
 
     it("can start a new game, when all players are ready", function() {
-      player = new Ludo.Player();
+      player.isReady = sinon.stub().returns(true);
       game.addPlayer(player);
-      player.ready();
       game.start();
       game.started.should.equal(true);
     });
@@ -47,6 +46,15 @@ describe("Game", function() {
         done();
       });
       game.events.emit('test', {name: "ye"});
+    });
+
+    it("fires the game:started event when the game starts", function() {
+      var spy = sinon.spy();
+      game.events.on("game:started", spy);
+      player.isReady = sinon.stub().returns(true);
+      game.addPlayer(player);
+      game.start();
+      spy.should.have.been.called;
     });
   });
 
