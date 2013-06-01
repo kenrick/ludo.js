@@ -1,9 +1,20 @@
 describe("Game", function() {
-  var game, emitter,
-  player = {name: "A Player"};
+  var game, emitter, player;
 
   beforeEach(function() {
     game = new Ludo.Game();
+    player = {
+      name: "Player1",
+      isReady: sinon.stub().returns(true),
+      turn: sinon.spy()
+    };
+
+    player2 = {
+      name: "Player2",
+      isReady: sinon.stub().returns(true),
+      turn: sinon.spy()
+    };
+
   });
 
   it("can add a new player to the game", function() {
@@ -15,6 +26,13 @@ describe("Game", function() {
       game.addPlayer(player);
     }
     game.players.length.should.equal(4);
+  });
+
+  it.skip("returns the player thats turn is next", function() {
+      game.addPlayer(player);
+      game.addPlayer(player2);
+      game.start();
+      game.nextPlayersTurn().should.equal(player);
   });
 
   describe("starting", function() {
@@ -31,10 +49,16 @@ describe("Game", function() {
     });
 
     it("can start a new game, when all players are ready", function() {
-      player.isReady = sinon.stub().returns(true);
       game.addPlayer(player);
       game.start();
       game.started.should.equal(true);
+    });
+
+    it("runs the loop when game has been started", function() {
+      game.addPlayer(player);
+      game.loop = sinon.spy();
+      game.start();
+      game.loop.should.have.been.called;
     });
 
   });
@@ -51,14 +75,20 @@ describe("Game", function() {
     it("fires the game:started event when the game starts", function() {
       var spy = sinon.spy();
       game.events.on("game:started", spy);
-      player.isReady = sinon.stub().returns(true);
       game.addPlayer(player);
       game.start();
       spy.should.have.been.called;
     });
   });
 
-  it("calls turn on the player, when its their turn");
-  it("runs a loop of checks after each players turn");
-  it("can check to see if the game was won");
+  describe("loop", function() {
+    it.skip("calls turn on the next player in line", function() {
+      game.addPlayer(player);
+      game.addPlayer(player2);
+      game.start();
+      player.turn.should.have.been.called;
+    });
+    it("can continue running the loop after it was paused");
+    it("can check to see if the game was won");
+  });
 });
