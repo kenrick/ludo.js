@@ -1,18 +1,27 @@
 describe("Game", function() {
-  var game, emitter, player;
+  var game, emitter, player, player2, player3;
 
   beforeEach(function() {
     game = new Ludo.Game();
     player = {
       name: "Player1",
       isReady: sinon.stub().returns(true),
-      turn: sinon.spy()
+      turn: sinon.spy(),
+      joinGame: sinon.spy()
     };
 
     player2 = {
       name: "Player2",
       isReady: sinon.stub().returns(true),
-      turn: sinon.spy()
+      turn: sinon.spy(),
+      joinGame: sinon.spy()
+    };
+
+    player3 = {
+      name: "Player3",
+      isReady: sinon.stub().returns(true),
+      turn: sinon.spy(),
+      joinGame: sinon.spy()
     };
 
   });
@@ -21,6 +30,7 @@ describe("Game", function() {
     game.addPlayer(player);
     game.players.should.include(player);
   });
+
   it("can add up to 4 players to the game", function() {
     for (var i = 0; i <= 4; i++) {
       game.addPlayer(player);
@@ -28,11 +38,15 @@ describe("Game", function() {
     game.players.length.should.equal(4);
   });
 
-  it.skip("returns the player thats turn is next", function() {
-      game.addPlayer(player);
-      game.addPlayer(player2);
-      game.start();
-      game.nextPlayersTurn().should.equal(player);
+  it("calls joined game on the player, with its game instance", function() {
+    game.addPlayer(player);
+    player.joinGame.should.have.been.calledWith(game);
+  });
+
+  it("returns the player thats turn is next", function() {
+    game.addPlayer(player);
+    game.addPlayer(player2);
+    game.nextPlayersTurn().should.equal(player);
   });
 
   describe("starting", function() {
@@ -82,13 +96,44 @@ describe("Game", function() {
   });
 
   describe("loop", function() {
-    it.skip("calls turn on the next player in line", function() {
+    it("invokes turn on the next player in line, when the loop starts", function() {
       game.addPlayer(player);
       game.addPlayer(player2);
       game.start();
       player.turn.should.have.been.called;
     });
-    it("can continue running the loop after it was paused");
+    describe("invokeTurn", function() {
+      it("sets the current turn to the first player at the starting of the game", function() {
+        game.addPlayer(player);
+        game.addPlayer(player2);
+        game.invokeTurn(player);
+        game.currentPlayersTurn.should.equal(player)
+      });
+
+      it("sets the next turn to the second player, after invokeTurn is called", function() {
+        game.addPlayer(player);
+        game.addPlayer(player2);
+        game.invokeTurn(player);
+        game.nextPlayersTurn().should.equal(player2);
+      });
+
+      it("sets the next turn to the first player, if the last player in the list has the current turn", function() {
+        game.addPlayer(player);
+        game.addPlayer(player2);
+        game.invokeTurn(player2);
+        game.nextPlayersTurn().should.equal(player);
+      });
+    });
+
+    it("can continue running the loop after a player's turn", function() {
+      game.addPlayer(player);
+      game.addPlayer(player2);
+      game.addPlayer(player3);
+      game.start();
+      game.continue();
+      game.nextPlayersTurn().should.equal(player3);
+    });
+
     it("can check to see if the game was won");
   });
 });
