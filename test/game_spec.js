@@ -49,20 +49,34 @@ describe("Game", function() {
     game.nextPlayersTurn().should.equal(player);
   });
 
+  describe("initialize", function() {
+    it("can accept options for events", function() {
+      var options = {
+        events: {
+          "game:started": sinon.spy()
+        }
+      }
+      var game = new Ludo.Game(options);
+      game.addPlayer(player);
+      game.start();
+      options.events['game:started'].should.have.been.called;
+    });
+  });
+
   describe("starting", function() {
-    it("cant start a new game, if there are no players", function() {
+    it("cant start, if there are no players", function() {
       game.start();
       game.started.should.equal(false);
     });
 
-    it("cant start a new game, when all players are not ready", function() {
+    it("cant start, if all players are not ready", function() {
       player.isReady = sinon.stub().returns(false);
       game.addPlayer(player);
       game.start();
       game.started.should.equal(false);
     });
 
-    it("can start a new game, when all players are ready", function() {
+    it("can start, if all players are ready", function() {
       game.addPlayer(player);
       game.start();
       game.started.should.equal(true);
