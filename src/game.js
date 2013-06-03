@@ -5,12 +5,12 @@ var Ludo = Ludo || {};
   'use strict';
 
   function Game(options) {
-    var options = options || {};
 
+    this.options = options || {};
     this.players = [];
     this.started = false;
     this.events = new exports.Emitter();
-    this.attachEvents(options.events);
+    this.attachEvents(this.options.events);
     this.currentPlayersTurn = false;
   }
 
@@ -20,14 +20,14 @@ var Ludo = Ludo || {};
         this.events.on(e, events[e]);
       }
     }
-  }
+  };
 
   Game.prototype.addPlayer = function (player) {
     if(this.players.length <= 3) {
       player.joinGame(this);
       this.players.push(player);
     }
-  }
+  };
 
   Game.prototype.start = function() {
     var readies = 0;
@@ -47,23 +47,23 @@ var Ludo = Ludo || {};
       this.loop();
     }
 
-  }
+  };
 
   Game.prototype.loop = function() {
 
     //Calls the next players turn in line.
     var player = this.nextPlayersTurn();
     this.invokeTurn(player);
-  }
+  };
 
-  Game.prototype.continue = function() {
+  Game.prototype.continueGame = function() {
     this.loop();
-  }
+  };
 
   Game.prototype.invokeTurn = function(player) {
     this.currentPlayersTurn = player;
     return player.turn();
-  }
+  };
 
   Game.prototype.nextPlayersTurn = function() {
     var nextPlayer;
@@ -80,7 +80,7 @@ var Ludo = Ludo || {};
       nextPlayer = this.players[0];
     }
     return nextPlayer;
-  }
+  };
 
 
   exports.Game = Game;

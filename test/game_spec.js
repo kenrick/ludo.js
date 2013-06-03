@@ -55,11 +55,11 @@ describe("Game", function() {
         events: {
           "game:started": sinon.spy()
         }
-      }
+      };
       var game = new Ludo.Game(options);
       game.addPlayer(player);
       game.start();
-      options.events['game:started'].should.have.been.called;
+      options.events['game:started'].called.should.equal(true);
     });
   });
 
@@ -86,7 +86,7 @@ describe("Game", function() {
       game.addPlayer(player);
       game.loop = sinon.spy();
       game.start();
-      game.loop.should.have.been.called;
+      game.loop.called.should.equal(true);
     });
 
   });
@@ -105,7 +105,7 @@ describe("Game", function() {
       game.events.on("game:started", spy);
       game.addPlayer(player);
       game.start();
-      spy.should.have.been.called;
+      spy.called.should.equal(true);
     });
   });
 
@@ -114,14 +114,14 @@ describe("Game", function() {
       game.addPlayer(player);
       game.addPlayer(player2);
       game.start();
-      player.turn.should.have.been.called;
+      player.turn.called.should.equal(true);
     });
     describe("invokeTurn", function() {
       it("sets the current turn to the first player at the starting of the game", function() {
         game.addPlayer(player);
         game.addPlayer(player2);
         game.invokeTurn(player);
-        game.currentPlayersTurn.should.equal(player)
+        game.currentPlayersTurn.should.equal(player);
       });
 
       it("sets the next turn to the second player, after invokeTurn is called", function() {
@@ -144,7 +144,7 @@ describe("Game", function() {
       game.addPlayer(player2);
       game.addPlayer(player3);
       game.start();
-      game.continue();
+      game.continueGame();
       game.nextPlayersTurn().should.equal(player3);
     });
 

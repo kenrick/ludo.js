@@ -11,21 +11,21 @@ var Ludo = Ludo || {};
 
   Player.prototype.ready = function() {
     this.readied = true;
-  }
+  };
 
   Player.prototype.isReady = function() {
     return this.readied;
-  }
+  };
 
   Player.prototype.turn = function() {
     this.game.events.emit("player:turn", this);
-  }
+  };
 
   Player.prototype.joinGame = function(game) {
     this.game = game;
     this.game.events.emit("player:joined");
     return true;
-  }
+  };
 
 
   exports.Player = Player;

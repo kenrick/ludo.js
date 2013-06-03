@@ -6,8 +6,8 @@ describe("Player", function() {
       events: {
         emit: sinon.spy()
       },
-      continue: sinon.spy()
-    }
+      continueGame: sinon.spy()
+    };
     player = new Ludo.Player();
   });
 
@@ -22,12 +22,12 @@ describe("Player", function() {
     });
 
     it("sets the game that it was joined to", function() {
-      player.joinGame(game)
+      player.joinGame(game);
       player.game.should.equal(game);
     });
 
     it("fires player:joined on the game, when it joins", function() {
-      player.joinGame(game)
+      player.joinGame(game);
       game.events.emit.should.be.calledWith("player:joined");
     });
   });
