@@ -55,26 +55,26 @@ describe("Game", function() {
     });
   });
 
-  describe("starting", function() {
-    it("cant start, if there are no players", function() {
+  describe("start", function() {
+    it("returns false if there are no players", function() {
       game.start();
       game.started.should.equal(false);
     });
 
-    it("cant start, if all players are not ready", function() {
+    it("returns false if all players are not ready", function() {
       player.isReady = sinon.stub().returns(false);
       game.addPlayer(player);
       game.start();
       game.started.should.equal(false);
     });
 
-    it("can start, if all players are ready", function() {
+    it("returns true if all players are ready", function() {
       game.addPlayer(player);
       game.start();
       game.started.should.equal(true);
     });
 
-    it("runs the loop when game has been started", function() {
+    it("runs the the loop method", function() {
       game.addPlayer(player);
       game.loop = sinon.spy();
       game.start();
@@ -84,7 +84,7 @@ describe("Game", function() {
   });
 
   describe("events", function() {
-    it("can listen for and trigger events", function(done) {
+    it("can listen for and trigger", function(done) {
       game.events.on("test", function(data) {
         data.name.should.equal("ye");
         done();

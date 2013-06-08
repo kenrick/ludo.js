@@ -2,6 +2,7 @@ var Ludo = {};
 Ludo.Emitter = require('../src/emitter').Emitter;
 Ludo.Game = require('../src/game').Game;
 Ludo.Player = require('../src/player').Player;
+Ludo.Dice = require('../src/dice').Dice;
 
 
 

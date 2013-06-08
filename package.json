@@ -9,6 +9,7 @@
   "devDependencies": {
       "mocha" : "*"
     , "chai" : "*"
+    , "should" : "*"
     , "sinon": "*"
     , "sinon-chai": "*"
     , "grunt": "~0.4.1"
