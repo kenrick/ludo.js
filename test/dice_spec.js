@@ -4,7 +4,7 @@ describe("Dice", function() {
   describe("roll", function() {
     it('returns a random number between 1 and 6', function() {
       dice = new Ludo.Dice();
-      rolled = dice.roll();
+      var rolled = dice.roll();
       rolled.should.be.within(1, 6);
     });
     it('returns a number thats not always the same', function() {
