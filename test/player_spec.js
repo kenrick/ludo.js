@@ -31,11 +31,25 @@ describe("Player", function() {
       game.events.emit.should.be.calledWith("player:joined");
     });
   });
-  describe("turn", function() {
-    it("fires player:turn on the game, turn is called", function() {
+  describe("beginTurn", function() {
+    it("fires player:turn:begins on the game, turn begins", function() {
       player.game = game;
-      player.turn();
-      game.events.emit.should.be.calledWith("player:turn", player);
+      player.beginTurn();
+      game.events.emit.should.be.calledWith("player:turn:begins", player);
+    });
+  });
+
+  describe("endTurn", function() {
+    it("fires player:turn:ends on the game, turn begins", function() {
+      player.game = game;
+      player.endTurn();
+      game.events.emit.should.be.calledWith("player:turn:end", player);
+    });
+
+    it("calls continueGame on the game instance", function() {
+      player.game = game;
+      player.endTurn();
+      game.continueGame.called.should.equal(true);
     });
   });
 });

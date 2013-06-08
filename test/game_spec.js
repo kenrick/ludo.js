@@ -1,28 +1,20 @@
 describe("Game", function() {
   var game, emitter, player, player2, player3;
 
+  var mockPlayer = function(name) {
+    return {
+      name: name,
+      isReady: sinon.stub().returns(true),
+      beginTurn: sinon.spy(),
+      joinGame: sinon.spy()
+    };
+  };
+
   beforeEach(function() {
     game = new Ludo.Game();
-    player = {
-      name: "Player1",
-      isReady: sinon.stub().returns(true),
-      turn: sinon.spy(),
-      joinGame: sinon.spy()
-    };
-
-    player2 = {
-      name: "Player2",
-      isReady: sinon.stub().returns(true),
-      turn: sinon.spy(),
-      joinGame: sinon.spy()
-    };
-
-    player3 = {
-      name: "Player3",
-      isReady: sinon.stub().returns(true),
-      turn: sinon.spy(),
-      joinGame: sinon.spy()
-    };
+    player = mockPlayer("Player1");
+    player2 = mockPlayer("Player2");
+    player3 = mockPlayer("Player3");
 
   });
 
@@ -114,7 +106,7 @@ describe("Game", function() {
       game.addPlayer(player);
       game.addPlayer(player2);
       game.start();
-      player.turn.called.should.equal(true);
+      player.beginTurn.called.should.equal(true);
     });
     describe("invokeTurn", function() {
       it("sets the current turn to the first player at the starting of the game", function() {

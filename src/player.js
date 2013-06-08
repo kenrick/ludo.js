@@ -17,8 +17,13 @@ var Ludo = Ludo || {};
     return this.readied;
   };
 
-  Player.prototype.turn = function() {
-    this.game.events.emit("player:turn", this);
+  Player.prototype.beginTurn = function() {
+    this.game.events.emit("player:turn:begins", this);
+  };
+
+  Player.prototype.endTurn = function() {
+    this.game.events.emit("player:turn:end", this);
+    this.game.continueGame();
   };
 
   Player.prototype.joinGame = function(game) {
@@ -26,6 +31,7 @@ var Ludo = Ludo || {};
     this.game.events.emit("player:joined");
     return true;
   };
+
 
 
   exports.Player = Player;

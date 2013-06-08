@@ -62,7 +62,7 @@ var Ludo = Ludo || {};
 
   Game.prototype.invokeTurn = function(player) {
     this.currentPlayersTurn = player;
-    return player.turn();
+    return player.beginTurn();
   };
 
   Game.prototype.nextPlayersTurn = function() {
