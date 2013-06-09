@@ -123,7 +123,7 @@ describe("Game", function() {
         game.nextPlayersTurn().should.equal(player2);
       });
 
-      it("sets the next turn to the first player, if the last player in the list has the current turn", function() {
+      it("sets the next turn to the first player, if its the last players turn", function() {
         game.addPlayer(player);
         game.addPlayer(player2);
         game.invokeTurn(player2);
