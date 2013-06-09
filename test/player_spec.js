@@ -32,7 +32,7 @@ describe("Player", function() {
     });
   });
   describe("beginTurn", function() {
-    it("fires player:turn:begins on the game, turn begins", function() {
+    it("fires player:turn:begins on the game", function() {
       player.game = game;
       player.beginTurn();
       game.events.emit.should.be.calledWith("player:turn:begins", player);
@@ -40,7 +40,7 @@ describe("Player", function() {
   });
 
   describe("endTurn", function() {
-    it("fires player:turn:ends on the game, turn begins", function() {
+    it("fires player:turn:ends on the game", function() {
       player.game = game;
       player.endTurn();
       game.events.emit.should.be.calledWith("player:turn:end", player);
