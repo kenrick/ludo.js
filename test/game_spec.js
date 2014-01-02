@@ -1,15 +1,6 @@
 describe("Game", function() {
   var game, emitter, player, player2, player3;
 
-  var mockPlayer = function(name) {
-    return {
-      name: name,
-      isReady: sinon.stub().returns(true),
-      beginTurn: sinon.spy(),
-      joinGame: sinon.spy()
-    };
-  };
-
   beforeEach(function() {
     game = new Ludo.Game();
     player = mockPlayer("Player1");

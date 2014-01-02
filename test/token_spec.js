@@ -1,7 +1,19 @@
 describe("Token", function() {
+  var token, player;
+
+  beforeEach(function() {
+    player = mockPlayer("Player1");
+  });
+
   describe("intialize", function() {
-    it('can accept the player it belongs to');
-    it('can accept its position');
+    it('can accept the player it belongs to', function() {
+      token = new Ludo.Token({player: player});
+      token.player.should.equal(player);
+    });
+    it('can accept its position', function() {
+      token = new Ludo.Token({position: 1});
+      token.position.should.equal(1);
+    });
   });
   describe("born", function() {
     it('sets active to true');
@@ -20,6 +32,6 @@ describe("Token", function() {
   });
 
   describe("killed", function() {
-
+    it('sets active to false');
   });
 });
