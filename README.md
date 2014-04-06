@@ -1,5 +1,7 @@
 # Ludo.js
 
+[![Build Status](https://travis-ci.org/planimus/Ludo.js.svg?branch=master)](https://travis-ci.org/planimus/Ludo.js)
+
 The ludo board game engine written in javascript
 
 

@@ -1,5 +1,0 @@
---require test/spec_helper.js
---reporter spec
---ui bdd
---growl
---colors
