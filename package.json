@@ -7,7 +7,7 @@
   "dependencies": {
   },
   "devDependencies": {
-      "mocha" : "*"
+      "mocha" : "~1.18.2"
     , "chai" : "*"
     , "should" : "*"
     , "sinon": "*"
