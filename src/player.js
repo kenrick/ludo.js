@@ -1,38 +1,29 @@
-var Ludo = Ludo || {};
+function Player() {
+  this.readied = false;
+  this.game = false;
+}
 
-(function (exports) {
-  // Place the script in strict mode
-  'use strict';
+Player.prototype.ready = function() {
+  this.readied = true;
+};
 
-  function Player() {
-    this.readied = false;
-    this.game = false;
-  }
+Player.prototype.isReady = function() {
+  return this.readied;
+};
 
-  Player.prototype.ready = function() {
-    this.readied = true;
-  };
+Player.prototype.beginTurn = function() {
+  this.game.events.emit("player:turn:begins", this);
+};
 
-  Player.prototype.isReady = function() {
-    return this.readied;
-  };
+Player.prototype.endTurn = function() {
+  this.game.events.emit("player:turn:end", this);
+  this.game.continueGame();
+};
 
-  Player.prototype.beginTurn = function() {
-    this.game.events.emit("player:turn:begins", this);
-  };
+Player.prototype.joinGame = function(game) {
+  this.game = game;
+  this.game.events.emit("player:joined");
+  return true;
+};
 
-  Player.prototype.endTurn = function() {
-    this.game.events.emit("player:turn:end", this);
-    this.game.continueGame();
-  };
-
-  Player.prototype.joinGame = function(game) {
-    this.game = game;
-    this.game.events.emit("player:joined");
-    return true;
-  };
-
-
-
-  exports.Player = Player;
-})(typeof exports === 'undefined'? Ludo : exports);
+module.exports = Player;

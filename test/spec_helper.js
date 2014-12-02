@@ -1,11 +1,4 @@
-var Ludo = {};
-Ludo.Emitter = require('../src/emitter').Emitter;
-Ludo.Game = require('../src/game').Game;
-Ludo.Player = require('../src/player').Player;
-Ludo.Dice = require('../src/dice').Dice;
-Ludo.Token = require('../src/token').Token;
-
-
+var Ludo = require("../index");
 
 global.Ludo = Ludo;
 global.chai = require('chai');
@@ -24,4 +17,3 @@ global.mockPlayer = function(name) {
     joinGame: sinon.spy()
   };
 };
-
