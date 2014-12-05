@@ -1,7 +1,6 @@
 var spec_helper = require('./spec_helper');
 var Token = require('../src/token');
 
-
 describe("Token", function() {
   var token, player;
 
