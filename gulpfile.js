@@ -5,11 +5,24 @@ var transform = require('vinyl-transform');
 var uglify = require('gulp-uglify');
 var rename = require("gulp-rename");
 var karma = require('karma').server;
+var jshint = require('gulp-jshint');
 
+var paths = {
+  tests: 'test/*spec.js',
+  index: './index.js',
+  src:   'src/*.js'
+};
 
-gulp.task('test', function() {
-  return gulp.src('test/*spec.js', {read: false})
-        .pipe(mocha({reporter: 'spec'}));
+gulp.task('lint', function() {
+  return gulp.src([paths.index, paths.src, paths.tests, './gulpfile.js'])
+    .pipe(jshint())
+    .pipe(jshint.reporter('default'))
+    .pipe(jshint.reporter('fail'));
+});
+
+gulp.task('test', ['lint'], function() {
+  return gulp.src(paths.tests, {read: false})
+    .pipe(mocha({reporter: 'dot'}));
 });
 
 gulp.task('browserify', function () {
@@ -18,10 +31,10 @@ gulp.task('browserify', function () {
     return b.bundle();
   });
 
-  return gulp.src(['./index.js'])
+  return gulp.src(paths.index)
     .pipe(browserified)
     .pipe(uglify())
-    .pipe(rename("ludo.js"))
+    .pipe(rename("Ludo.js"))
     .pipe(gulp.dest('./dist'));
 });
 
@@ -30,4 +43,8 @@ gulp.task('test-all', function (done) {
     configFile: __dirname + '/karma.conf.js',
     singleRun: true
   }, done);
+});
+
+gulp.task('watch', function() {
+  gulp.watch([paths.tests, paths.src], ['test']);
 });
