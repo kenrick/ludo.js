@@ -1,8 +1,11 @@
+var spec_helper = require('./spec_helper');
+var Game = require('../src/game');
+
 describe("Game", function() {
   var game, emitter, player, player2, player3;
 
   beforeEach(function() {
-    game = new Ludo.Game();
+    game = new Game();
     player = mockPlayer("Player1");
     player2 = mockPlayer("Player2");
     player3 = mockPlayer("Player3");
@@ -39,7 +42,7 @@ describe("Game", function() {
           "game:started": sinon.spy()
         }
       };
-      var game = new Ludo.Game(options);
+      var game = new Game(options);
       game.addPlayer(player);
       game.start();
       options.events['game:started'].called.should.equal(true);

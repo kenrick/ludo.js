@@ -1,3 +1,6 @@
+var spec_helper = require('./spec_helper');
+var Player = require('../src/player');
+
 describe("Player", function() {
   var game, player;
 
@@ -8,7 +11,7 @@ describe("Player", function() {
       },
       continueGame: sinon.spy()
     };
-    player = new Ludo.Player();
+    player = new Player();
   });
 
   it("can set itself to ready", function() {

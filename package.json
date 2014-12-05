@@ -4,24 +4,27 @@
   "author": "Kenrick Beckett <kenrick.beckett@gmail.com>",
   "version": "0.0.1",
   "repository": "https://github.com/planimus/Ludo.js",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
-      "mocha" : "~1.18.2"
-    , "chai" : "*"
-    , "should" : "*"
-    , "sinon": "*"
-    , "sinon-chai": "*"
-    , "grunt": "~0.4.1"
-    , "grunt-contrib-jshint": "~0.1.1"
-    , "grunt-contrib-nodeunit": "~0.1.2"
-    , "grunt-contrib-concat": "~0.3.0"
-    , "grunt-contrib-uglify": "~0.2.2"
-    , "grunt-contrib-watch": "~0.4.4"
-    , "grunt-mocha-test": "~0.4.0"
+    "browserify": "^7.0.0",
+    "chai": "*",
+    "gulp": "^3.8.10",
+    "gulp-mocha": "^2.0.0",
+    "gulp-rename": "^1.2.0",
+    "gulp-uglify": "^1.0.1",
+    "karma": "^0.12.28",
+    "karma-browserify": "^1.0.0",
+    "karma-chrome-launcher": "^0.1.7",
+    "karma-firefox-launcher": "^0.1.3",
+    "karma-mocha": "^0.1.9",
+    "karma-safari-launcher": "^0.1.1",
+    "mocha": "^2.0.1",
+    "should": "*",
+    "sinon": "*",
+    "sinon-chai": "*",
+    "vinyl-transform": "^1.0.0"
   },
-
-  "scripts" : {
-    "test" : "grunt test"
+  "scripts": {
+    "test": "gulp test"
   }
 }

@@ -1,3 +1,7 @@
+var spec_helper = require('./spec_helper');
+var Token = require('../src/token');
+
+
 describe("Token", function() {
   var token, player;
 
@@ -7,11 +11,11 @@ describe("Token", function() {
 
   describe("intialize", function() {
     it('can accept the player it belongs to', function() {
-      token = new Ludo.Token({player: player});
+      token = new Token({player: player});
       token.player.should.equal(player);
     });
     it('can accept its position', function() {
-      token = new Ludo.Token({position: 1});
+      token = new Token({position: 1});
       token.position.should.equal(1);
     });
   });
