@@ -1,4 +1,4 @@
-var spec_helper = require('./spec_helper');
+var helper = require('./spec_helper');
 var Player = require('../src/player');
 
 describe("Player", function() {
@@ -7,9 +7,9 @@ describe("Player", function() {
   beforeEach(function() {
     game = {
       events: {
-        emit: sinon.spy()
+        emit: helper.sinon.spy()
       },
-      continueGame: sinon.spy()
+      continueGame: helper.sinon.spy()
     };
     player = new Player();
   });

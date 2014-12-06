@@ -1,11 +1,11 @@
-global.chai = require('chai');
-global.sinonChai = require("sinon-chai");
-global.sinon = require('sinon');
-global.should = chai.should();
+var chai = exports.chai = require('chai');
+var sinonChai = exports.sinonChai = require("sinon-chai");
+var sinon = exports.sinon = require('sinon');
+exports.should = chai.should();
 chai.use(sinonChai);
 
 // Helper functions
-global.mockPlayer = function(name) {
+exports.mockPlayer = function(name) {
   return {
     name: name,
     isReady: sinon.stub().returns(true),

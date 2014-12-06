@@ -1,5 +1,5 @@
 var Dice = require('../src/dice');
-var spec_helper = require('./spec_helper');
+var helper = require('./spec_helper');
 
 describe("Dice", function() {
   var dice;

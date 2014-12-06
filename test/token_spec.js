@@ -1,11 +1,11 @@
-var spec_helper = require('./spec_helper');
+var helper = require('./spec_helper');
 var Token = require('../src/token');
 
 describe("Token", function() {
   var token, player;
 
   beforeEach(function() {
-    player = mockPlayer("Player1");
+    player = helper.mockPlayer("Player1");
   });
 
   describe("intialize", function() {

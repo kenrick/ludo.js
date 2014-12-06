@@ -1,4 +1,4 @@
-var spec_helper = require('./spec_helper');
+var helper = require('./spec_helper');
 var Game = require('../src/game');
 
 describe("Game", function() {
@@ -6,9 +6,9 @@ describe("Game", function() {
 
   beforeEach(function() {
     game = new Game();
-    player = mockPlayer("Player1");
-    player2 = mockPlayer("Player2");
-    player3 = mockPlayer("Player3");
+    player = helper.mockPlayer("Player1");
+    player2 = helper.mockPlayer("Player2");
+    player3 = helper.mockPlayer("Player3");
 
   });
 
@@ -39,7 +39,7 @@ describe("Game", function() {
     it("can accept options for events", function() {
       var options = {
         events: {
-          "game:started": sinon.spy()
+          "game:started": helper.sinon.spy()
         }
       };
       var game = new Game(options);
@@ -56,7 +56,7 @@ describe("Game", function() {
     });
 
     it("returns false if all players are not ready", function() {
-      player.isReady = sinon.stub().returns(false);
+      player.isReady = helper.sinon.stub().returns(false);
       game.addPlayer(player);
       game.start();
       game.started.should.equal(false);
@@ -70,7 +70,7 @@ describe("Game", function() {
 
     it("runs the the loop method", function() {
       game.addPlayer(player);
-      game.loop = sinon.spy();
+      game.loop = helper.sinon.spy();
       game.start();
       game.loop.called.should.equal(true);
     });
@@ -87,7 +87,7 @@ describe("Game", function() {
     });
 
     it("fires the game:started event when the game starts", function() {
-      var spy = sinon.spy();
+      var spy = helper.sinon.spy();
       game.events.on("game:started", spy);
       game.addPlayer(player);
       game.start();
