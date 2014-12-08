@@ -6,6 +6,9 @@ describe("Player", function() {
 
   beforeEach(function() {
     game = {
+      actuator: {
+        handlePlayerTurn: helper.sinon.spy(),
+      },
       events: {
         emit: helper.sinon.spy()
       },
