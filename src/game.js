@@ -1,11 +1,13 @@
 var EventEmitter = require('events').EventEmitter;
+var Actuator = require('./actuator');
 
 function Game(options) {
 
-  this.options = options || {};
+  this.options = (options || {});
+  this.actuator = this.options.actuator || (new Actuator());
   this.players = [];
   this.started = false;
-  this.events = new EventEmitter();
+  this.events = (new EventEmitter());
   this.attachEvents(this.options.events);
   this.currentPlayersTurn = false;
 }
@@ -22,31 +24,34 @@ Game.prototype.addPlayer = function (player) {
   if(this.players.length <= 3) {
     player.joinGame(this);
     this.players.push(player);
+    this.actuator.handlePlayerAdded(player);
   }
 };
 
 Game.prototype.start = function() {
-  var readies = 0;
+  if(!this.started) {
+    var readies = 0;
 
-  for (var i = 0; i < this.players.length; i++) {
-    if(this.players[i].isReady()) {
-      readies++;
+    for (var i = 0; i < this.players.length; i++) {
+      if(this.players[i].isReady()) {
+        readies++;
+      }
+    }
+
+    if(this.players.length <= 0 || this.players.length != readies) {
+      this.actuator.handleNotEnoughReadyPlayers();
+      this.started = false;
+    }
+    else {
+      this.started = true;
+      this.events.emit("game:started");
+      this.actuator.handleGameStart();
+      this.loop();
     }
   }
-
-  if(this.players.length <= 0 || this.players.length != readies) {
-    this.started = false;
-  }
-  else {
-    this.started = true;
-    this.events.emit("game:started");
-    this.loop();
-  }
-
 };
 
 Game.prototype.loop = function() {
-
   //Calls the next players turn in line.
   var player = this.nextPlayersTurn();
   this.invokeTurn(player);
