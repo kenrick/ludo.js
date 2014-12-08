@@ -4,7 +4,9 @@
   "author": "Kenrick Beckett <kenrick.beckett@gmail.com>",
   "version": "0.0.1",
   "repository": "https://github.com/planimus/Ludo.js",
-  "dependencies": {},
+  "dependencies": {
+    "object-assign": "^2.0.0"
+  },
   "devDependencies": {
     "browserify": "^7.0.0",
     "chai": "*",
