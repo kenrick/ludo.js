@@ -4,6 +4,12 @@ var helper = require('./spec_helper');
 describe("Dice", function() {
   var dice;
 
+  it('accepts options with the rolled value', function() {
+    dice = new Dice({ rolled: 5});
+    var rolled = dice.roll();
+    rolled.should.equal(5);
+  });
+
   describe("roll", function() {
     it('returns a random number between 1 and 6', function() {
       dice = new Dice();

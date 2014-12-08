@@ -1,5 +1,6 @@
-function Dice() {
-  this.rolled = false;
+function Dice(options) {
+  this.options = (options || {});
+  this.rolled = this.options.rolled || false;
 }
 
 Dice.prototype.roll = function() {
