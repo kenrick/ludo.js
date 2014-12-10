@@ -1,0 +1,174 @@
+<html>
+  <head>
+    <title>Simple Ludo Game</title>
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" media="screen" title="no title" charset="utf-8">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.3.0/bootbox.min.js"></script>
+    <script type="text/javascript" src="../dist/Ludo.js"></script>
+    <script type="text/javascript" charset="utf-8">
+      function log(message) {
+        $('<p/>', {
+          text: message
+        }).appendTo('#logger');
+      }
+
+      $(function(){
+
+        log("This is simple game using the Ludo engine");
+        log("Lets Begin!");
+
+        for (var y = 1; y <= 15; y++) {
+          for (var x = 1; x <= 15; x++) {
+            $('<div/>', {
+              id: '',
+              text: x + ' . ' + y,
+            }).appendTo('#grid');
+          }
+        }
+
+
+
+        var SampleActuator = Ludo.Actuator.build({
+          debug: true,
+
+          handlePlayerAdded: function(player) {
+            log(player.metadata.name + ' joined the game');
+          },
+          handleGameStart: function(game) {
+            log("Game Started");
+          },
+          handlePlayerDiceRoll: function(player, diceRolledCallback) {
+            log("its " + player.metadata.name + "'s turn");
+
+            bootbox.dialog({
+              message: "its " + player.metadata.name + "'s turn to roll the dice",
+              buttons: {
+                main: {
+                  label: "ROLL DICE!",
+                  callback: function() {
+                    var dice = new Ludo.Dice({ rolled: 6 });
+                    dice.roll();
+                    log(player.metadata.name + " rolled a " + dice.rolled);
+                    diceRolledCallback(dice);
+                  }
+                }
+              }
+            });
+          },
+          handlePlayerActionDecision: function(player, actions, decisionCallback) {
+            actionText = '';
+            for (var i = 0; i < actions.length; i++) {
+              actionText += '<div class="radio"> <label for="action-' + i + '"> ' +
+              '<input type="radio" name="action" id="action-' + i + '" value="'+ i +'"> '+ actions[i].type +' - token: ' + (actions[i].token.id + 1)  +' </label> ' +
+              '</div> ';
+            }
+
+            bootbox.dialog({
+              message: '<div class="row">  ' +
+              '<div class="col-md-12"> ' +
+              '<form class="form-horizontal"> ' +
+              '<div class="form-group"> ' +
+              '<label class="col-md-4 control-label" for="actions">Choose action to take</label> ' +
+              '<div class="col-md-4">' +
+              actionText +
+              '</div> </div>' +
+              '</form> </div>  </div>',
+              buttons: {
+                main: {
+                  label: "Select",
+                  callback: function() {
+                    var action = $("input[name='action']:checked").val();
+                    if(typeof action === "undefined") action = 0;
+                    decisionCallback(actions[action]);
+                  }
+                }
+              }
+            });
+          },
+        });
+
+        var game = new Ludo.Game({ actuator: SampleActuator });
+        var player1 = new Ludo.Player({name: "Jimmy"});
+        var player2 = new Ludo.Player({name: "Tommy"});
+
+        game.addPlayer(player1);
+        game.addPlayer(player2);
+
+        player1.ready();
+        player2.ready();
+
+        game.start();
+
+      });
+    </script>
+    <style media="screen">
+
+      #logger {
+        width: 300px;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        border: 1px solid gray;
+        border-left: none;
+        padding-left: 9px;
+      }
+
+      #logger p {
+        margin-bottom: 5px;
+        margin-top: 5px;
+      }
+
+      #grid {
+        width: 600px;
+        margin: 40px auto;
+      }
+
+      #grid:after {
+        content: "";
+        clear: both;
+      }
+
+      #grid>div {
+        width: 39px;
+        height: 39px;
+        text-align: center;
+        border: 1px solid gray;
+        float: left;
+        margin: -1px 0 0 -1px;
+        color: LightGray;
+        font-size: 10px;
+      }
+      </style>
+  </head>
+  <body>
+    <div id="logger">
+    </div>
+
+    <div id="grid">
+
+    </div>
+
+
+
+    <div class="modal" id="main-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title" id="modal-title"></h4>
+          </div>
+          <div class="modal-body" id="modal-body">
+            ...
+          </div>
+          <div class="modal-footer">
+            <button type="button" id="continue" class="btn btn-primary">Contiune</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+
+
+</html>
