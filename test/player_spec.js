@@ -5,16 +5,7 @@ describe("Player", function() {
   var game, player;
 
   beforeEach(function() {
-    game = {
-      actuator: {
-        handlePlayerTurn: helper.sinon.spy(),
-        handlePlayerDiceRoll: helper.sinon.spy(),
-      },
-      events: {
-        emit: helper.sinon.spy()
-      },
-      continueGame: helper.sinon.spy()
-    };
+    game = helper.mockGame();
     player = new Player();
     player.setTeam("bl");
   });

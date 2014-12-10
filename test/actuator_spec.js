@@ -1,5 +1,4 @@
 var Ludo = require('../index');
-var assign = require('object-assign');
 var helper = require('./spec_helper');
 var expect = helper.chai.expect;
 var turnStart = helper.sinon.spy();
@@ -13,7 +12,7 @@ var stubPlayer = function(name) {
 describe("Acutator", function() {
 
   beforeEach(function() {
-    TestActuator = assign(new Ludo.Actuator(), {
+    TestActuator = Ludo.Actuator.build({
       debug: true,
 
       handlePlayerAdded: helper.sinon.spy(),

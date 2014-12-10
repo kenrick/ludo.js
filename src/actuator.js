@@ -1,10 +1,15 @@
+var assign = require('object-assign');
+
 function Actuator() {
   this.debug = false;
-
 }
 
+Actuator.build = function(actuator) {
+  return assign(new Actuator(), actuator);
+};
+
 Actuator.prototype.log = function() {
-  if(this.debug) console.log.apply(this, arguments);
+  if(this.debug) console.log.apply(console, arguments);
 };
 
 Actuator.prototype.handlePlayerAdded = function(player) {
@@ -23,8 +28,16 @@ Actuator.prototype.handlePlayerDiceRoll = function(player, callback) {
   this.log("handlePlayerDiceRoll requires implementation");
 };
 
-Actuator.prototype.handlePlayerActionDecision = function(player, callback) {
+Actuator.prototype.handlePlayerActionDecision = function(player, actions, callback) {
   this.log("handlePlayerActionDecision requires implementation");
+};
+
+Actuator.prototype.handleTokenBorn = function(token) {
+  this.log(token, "is now active");
+};
+
+Actuator.prototype.handleTokenMoveTo = function(token, cords) {
+  this.log(token, "moved To", cords);
 };
 
 module.exports = Actuator;

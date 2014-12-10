@@ -9,11 +9,12 @@ Conversions;
 exports.Teams = ['bl', 'br', 'tl', 'tr'];
 
 exports.ActionTypes = {
-		BORN: 'born',
+		BORN: 		'born',
+		MOVE_BY:  'moveBy',
 };
 
 exports.Grid = {
-	main: [
+	path: [
 	  [7, 1],
     [8, 1],
     [9, 1],

@@ -32,10 +32,7 @@ Player.prototype.getActionsByDice = function(dice) {
   var possibleActions = this.generatePossibleActions(rolled);
 
   if(possibleActions.length !== 0) {
-    this.game.actuator.handlePlayerActionDecision(this, possibleActions, function(action) {
-      this.executeAction(action);
-      this.endTurn();
-    });
+    this.game.actuator.handlePlayerActionDecision(this, possibleActions, this.executeAction.bind(this));
   }
   else {
     this.endTurn();
@@ -55,6 +52,11 @@ Player.prototype.generatePossibleActions = function(rolled) {
     totalActions = totalActions.concat(actions);
   }
   return totalActions;
+};
+
+Player.prototype.executeAction = function(action) {
+  action.token.executeAction(action);
+  this.endTurn();
 };
 
 Player.prototype.endTurn = function() {
