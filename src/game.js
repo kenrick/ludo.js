@@ -1,5 +1,6 @@
 var EventEmitter = require('events').EventEmitter;
 var Actuator = require('./actuator');
+var constants = require('./constants');
 
 function Game(options) {
 
@@ -23,6 +24,7 @@ Game.prototype.attachEvents = function (events) {
 Game.prototype.addPlayer = function (player) {
   if(this.players.length <= 3) {
     player.joinGame(this);
+    player.setTeam(constants.Teams[this.players.length]);
     this.players.push(player);
     this.actuator.handlePlayerAdded(player);
   }
