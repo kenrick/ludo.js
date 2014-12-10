@@ -1,21 +1,29 @@
 var helper = require('./spec_helper');
 var Token = require('../src/token');
+var ActionTypes = require('../src/constants').ActionTypes;
 
 describe("Token", function() {
   var token, player;
 
   beforeEach(function() {
     player = helper.mockPlayer("Player1");
+    token = new Token({team: "bl", player: player, id: 0});
   });
 
   describe("intialize", function() {
     it('can accept the player it belongs to', function() {
-      token = new Token({player: player});
       token.player.should.equal(player);
     });
-    it('can accept its position', function() {
-      token = new Token({position: 1});
-      token.position.should.equal(1);
+    it('can accept its team', function() {
+      token.team.should.equal("bl");
+    });
+  });
+
+  describe("getPossibleActions", function() {
+    it('returns the born action when rolled is 6', function() {
+      token.active.should.equal(false);
+      actions = token.getPossibleActions(6);
+      actions[0].should.eql({type: ActionTypes.BORN, token: token });
     });
   });
   describe("born", function() {
