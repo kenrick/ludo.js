@@ -10,6 +10,7 @@ exports.mockPlayer = function(name) {
     name: name,
     isReady: sinon.stub().returns(true),
     beginTurn: sinon.spy(),
+    setTeam: sinon.spy(),
     joinGame: sinon.spy()
   };
 };
