@@ -8,6 +8,7 @@ describe("Player", function() {
     game = {
       actuator: {
         handlePlayerTurn: helper.sinon.spy(),
+        handlePlayerDiceRoll: helper.sinon.spy(),
       },
       events: {
         emit: helper.sinon.spy()
@@ -15,6 +16,7 @@ describe("Player", function() {
       continueGame: helper.sinon.spy()
     };
     player = new Player();
+    player.setTeam("bl");
   });
 
   it("can set itself to ready", function() {
@@ -42,6 +44,23 @@ describe("Player", function() {
       player.game = game;
       player.beginTurn();
       game.events.emit.should.be.calledWith("player:turn:begins", player);
+    });
+  });
+
+  describe("createTokensForTeam", function() {
+    it("creates 4 tokens for that team", function() {
+      player.tokens.length.should.equal(4);
+    });
+  });
+
+  describe("generatePossibleActions", function() {
+    it("returns born actions for inactive tokens when 6 is rolled", function() {
+      actions = player.generatePossibleActions(6);
+      actions.length.should.equal(4);
+
+      for (var i = 0; i <= 3; i++) {
+        actions[0].type.should.eql("born");
+      }
     });
   });
 
