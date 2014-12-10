@@ -18,10 +18,15 @@ describe("Acutator", function() {
 
       handlePlayerAdded: helper.sinon.spy(),
       handleGameStart:   helper.sinon.spy(),
-      handlePlayerTurn:  function(player, callback) {
-        turnStart();
-        dice = new Ludo.Dice({ rolled: 4 });
-        player.rolled(dice);
+      handlePlayerDiceRoll: function(player, callback) {
+        if(player.team === "bl") {
+          turnStart();
+          dice = new Ludo.Dice({ rolled: 6 });
+          callback(dice);
+        }
+      },
+      handlePlayerActionDecision: function(player, actions, callback) {
+
       },
     });
 
@@ -43,7 +48,7 @@ describe("Acutator", function() {
     expect(TestActuator.handleGameStart.calledOnce).to.equal(true);
   });
 
-  it('was called when the when a player\'s turn started on handlePlayerTurn', function() {
+  it('was called when a player\'s turn started on handlePlayerTurn', function() {
     expect(turnStart.called).to.equal(true);
   });
 

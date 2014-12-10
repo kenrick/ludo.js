@@ -19,8 +19,12 @@ Actuator.prototype.handleGameStart = function() {
   this.log("Game Started");
 };
 
-Actuator.prototype.handlePlayerTurn = function(player, callback) {
-  this.log("handlePlayerTurn requires implementation");
+Actuator.prototype.handlePlayerDiceRoll = function(player, callback) {
+  this.log("handlePlayerDiceRoll requires implementation");
+};
+
+Actuator.prototype.handlePlayerActionDecision = function(player, callback) {
+  this.log("handlePlayerActionDecision requires implementation");
 };
 
 module.exports = Actuator;
