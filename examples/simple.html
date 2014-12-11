@@ -163,6 +163,10 @@
           handleTokenMoveTo: function(token, cords) {
             el = $('#' + token.team + '-' + token.id);
             moveTo(el, cords);
+          },
+
+          handlePlayerAnotherTurn: function(player) {
+            log(player.metadata.name + " gets another turn");
           }
 
         });

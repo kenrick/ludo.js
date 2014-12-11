@@ -380,6 +380,11 @@ Actuator.prototype.handleTokenMoveTo = function(token, cords) {
   this.log(token, "moved To", cords);
 };
 
+Actuator.prototype.handlePlayerAnotherTurn = function(player) {
+  this.log(player, "rolled a 6 do they go again");
+};
+
+
 module.exports = Actuator;
 
 },{"object-assign":3}],5:[function(require,module,exports){
@@ -694,7 +699,14 @@ Player.prototype.generatePossibleActions = function(rolled) {
 
 Player.prototype.executeAction = function(action) {
   action.token.executeAction(action);
-  this.endTurn();
+  if(action.rolled === 6)
+  {
+    this.game.actuator.handlePlayerAnotherTurn(this);
+    this.beginTurn();
+  } else {
+    this.endTurn();
+  }
+
 };
 
 Player.prototype.endTurn = function() {

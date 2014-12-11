@@ -40,4 +40,9 @@ Actuator.prototype.handleTokenMoveTo = function(token, cords) {
   this.log(token, "moved To", cords);
 };
 
+Actuator.prototype.handlePlayerAnotherTurn = function(player) {
+  this.log(player, "rolled a 6 do they go again");
+};
+
+
 module.exports = Actuator;

@@ -56,7 +56,14 @@ Player.prototype.generatePossibleActions = function(rolled) {
 
 Player.prototype.executeAction = function(action) {
   action.token.executeAction(action);
-  this.endTurn();
+  if(action.rolled === 6)
+  {
+    this.game.actuator.handlePlayerAnotherTurn(this);
+    this.beginTurn();
+  } else {
+    this.endTurn();
+  }
+
 };
 
 Player.prototype.endTurn = function() {
