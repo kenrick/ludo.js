@@ -4,8 +4,9 @@ exports.Player = require("./src/player");
 exports.Token = require("./src/token");
 exports.Dice = require("./src/dice");
 exports.Actuator = require("./src/actuator");
+exports.utils = require("./src/utils");
 
-},{"./src/actuator":4,"./src/dice":6,"./src/game":7,"./src/player":8,"./src/token":9}],2:[function(require,module,exports){
+},{"./src/actuator":4,"./src/dice":6,"./src/game":7,"./src/player":8,"./src/token":9,"./src/utils":10}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -390,122 +391,142 @@ Conversions;
  GREEN  = TL
 **/
 
+var _listTeamAreaFrom = function(c) {
+  var area = [];
+  for (var y = c[1]; y <= c[1]+5; y++) {
+    for (var x = c[0]; x <= c[0]+5; x++) {
+      area.push([x, y]);
+    }
+  }
+
+  return area;
+};
+
 exports.Teams = ['bl', 'br', 'tl', 'tr'];
 
 exports.ActionTypes = {
-		BORN: 		'born',
-		MOVE_BY:  'moveBy',
+    BORN:     'born',
+    MOVE_BY:  'moveBy',
 };
 
-exports.Grid = {
-	path: [
-	  [7, 1],
+var Grid = exports.Grid = {
+  path: [
+    [7, 1],
     [8, 1],
     [9, 1],
-		[9, 2],
-		[9, 3],
-		[9, 4],
-		[9, 5],
-		[9, 6],
-		[10, 7],
-		[11, 7],
-		[12, 7],
-		[13, 7],
-		[14, 7],
-		[15, 7],
-		[15, 8],
-		[15, 9],
-		[14, 9],
-		[13, 9],
-		[12, 9],
-		[11, 9],
-		[10, 9],
-		[9, 10],
-		[9, 11],
-		[9, 12],
-		[9, 13],
-		[9, 14],
-		[9, 15],
-		[8, 15],
-		[7, 15],
-		[7, 14],
-		[7, 13],
-		[7, 12],
-		[7, 11],
-		[7, 10],
-		[6, 9],
-		[5, 9],
-		[4, 9],
-		[3, 9],
-		[2, 9],
-		[1, 9],
-		[1, 8],
-		[1, 7],
-		[2, 7],
-		[3, 7],
-		[4, 7],
-		[5, 7],
-		[6, 7],
-		[7, 6],
-		[7, 5],
-		[7, 4],
-		[7, 3],
-		[7, 2],
+    [9, 2],
+    [9, 3],
+    [9, 4],
+    [9, 5],
+    [9, 6],
+    [10, 7],
+    [11, 7],
+    [12, 7],
+    [13, 7],
+    [14, 7],
+    [15, 7],
+    [15, 8],
+    [15, 9],
+    [14, 9],
+    [13, 9],
+    [12, 9],
+    [11, 9],
+    [10, 9],
+    [9, 10],
+    [9, 11],
+    [9, 12],
+    [9, 13],
+    [9, 14],
+    [9, 15],
+    [8, 15],
+    [7, 15],
+    [7, 14],
+    [7, 13],
+    [7, 12],
+    [7, 11],
+    [7, 10],
+    [6, 9],
+    [5, 9],
+    [4, 9],
+    [3, 9],
+    [2, 9],
+    [1, 9],
+    [1, 8],
+    [1, 7],
+    [2, 7],
+    [3, 7],
+    [4, 7],
+    [5, 7],
+    [6, 7],
+    [7, 6],
+    [7, 5],
+    [7, 4],
+    [7, 3],
+    [7, 2],
   ],
-	center: [
-		[7, 7],
-		[8, 7],
-		[9, 7],
-		[7, 8],
-	  [8, 8],
-	  [9, 8],
-	  [7, 9],
-	  [8, 9],
-	  [9, 9],
+  center: [
+    [7, 7],
+    [8, 7],
+    [9, 7],
+    [7, 8],
+    [8, 8],
+    [9, 8],
+    [7, 9],
+    [8, 9],
+    [9, 9],
   ],
-	heaven: {
-		bl: [
-			[8,14],
-			[8,13],
-			[8,12],
-			[8,11],
-			[8,10],
+  heaven: {
+    bl: [
+      [8,14],
+      [8,13],
+      [8,12],
+      [8,11],
+      [8,10],
     ],
-		br: [
-		  [14,8],
-		  [13,8],
-		  [12,8],
-		  [11,8],
-		  [10,8],
+    br: [
+      [14,8],
+      [13,8],
+      [12,8],
+      [11,8],
+      [10,8],
     ],
-		tl: [
-			[2,8],
-			[3,8],
-			[4,8],
-			[5,8],
-			[6,8],
+    tl: [
+      [2,8],
+      [3,8],
+      [4,8],
+      [5,8],
+      [6,8],
     ],
-		tr: [
-			[8,2],
-			[8,3],
-			[8,4],
-			[8,5],
-			[8,6],
+    tr: [
+      [8,2],
+      [8,3],
+      [8,4],
+      [8,5],
+      [8,6],
     ]
   },
-	startPoint: {
+  startPoint: {
     bl: [7, 14],
     br: [14, 9],
     tr: [9, 2],
     tl: [2, 7],
   },
   teamAreas: {
-		tl: [1, 1],
-		tr: [10, 1],
-		bl: [1, 10],
-		br: [10, 10],
-  }
+    tl: _listTeamAreaFrom([1, 1]),
+    tr: _listTeamAreaFrom([10, 1]),
+    bl: _listTeamAreaFrom([1, 10]),
+    br: _listTeamAreaFrom([10, 10])
+  },
+  allCordsForTeam: {}
 };
+
+
+for (var i = 0; i <= 3; i++) {
+	t = exports.Teams[i];
+  exports.Grid.allCordsForTeam[t] = [Grid.startPoint[t]]
+		.concat(Grid.heaven[t])
+		.concat(Grid.teamAreas[t]);
+}
 
 },{}],6:[function(require,module,exports){
 function Dice(options) {
@@ -760,6 +781,10 @@ Token.prototype.moveTo = function(cords) {
 module.exports = Token;
 
 },{"./constants":5,"./utils":10}],10:[function(require,module,exports){
+var constants = require('./constants');
+var Grid = constants.Grid;
+var Teams = constants.Teams;
+
 if (!Array.prototype.findIndex) {
   Array.prototype.findIndex = function(predicate) {
     if (this === null) {
@@ -783,11 +808,21 @@ if (!Array.prototype.findIndex) {
   };
 }
 
-exports.findCordsInArray = function(needle, haystack) {
+var findCordsInArray = exports.findCordsInArray = function(needle, haystack) {
   return haystack.findIndex(function(e, index) {
     if(e[0] == needle[0] && e[1] == needle[1] ) return 1;
   });
 };
 
-},{}]},{},[1])(1)
+exports.cordBelongsTo = function(cordArray) {
+  for (var i = 0; i <= 3; i++) {
+    if(findCordsInArray(cordArray, Grid.allCordsForTeam[Teams[i]]) !== -1) {
+      return Teams[i];
+    }
+  }
+
+  return false;
+};
+
+},{"./constants":5}]},{},[1])(1)
 });

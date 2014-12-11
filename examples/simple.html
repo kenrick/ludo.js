@@ -11,23 +11,111 @@
         $('<p/>', {
           text: message
         }).appendTo('#logger');
+
+        $("#logger").animate({ scrollTop: $('#logger')[0].scrollHeight}, 1000);
+      }
+
+      function moveTo(el, cord) {
+        el.stop().animate({
+          left: 38.1 * (cord.x - 1),
+          top:  38.1 * (cord.y - 1),
+        })
+      }
+
+      function slideDialog(out) {
+        var $dialog = $("#dialog");
+
+        if(out) {
+          $dialog.stop().animate({ right: 0 })
+        } else {
+          $dialog.stop().animate({ right: -300 });
+        }
+      }
+
+      function dialog(options) {
+        var $dialog = $("#dialog");
+        var button = options.button || false;
+        var title = options.title || false;
+        var cb = options.callback || false;
+        var color = options.color || false;
+        var actions = options.actions || false;
+
+        $("#dialog").promise().done(function(){
+          $dialog.html('');
+
+          if(title) {
+            $('<h4/>', {
+              text: title,
+            }).appendTo('#dialog');
+          }
+
+          if(color) {
+            $dialog.css({"background-color": color});
+          }
+
+          if(button) {
+            $('<button/>', {
+              text: button,
+              class: "btn btn-primary btn-lg",
+            })
+            .one('click', function() {
+              slideDialog();
+              cb();
+            })
+            .appendTo('#dialog');
+          }
+
+          if(actions) {
+
+            for (var i = 0; i < actions.length; i++) {
+              var action = actions[i];
+              $('<a/>', {
+                text: action.type + " - token: " + (action.token.id + 1),
+                class: "action",
+                id: "action-" + action.token.id,
+                data: {
+                  action: i,
+                }
+              })
+              .appendTo('#dialog')
+              .click(function(e) {
+                action = actions[$(this).data('action')];
+                slideDialog();
+                cb(action);
+              })
+            }
+          }
+
+          slideDialog(true);
+        });
       }
 
       $(function(){
+
+        var teamColors = {
+          bl: "#2980b9",
+          br: "#2ecc71",
+          tr: "#e74c3c",
+          tl: "#9b59b6"
+        };
 
         log("This is simple game using the Ludo engine");
         log("Lets Begin!");
 
         for (var y = 1; y <= 15; y++) {
           for (var x = 1; x <= 15; x++) {
-            $('<div/>', {
+            var point = $('<div/>', {
               id: '',
-              text: x + ' . ' + y,
+              class: 'point',
             }).appendTo('#grid');
+
+            var owner = Ludo.utils.cordBelongsTo([x, y]);
+
+            if(owner) {
+              point.css({"background-color": teamColors[owner]});
+            }
           }
         }
-
-
 
         var SampleActuator = Ludo.Actuator.build({
           debug: true,
@@ -41,64 +129,68 @@
           handlePlayerDiceRoll: function(player, diceRolledCallback) {
             log("its " + player.metadata.name + "'s turn");
 
-            bootbox.dialog({
-              message: "its " + player.metadata.name + "'s turn to roll the dice",
-              buttons: {
-                main: {
-                  label: "ROLL DICE!",
-                  callback: function() {
-                    var dice = new Ludo.Dice({ rolled: 6 });
-                    dice.roll();
-                    log(player.metadata.name + " rolled a " + dice.rolled);
-                    diceRolledCallback(dice);
-                  }
-                }
+            dialog({
+              title: "its " + player.metadata.name + "'s turn to roll the dice",
+              button: "ROLL DICE!",
+              color: teamColors[player.team],
+              callback: function() {
+                var dice = new Ludo.Dice();
+                dice.roll();
+                log(player.metadata.name + " rolled a " + dice.rolled);
+                diceRolledCallback(dice);
               }
             });
+
           },
           handlePlayerActionDecision: function(player, actions, decisionCallback) {
-            actionText = '';
-            for (var i = 0; i < actions.length; i++) {
-              actionText += '<div class="radio"> <label for="action-' + i + '"> ' +
-              '<input type="radio" name="action" id="action-' + i + '" value="'+ i +'"> '+ actions[i].type +' - token: ' + (actions[i].token.id + 1)  +' </label> ' +
-              '</div> ';
-            }
-
-            bootbox.dialog({
-              message: '<div class="row">  ' +
-              '<div class="col-md-12"> ' +
-              '<form class="form-horizontal"> ' +
-              '<div class="form-group"> ' +
-              '<label class="col-md-4 control-label" for="actions">Choose action to take</label> ' +
-              '<div class="col-md-4">' +
-              actionText +
-              '</div> </div>' +
-              '</form> </div>  </div>',
-              buttons: {
-                main: {
-                  label: "Select",
-                  callback: function() {
-                    var action = $("input[name='action']:checked").val();
-                    if(typeof action === "undefined") action = 0;
-                    decisionCallback(actions[action]);
-                  }
-                }
+            dialog({
+              title: player.metadata.name + " rolled a " + actions[0].rolled + ". What now?",
+              color: teamColors[player.team],
+              actions: actions,
+              callback: function(action) {
+                decisionCallback(action);
               }
             });
           },
+
+          handleTokenBorn: function(token) {
+            $('<div/>', {
+              id: token.team + '-' + token.id,
+              class: 'token ' + token.team + '-token',
+              text: token.id + 1,
+            }).appendTo('#grid');
+          },
+          handleTokenMoveTo: function(token, cords) {
+            el = $('#' + token.team + '-' + token.id);
+            moveTo(el, cords);
+          }
+
         });
 
         var game = new Ludo.Game({ actuator: SampleActuator });
-        var player1 = new Ludo.Player({name: "Jimmy"});
-        var player2 = new Ludo.Player({name: "Tommy"});
+        var player1 = new Ludo.Player({name: "Shane"});
+        var player2 = new Ludo.Player({name: "Dake"});
+        var player3 = new Ludo.Player({name: "David"});
+        var player4 = new Ludo.Player({name: "Gary"});
 
         game.addPlayer(player1);
         game.addPlayer(player2);
+        game.addPlayer(player3);
+        game.addPlayer(player4);
 
         player1.ready();
         player2.ready();
+        player3.ready();
+        player4.ready();
 
-        game.start();
+        dialog({
+          button: "Start Game",
+          title: "Click to start game",
+          callback: function() {
+            game.start();
+          }
+        });
+
 
       });
     </script>
@@ -113,6 +205,7 @@
         border: 1px solid gray;
         border-left: none;
         padding-left: 9px;
+        overflow: auto;
       }
 
       #logger p {
@@ -123,6 +216,7 @@
       #grid {
         width: 600px;
         margin: 40px auto;
+        position: relative;
       }
 
       #grid:after {
@@ -130,44 +224,74 @@
         clear: both;
       }
 
-      #grid>div {
+      #grid .point {
         width: 39px;
         height: 39px;
         text-align: center;
-        border: 1px solid gray;
+        border: 1px solid black;
         float: left;
         margin: -1px 0 0 -1px;
         color: LightGray;
         font-size: 10px;
       }
+
+      .action {
+        color: white;
+        display: block;
+        font-size: 18px;
+        cursor: pointer;
+      }
+
+      .action:hover {
+        color: white;
+      }
+
+      .bl-token {
+        background-color: #3498db;
+      }
+
+      .br-token {
+        background-color: #27ae60;
+      }
+
+      .tr-token {
+        background-color: #c0392b;
+      }
+
+      .tl-token {
+        background-color: #8e44ad;
+      }
+
+      .token {
+        border: 1px solid black;
+        position: absolute;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        top: 0;
+        left: 0;
+        margin: 3px 0 0 3px;
+        text-align: center;
+        color: white;
+        font-size: 18px;
+      }
+
+      #dialog {
+        width: 300px;
+        height: 200px;
+        border: 1px solid black;
+        position: absolute;
+        padding: 17px 0 0 15px;
+        background: black;
+        color: white;
+        right: -300px;
+      }
       </style>
   </head>
   <body>
-    <div id="logger">
-    </div>
-
-    <div id="grid">
-
-    </div>
-
-
-
-    <div class="modal" id="main-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-            <h4 class="modal-title" id="modal-title"></h4>
-          </div>
-          <div class="modal-body" id="modal-body">
-            ...
-          </div>
-          <div class="modal-footer">
-            <button type="button" id="continue" class="btn btn-primary">Contiune</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div id="logger"></div>
+    <div id="grid"></div>
+    <div id="dialog"></div>
   </body>
 
 

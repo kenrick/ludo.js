@@ -1,3 +1,7 @@
+var constants = require('./constants');
+var Grid = constants.Grid;
+var Teams = constants.Teams;
+
 if (!Array.prototype.findIndex) {
   Array.prototype.findIndex = function(predicate) {
     if (this === null) {
@@ -21,8 +25,18 @@ if (!Array.prototype.findIndex) {
   };
 }
 
-exports.findCordsInArray = function(needle, haystack) {
+var findCordsInArray = exports.findCordsInArray = function(needle, haystack) {
   return haystack.findIndex(function(e, index) {
     if(e[0] == needle[0] && e[1] == needle[1] ) return 1;
   });
+};
+
+exports.cordBelongsTo = function(cordArray) {
+  for (var i = 0; i <= 3; i++) {
+    if(findCordsInArray(cordArray, Grid.allCordsForTeam[Teams[i]]) !== -1) {
+      return Teams[i];
+    }
+  }
+
+  return false;
 };
