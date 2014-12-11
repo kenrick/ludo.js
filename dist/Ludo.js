@@ -743,7 +743,11 @@ Token.prototype.born = function() {
 Token.prototype.moveBy = function(rolled) {
   cordArray = [this.cords.x, this.cords.y];
   index = utils.findCordsInArray(cordArray, Grid.path);
-  newCord = Grid.path[index + rolled];
+  index += rolled;
+  if(index > (Grid.path.length - 1) ) {
+    index -= (Grid.path.length);
+  }
+  newCord = Grid.path[index];
   this.moveTo({x: newCord[0], y: newCord[1]});
 };
 

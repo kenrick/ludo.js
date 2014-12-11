@@ -53,6 +53,24 @@ describe("Token", function() {
         token.cords.x.should.equal(7);
         token.cords.y.should.equal(11);
     });
+
+    it('resets at the end of the path', function() {
+      token.born();
+      token.moveTo({x: 7, y: 4});
+      token.moveBy(3);
+      token.cords.x.should.equal(7);
+      token.cords.y.should.equal(1);
+    });
+
+    it('loops around the path when it reaches the end by 2', function() {
+      token.born();
+      token.moveTo({x: 7, y: 4});
+      token.moveBy(5);
+      token.cords.x.should.equal(9);
+      token.cords.y.should.equal(1);
+    });
+
+
     it('calls moveTo with the coordinates that token should be at');
     it('returns the coordinates the token was moved to');
   });
