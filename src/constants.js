@@ -6,22 +6,30 @@ Conversions;
  GREEN  = TL
 **/
 
-var _listTeamAreaFrom = function(c) {
-  var area = [];
-  for (var y = c[1]; y <= c[1]+5; y++) {
-    for (var x = c[0]; x <= c[0]+5; x++) {
-      area.push([x, y]);
-    }
-  }
-
-  return area;
-};
-
 exports.Teams = ['bl', 'br', 'tl', 'tr'];
 
+exports.Messages = {
+};
+
+exports.Events = {
+  GAME_START:      'game.start',
+
+  PLAYER_JOIN:     'player.join',
+  TURN_BEGIN:      'player.turn.begin',
+  TURN_END:        'player.turn.end',
+  DICE_ROLL:       'player.turn.rollDice',
+  REPEAT_TURN:     'player.turn.repeat',
+  PLAYER_ACTIONS:  'player.actions',
+
+  TOKEN_BORN:      'token.born',
+  TOKEN_MOVE_BY:   'token.moveBy',
+
+  ERROR:           'error'
+};
+
 exports.ActionTypes = {
-    BORN:     'born',
-    MOVE_BY:  'moveBy',
+  BORN:     'born',
+  MOVE_BY:  'moveBy'
 };
 
 var Grid = exports.Grid = {
@@ -77,7 +85,7 @@ var Grid = exports.Grid = {
     [7, 5],
     [7, 4],
     [7, 3],
-    [7, 2],
+    [7, 2]
   ],
   center: [
     [7, 7],
@@ -88,7 +96,7 @@ var Grid = exports.Grid = {
     [9, 8],
     [7, 9],
     [8, 9],
-    [9, 9],
+    [9, 9]
   ],
   heaven: {
     bl: [
@@ -96,35 +104,35 @@ var Grid = exports.Grid = {
       [8,13],
       [8,12],
       [8,11],
-      [8,10],
+      [8,10]
     ],
     br: [
       [14,8],
       [13,8],
       [12,8],
       [11,8],
-      [10,8],
+      [10,8]
     ],
     tl: [
       [2,8],
       [3,8],
       [4,8],
       [5,8],
-      [6,8],
+      [6,8]
     ],
     tr: [
       [8,2],
       [8,3],
       [8,4],
       [8,5],
-      [8,6],
+      [8,6]
     ]
   },
   startPoint: {
     bl: [7, 14],
     br: [14, 9],
     tr: [9, 2],
-    tl: [2, 7],
+    tl: [2, 7]
   },
   teamAreas: {
     tl: _listTeamAreaFrom([1, 1]),
@@ -137,8 +145,19 @@ var Grid = exports.Grid = {
 
 
 for (var i = 0; i <= 3; i++) {
-	t = exports.Teams[i];
+  t = exports.Teams[i];
   exports.Grid.allCordsForTeam[t] = [Grid.startPoint[t]]
-		.concat(Grid.heaven[t])
-		.concat(Grid.teamAreas[t]);
+    .concat(Grid.heaven[t])
+    .concat(Grid.teamAreas[t]);
+}
+
+function _listTeamAreaFrom(c) {
+  var area = [];
+  for (var y = c[1]; y <= c[1]+5; y++) {
+    for (var x = c[0]; x <= c[0]+5; x++) {
+      area.push([x, y]);
+    }
+  }
+
+  return area;
 }

@@ -5,11 +5,12 @@ var ActionTypes = constants.ActionTypes;
 var Grid = constants.Grid;
 
 describe("Token", function() {
-  var token, player;
+  var token, player, game;
 
   beforeEach(function() {
-    player = helper.mockPlayer("Player1");
-    token = new Token({team: "bl", player: player, id: 0});
+    player = helper.mockPlayer("Player1", 'bl');
+    game = player.game;
+    token = new Token({player: player, id: 0});
   });
 
   describe("intialize", function() {
@@ -39,12 +40,22 @@ describe("Token", function() {
       token.born();
       token.active.should.equal(true);
     });
+
     it('calls moveTo with the startPoint coordinates', function() {
       token.born();
       token.cords.x.should.equal(Grid.startPoint.bl[0]);
       token.cords.y.should.equal(Grid.startPoint.bl[1]);
     });
-    it('fires the token:born event');
+    it('fires the token.born event', function() {
+      token.born();
+      game.emit.should.be.calledWith("token.born", { token: token });
+    });
+
+    it('fires the token.moveTo event to startPoint', function() {
+      token.born();
+      cords = { x: Grid.startPoint.bl[0], y: Grid.startPoint.bl[1] };
+      game.emit.should.be.calledWith("token.moveTo", { token: token, cords: cords });
+    });
   });
   describe("moveBy", function() {
     it('accepts a number to move the token by', function() {
@@ -69,14 +80,14 @@ describe("Token", function() {
       token.cords.x.should.equal(9);
       token.cords.y.should.equal(1);
     });
-
-
-    it('calls moveTo with the coordinates that token should be at');
-    it('returns the coordinates the token was moved to');
   });
 
   describe("moveTo", function() {
-    it('fires the token:move event, passing the token and coordinates');
+    it('fires the token.moveTo event, passing the token and coordinates', function() {
+      token.moveTo({x: 5, y: 15});
+      game.emit.should.be.calledWith("token.moveTo", { token: token, cords: {x: 5, y: 15} });
+    });
+
     it('updates the cords with the new coordinates', function() {
       token.moveTo({x: 5, y: 15});
       token.cords.x.should.equal(5);

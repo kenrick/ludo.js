@@ -11,8 +11,8 @@ describe("Player", function() {
   });
 
   it("can set itself to ready", function() {
-    player.ready();
-    player.isReady().should.equal(true);
+    player.readyUp();
+    player.getReady().should.equal(true);
   });
 
   describe("joinGame", function() {
@@ -24,23 +24,45 @@ describe("Player", function() {
       player.joinGame(game);
       player.game.should.equal(game);
     });
-
-    it("fires player:joined on the game, when it joins", function() {
-      player.joinGame(game);
-      game.events.emit.should.be.calledWith("player:joined");
-    });
   });
+
   describe("beginTurn", function() {
     it("fires player:turn:begins on the game", function() {
       player.game = game;
       player.beginTurn();
-      game.events.emit.should.be.calledWith("player:turn:begins", player);
+      game.emit.should.be.calledWith("player.turn.begin", { player: player });
+    });
+
+    it('fires player.turn.rollDice and waits for the dice to roll', function() {
+      player.game = game;
+      player.beginTurn();
+      callback = game.emit.args[1][1].callback;
+      game.emit.should.be.calledWith("player.turn.rollDice", { player: player, callback: callback });
+    });
+
+    it('fires player.actions if there are possible actions', function() {
+      var dice = { rolled: 6 };
+      player.game = game;
+      player.beginTurn();
+      game.emit.args[1][1].callback(dice);
+
+      game.emit.should.be.calledWith("player.actions");
+    });
+
+    it('fires player.turn.end there are no possible actions', function() {
+      var dice = { rolled: 3 };
+      player.game = game;
+      player.beginTurn();
+      callback = game.emit.args[1][1].callback(dice);
+
+      game.emit.should.not.be.calledWith("player.actions");
+      game.emit.should.be.calledWith("player.turn.end", { player: player });
     });
   });
 
   describe("createTokensForTeam", function() {
     it("creates 4 tokens for that team", function() {
-      player.tokens.length.should.equal(4);
+      player._tokens.length.should.equal(4);
     });
   });
 
@@ -59,7 +81,7 @@ describe("Player", function() {
     it("fires player:turn:ends on the game", function() {
       player.game = game;
       player.endTurn();
-      game.events.emit.should.be.calledWith("player:turn:end", player);
+      game.emit.should.be.calledWith("player.turn.end", { player: player });
     });
 
     it("calls continueGame on the game instance", function() {

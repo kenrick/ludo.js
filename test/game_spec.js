@@ -12,6 +12,17 @@ describe("Game", function() {
     player4 = helper.mockPlayer("Player4");
   });
 
+  describe("addPlayer", function() {
+    it("fires player.join on the game", function(done) {
+      game.on("player.join", function(data) {
+        data.player.should.eq(player);
+        done();
+      });
+
+      game.addPlayer(player);
+    });
+  });
+
   it("can add a new player to the game", function() {
     game.addPlayer(player);
     game.players.should.include(player);
@@ -51,27 +62,34 @@ describe("Game", function() {
     it("can accept options for events", function() {
       var options = {
         events: {
-          "game:started": helper.sinon.spy()
+          "game.start": helper.sinon.spy()
         }
       };
       var game = new Game(options);
       game.addPlayer(player);
       game.start();
-      options.events['game:started'].called.should.equal(true);
+      options.events['game.start'].called.should.equal(true);
     });
   });
 
   describe("start", function() {
-    it("returns false if there are no players", function() {
+    it("fires error if there are no players", function(done) {
+      game.on('error', function(data) {
+        done();
+        data.message.should.equal('Not enough players to start game');
+      });
+
       game.start();
-      game.started.should.equal(false);
     });
 
     it("returns false if all players are not ready", function() {
-      player.isReady = helper.sinon.stub().returns(false);
+      game.on('error', function(data) {
+        done();
+        data.message.should.equal('Not all players are ready');
+      });
+
       game.addPlayer(player);
       game.start();
-      game.started.should.equal(false);
     });
 
     it("returns true if all players are ready", function() {
@@ -82,25 +100,25 @@ describe("Game", function() {
 
     it("runs the the loop method", function() {
       game.addPlayer(player);
-      game.loop = helper.sinon.spy();
+      game._loop = helper.sinon.spy();
       game.start();
-      game.loop.called.should.equal(true);
+      game._loop.called.should.equal(true);
     });
 
   });
 
   describe("events", function() {
     it("can listen for and trigger", function(done) {
-      game.events.on("test", function(data) {
+      game.on("test", function(data) {
         data.name.should.equal("ye");
         done();
       });
-      game.events.emit('test', {name: "ye"});
+      game.emit('test', {name: "ye"});
     });
 
-    it("fires the game:started event when the game starts", function() {
+    it("fires the game.started event when the game starts", function() {
       var spy = helper.sinon.spy();
-      game.events.on("game:started", spy);
+      game.on("game.start", spy);
       game.addPlayer(player);
       game.start();
       spy.called.should.equal(true);

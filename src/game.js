@@ -1,75 +1,84 @@
 var EventEmitter = require('events').EventEmitter;
-var Actuator = require('./actuator');
 var constants = require('./constants');
+var Events = constants.Events;
+var inherits = require('util').inherits;
 
 function Game(options) {
-
   this.options = (options || {});
-  this.actuator = this.options.actuator || (new Actuator());
   this.players = [];
   this.started = false;
-  this.events = (new EventEmitter());
-  this.attachEvents(this.options.events);
   this.currentPlayersTurn = false;
+
+  EventEmitter.call(this);
+  this._attachEvents(this.options.events);
 }
 
-Game.prototype.attachEvents = function (events) {
+inherits(Game, EventEmitter);
+
+Game.prototype._attachEvents = function _attachEvents(events) {
+  var event;
+
   if(typeof events !== "undefined") {
-    for(var e in events) {
-      this.events.on(e, events[e]);
+    for(event in events) {
+      this.on(event, events[event]);
     }
   }
 };
 
-Game.prototype.addPlayer = function (player) {
+Game.prototype.addPlayer = function addPlayer(player) {
   if(this.players.length <= 3) {
     player.joinGame(this);
     player.setTeam(constants.Teams[this.players.length]);
+
     this.players.push(player);
-    this.actuator.handlePlayerAdded(player);
+    this.emit(Events.PLAYER_JOIN, { player: player });
   }
 };
 
-Game.prototype.start = function() {
-  if(!this.started) {
-    var readies = 0;
+Game.prototype.start = function start() {
+  var readies = 0;
+  var i;
 
-    for (var i = 0; i < this.players.length; i++) {
-      if(this.players[i].isReady()) {
+  if(!this.started) {
+
+    for (i = 0; i < this.players.length; i++) {
+      if(this.players[i].getReady()) {
         readies++;
       }
     }
 
-    if(this.players.length <= 0 || this.players.length != readies) {
-      this.actuator.handleNotEnoughReadyPlayers();
-      this.started = false;
-    }
-    else {
+    if(!this.players.length) {
+      this.emit(Events.ERROR, { message: 'Not enough players to start game' });
+    } else if (this.players.length != readies) {
+      this.emit(Events.ERROR, { message: 'Not all players are ready' });
+    } else {
       this.started = true;
-      this.events.emit("game:started");
-      this.actuator.handleGameStart();
-      this.loop();
+      this.emit(Events.GAME_START);
+      this._loop();
     }
   }
+
+  return this;
 };
 
-Game.prototype.loop = function() {
+Game.prototype._loop = function _loop() {
   //Calls the next players turn in line.
   var player = this.nextPlayersTurn();
   this.invokeTurn(player);
 };
 
-Game.prototype.continueGame = function() {
-  this.loop();
+Game.prototype.continueGame = function continueGame() {
+  this._loop();
 };
 
-Game.prototype.invokeTurn = function(player) {
+Game.prototype.invokeTurn = function invokeTurn(player) {
   this.currentPlayersTurn = player;
   return player.beginTurn();
 };
 
-Game.prototype.nextPlayersTurn = function() {
+Game.prototype.nextPlayersTurn = function nextPlayersTurn() {
   var nextPlayer;
+
   if(this.currentPlayersTurn) {
     var playerIndex = this.players.indexOf(this.currentPlayersTurn);
     if(playerIndex !== this.players.length - 1) {

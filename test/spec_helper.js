@@ -8,26 +8,20 @@ chai.use(sinonChai);
 // Helper functions
 exports.mockGame = function() {
   return {
-    actuator: {
-      handlePlayerTurn: sinon.spy(),
-      handlePlayerDiceRoll: sinon.spy(),
-      handleTokenBorn: sinon.spy(),
-      handleTokenMoveTo: sinon.spy(),
-    },
-    events: {
-      emit: sinon.spy()
-    },
+    on: sinon.spy(),
+    emit: sinon.spy(),
     continueGame: sinon.spy()
   };
 };
 
-exports.mockPlayer = function(name) {
+exports.mockPlayer = function(name, team) {
   return {
     name: name,
-    isReady: sinon.stub().returns(true),
+    team: team,
+    getReady: sinon.stub().returns(true),
     beginTurn: sinon.spy(),
     setTeam: sinon.spy(),
     joinGame: sinon.spy(),
-    game: exports.mockGame(),
+    game: exports.mockGame()
   };
 };
