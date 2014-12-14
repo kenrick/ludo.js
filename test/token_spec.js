@@ -93,6 +93,8 @@ describe("Token", function() {
       token.cords.x.should.equal(5);
       token.cords.y.should.equal(15);
     });
+
+    it('creates blockade if 1 or more tokens are at that cord');
   });
 
   describe("killed", function() {

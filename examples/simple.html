@@ -117,16 +117,17 @@
           }
         }
 
-        var SampleActuator = Ludo.Actuator.build({
-          debug: true,
-
-          handlePlayerAdded: function(player) {
+        var events = {
+          'player.join': function(data) {
+            var player = data.player;
             log(player.metadata.name + ' joined the game');
           },
-          handleGameStart: function(game) {
+          'game.start': function() {
             log("Game Started");
           },
-          handlePlayerDiceRoll: function(player, diceRolledCallback) {
+          'player.turn.rollDice': function(data) {
+            var player = data.player;
+            var diceRolledCallback = data.callback;
             log("its " + player.metadata.name + "'s turn");
 
             dialog({
@@ -142,7 +143,11 @@
             });
 
           },
-          handlePlayerActionDecision: function(player, actions, decisionCallback) {
+          'player.actions': function(data) {
+            var player = data.player;
+            var actions = data.actions;
+            var decisionCallback = data.callback;
+
             dialog({
               title: player.metadata.name + " rolled a " + actions[0].rolled + ". What now?",
               color: teamColors[player.team],
@@ -153,25 +158,34 @@
             });
           },
 
-          handleTokenBorn: function(token) {
+          'token.born': function(data) {
+            var token = data.token;
+
             $('<div/>', {
               id: token.team + '-' + token.id,
               class: 'token ' + token.team + '-token',
               text: token.id + 1,
             }).appendTo('#grid');
           },
-          handleTokenMoveTo: function(token, cords) {
+
+          'token.moveTo': function(data) {
+            var token = data.token;
+            var cords = data.cords;
+
             el = $('#' + token.team + '-' + token.id);
             moveTo(el, cords);
           },
 
-          handlePlayerAnotherTurn: function(player) {
+          'token.turn.repeat': function(player) {
             log(player.metadata.name + " gets another turn");
+          },
+
+          'error': function(data) {
+            log(data.message);
           }
+        };
 
-        });
-
-        var game = new Ludo.Game({ actuator: SampleActuator });
+        var game = new Ludo.Game({ events: events });
         var player1 = new Ludo.Player({name: "Shane"});
         var player2 = new Ludo.Player({name: "Dake"});
         var player3 = new Ludo.Player({name: "David"});
@@ -182,10 +196,10 @@
         game.addPlayer(player3);
         game.addPlayer(player4);
 
-        player1.ready();
-        player2.ready();
-        player3.ready();
-        player4.ready();
+        player1.readyUp();
+        player2.readyUp();
+        player3.readyUp();
+        player4.readyUp();
 
         dialog({
           button: "Start Game",

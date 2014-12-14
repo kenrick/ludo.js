@@ -1470,11 +1470,6 @@ Token.prototype.moveBy = function moveBy(rolled) {
 Token.prototype.moveTo = function moveTo(cords) {
   this.cords = cords;
   this.game.emit(Events.TOKEN_MOVE_TO, { token: this, cords: this.cords});
-
-  if(this.player.otherTokensAt(cords)) {
-
-  }
-
 };
 
 module.exports = Token;
