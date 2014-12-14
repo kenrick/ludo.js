@@ -22,7 +22,7 @@ exports.Events = {
   PLAYER_ACTIONS:  'player.actions',
 
   TOKEN_BORN:      'token.born',
-  TOKEN_MOVE_BY:   'token.moveBy',
+  TOKEN_MOVE_TO:   'token.moveTo',
 
   ERROR:           'error'
 };

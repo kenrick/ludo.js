@@ -1,11 +1,12 @@
 var constants = require('./constants');
 var Grid = constants.Grid;
 var ActionTypes = constants.ActionTypes;
+var Events = constants.Events;
 var utils = require('./utils');
 
 function Token(options) {
   this.player = options.player;
-  this._id     = options.id;
+  this.id     = options.id;
   this.game   = this.player.game;
   this.team   = this.player.team;
 
@@ -44,14 +45,14 @@ Token.prototype.executeAction = function executeAction(action) {
 Token.prototype.born = function born() {
   var startPoint = Grid.startPoint[this.team];
   this.active = true;
-  this.game.emit('token.born', { token: this });
+  this.game.emit(Events.TOKEN_BORN, { token: this });
 
   this.moveTo({x: startPoint[0], y: startPoint[1]});
 };
 
 Token.prototype.moveBy = function moveBy(rolled) {
-  cordArray = [this.cords.x, this.cords.y];
-  index = utils.findCordsInArray(cordArray, Grid.path);
+  var cordArray = [this.cords.x, this.cords.y];
+  var index = utils.findCordsInArray(cordArray, Grid.path);
   index += rolled;
   if(index > (Grid.path.length - 1) ) {
     index -= (Grid.path.length);
@@ -63,7 +64,7 @@ Token.prototype.moveBy = function moveBy(rolled) {
 
 Token.prototype.moveTo = function moveTo(cords) {
   this.cords = cords;
-  this.game.emit('token.moveTo', { token: this, cords: this.cords});
+  this.game.emit(Events.TOKEN_MOVE_TO, { token: this, cords: this.cords});
 };
 
 module.exports = Token;
