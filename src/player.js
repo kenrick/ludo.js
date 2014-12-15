@@ -36,7 +36,7 @@ Player.prototype.getActionsByDice = function getActionsByDice(dice) {
   var rolled = dice.rolled;
   var possibleActions = this.generatePossibleActions(rolled);
 
-  if(possibleActions.length) {
+  if (possibleActions.length) {
     this.game.emit(Events.PLAYER_ACTIONS, {
       player: this,
       actions: possibleActions,
@@ -78,7 +78,7 @@ Player.prototype.generatePossibleActions = function generatePossibleActions(roll
 Player.prototype.executeAction = function(action) {
   action.token.executeAction(action);
 
-  if(action.rolled === 6) {
+  if (action.rolled === 6) {
     this.game.emit(Events.REPEAT_TURN, { player: this });
 
     this.beginTurn();

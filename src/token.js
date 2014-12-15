@@ -17,11 +17,11 @@ function Token(options) {
 Token.prototype.getPossibleActions = function getPossibleActions(rolled) {
   var actions = [];
 
-  if(this.active) {
+  if (this.active0) {
     actions.push({type: ActionTypes.MOVE_BY, token: this, rolled: rolled});
   }
   else {
-    if(rolled === 6) {
+    if (rolled === 6) {
       actions.push({type: ActionTypes.BORN, token: this, rolled: rolled});
     }
   }
@@ -33,7 +33,7 @@ Token.prototype.executeAction = function executeAction(action) {
 
   switch (action.type) {
   case ActionTypes.BORN:
-      this.born();
+    this.born();
     break;
 
   case ActionTypes.MOVE_BY:
@@ -54,13 +54,12 @@ Token.prototype.moveBy = function moveBy(rolled) {
   var cordArray = [this.cords.x, this.cords.y];
   var index = utils.findCordsInArray(cordArray, Grid.path);
   index += rolled;
-  if(index > (Grid.path.length - 1) ) {
+  if (index > (Grid.path.length - 1)) {
     index -= (Grid.path.length);
   }
   newCord = Grid.path[index];
   this.moveTo({x: newCord[0], y: newCord[1]});
 };
-
 
 Token.prototype.moveTo = function moveTo(cords) {
   this.cords = cords;

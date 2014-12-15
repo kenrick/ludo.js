@@ -1,20 +1,24 @@
 var helper = require('./spec_helper');
 var Game = require('../src/game');
 
-describe("Game", function() {
-  var game, emitter, player, player2, player3, player4;
+describe('Game', function() {
+  var game;
+  var player;
+  var player2;
+  var player3;
+  var player4;
 
   beforeEach(function() {
     game = new Game();
-    player = helper.mockPlayer("Player1");
-    player2 = helper.mockPlayer("Player2");
-    player3 = helper.mockPlayer("Player3");
-    player4 = helper.mockPlayer("Player4");
+    player = helper.mockPlayer('Player1');
+    player2 = helper.mockPlayer('Player2');
+    player3 = helper.mockPlayer('Player3');
+    player4 = helper.mockPlayer('Player4');
   });
 
-  describe("addPlayer", function() {
-    it("fires player.join on the game", function(done) {
-      game.on("player.join", function(data) {
+  describe('addPlayer', function() {
+    it('fires player.join on the game', function(done) {
+      game.on('player.join', function(data) {
         data.player.should.eq(player);
         done();
       });
@@ -23,46 +27,46 @@ describe("Game", function() {
     });
   });
 
-  it("can add a new player to the game", function() {
+  it('can add a new player to the game', function() {
     game.addPlayer(player);
     game.players.should.include(player);
   });
 
-  it("can add up to 4 players to the game only", function() {
+  it('can add up to 4 players to the game only', function() {
     for (var i = 0; i <= 8; i++) {
       game.addPlayer(player);
     }
     game.players.length.should.equal(4);
   });
 
-  it("sets the team for each player added", function() {
+  it('sets the team for each player added', function() {
     game.addPlayer(player);
     game.addPlayer(player2);
     game.addPlayer(player3);
     game.addPlayer(player4);
 
-    game.players[0].setTeam.should.have.been.calledWith("bl");
-    game.players[1].setTeam.should.have.been.calledWith("br");
-    game.players[2].setTeam.should.have.been.calledWith("tl");
-    game.players[3].setTeam.should.have.been.calledWith("tr");
+    game.players[0].setTeam.should.have.been.calledWith('bl');
+    game.players[1].setTeam.should.have.been.calledWith('br');
+    game.players[2].setTeam.should.have.been.calledWith('tl');
+    game.players[3].setTeam.should.have.been.calledWith('tr');
   });
 
-  it("calls joined game on the player, with its game instance", function() {
+  it('calls joined game on the player, with its game instance', function() {
     game.addPlayer(player);
     player.joinGame.should.have.been.calledWith(game);
   });
 
-  it("returns the player thats turn is next", function() {
+  it('returns the player thats turn is next', function() {
     game.addPlayer(player);
     game.addPlayer(player2);
     game.nextPlayersTurn().should.equal(player);
   });
 
-  describe("initialize", function() {
-    it("can accept options for events", function() {
+  describe('initialize', function() {
+    it('can accept options for events', function() {
       var options = {
         events: {
-          "game.start": helper.sinon.spy()
+          'game.start': helper.sinon.spy()
         }
       };
       var game = new Game(options);
@@ -72,8 +76,8 @@ describe("Game", function() {
     });
   });
 
-  describe("start", function() {
-    it("fires error if there are no players", function(done) {
+  describe('start', function() {
+    it('fires error if there are no players', function(done) {
       game.on('error', function(data) {
         done();
         data.message.should.equal('Not enough players to start game');
@@ -82,7 +86,7 @@ describe("Game", function() {
       game.start();
     });
 
-    it("returns false if all players are not ready", function() {
+    it('returns false if all players are not ready', function() {
       game.on('error', function(data) {
         done();
         data.message.should.equal('Not all players are ready');
@@ -92,13 +96,13 @@ describe("Game", function() {
       game.start();
     });
 
-    it("returns true if all players are ready", function() {
+    it('returns true if all players are ready', function() {
       game.addPlayer(player);
       game.start();
       game.started.should.equal(true);
     });
 
-    it("runs the the loop method", function() {
+    it('runs the the loop method', function() {
       game.addPlayer(player);
       game._loop = helper.sinon.spy();
       game.start();
@@ -107,47 +111,47 @@ describe("Game", function() {
 
   });
 
-  describe("events", function() {
-    it("can listen for and trigger", function(done) {
-      game.on("test", function(data) {
-        data.name.should.equal("ye");
+  describe('events', function() {
+    it('can listen for and trigger', function(done) {
+      game.on('test', function(data) {
+        data.name.should.equal('ye');
         done();
       });
-      game.emit('test', {name: "ye"});
+      game.emit('test', {name: 'ye'});
     });
 
-    it("fires the game.started event when the game starts", function() {
+    it('fires the game.started event when the game starts', function() {
       var spy = helper.sinon.spy();
-      game.on("game.start", spy);
+      game.on('game.start', spy);
       game.addPlayer(player);
       game.start();
       spy.called.should.equal(true);
     });
   });
 
-  describe("loop", function() {
-    it("invokes turn on the next player in line, when the loop starts", function() {
+  describe('loop', function() {
+    it('invokes turn on the next player in line, when the loop starts', function() {
       game.addPlayer(player);
       game.addPlayer(player2);
       game.start();
       player.beginTurn.called.should.equal(true);
     });
-    describe("invokeTurn", function() {
-      it("sets the current turn to the first player at the starting of the game", function() {
+    describe('invokeTurn', function() {
+      it('sets the current turn to the first player at the starting of the game', function() {
         game.addPlayer(player);
         game.addPlayer(player2);
         game.invokeTurn(player);
         game.currentPlayersTurn.should.equal(player);
       });
 
-      it("sets the next turn to the second player, after invokeTurn is called", function() {
+      it('sets the next turn to the second player, after invokeTurn is called', function() {
         game.addPlayer(player);
         game.addPlayer(player2);
         game.invokeTurn(player);
         game.nextPlayersTurn().should.equal(player2);
       });
 
-      it("sets the next turn to the first player, if its the last players turn", function() {
+      it('sets the next turn to the first player, if its the last players turn', function() {
         game.addPlayer(player);
         game.addPlayer(player2);
         game.invokeTurn(player2);
@@ -155,7 +159,7 @@ describe("Game", function() {
       });
     });
 
-    it("can continue running the loop after a player's turn", function() {
+    it('can continue running the loop after a player\'s turn', function() {
       game.addPlayer(player);
       game.addPlayer(player2);
       game.addPlayer(player3);
@@ -164,6 +168,6 @@ describe("Game", function() {
       game.nextPlayersTurn().should.equal(player3);
     });
 
-    it("can check to see if the game was won");
+    it('can check to see if the game was won');
   });
 });

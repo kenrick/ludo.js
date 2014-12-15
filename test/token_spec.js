@@ -4,25 +4,27 @@ var constants = require('../src/constants');
 var ActionTypes = constants.ActionTypes;
 var Grid = constants.Grid;
 
-describe("Token", function() {
-  var token, player, game;
+describe('Token', function() {
+  var token;
+  var player;
+  var game;
 
   beforeEach(function() {
-    player = helper.mockPlayer("Player1", 'bl');
+    player = helper.mockPlayer('Player1', 'bl');
     game = player.game;
     token = new Token({player: player, id: 0});
   });
 
-  describe("intialize", function() {
+  describe('intialize', function() {
     it('can accept the player it belongs to', function() {
       token.player.should.equal(player);
     });
     it('can accept its team', function() {
-      token.team.should.equal("bl");
+      token.team.should.equal('bl');
     });
   });
 
-  describe("getPossibleActions", function() {
+  describe('getPossibleActions', function() {
     it('returns the born action when rolled is 6', function() {
       token.active.should.equal(false);
       actions = token.getPossibleActions(6);
@@ -35,7 +37,7 @@ describe("Token", function() {
       actions[0].should.eql({type: ActionTypes.MOVE_BY, token: token, rolled: 4});
     });
   });
-  describe("born", function() {
+  describe('born', function() {
     it('sets active to true', function() {
       token.born();
       token.active.should.equal(true);
@@ -48,21 +50,21 @@ describe("Token", function() {
     });
     it('fires the token.born event', function() {
       token.born();
-      game.emit.should.be.calledWith("token.born", { token: token });
+      game.emit.should.be.calledWith('token.born', { token: token });
     });
 
     it('fires the token.moveTo event to startPoint', function() {
       token.born();
       cords = { x: Grid.startPoint.bl[0], y: Grid.startPoint.bl[1] };
-      game.emit.should.be.calledWith("token.moveTo", { token: token, cords: cords });
+      game.emit.should.be.calledWith('token.moveTo', { token: token, cords: cords });
     });
   });
-  describe("moveBy", function() {
+  describe('moveBy', function() {
     it('accepts a number to move the token by', function() {
-        token.born();
-        token.moveBy(3);
-        token.cords.x.should.equal(7);
-        token.cords.y.should.equal(11);
+      token.born();
+      token.moveBy(3);
+      token.cords.x.should.equal(7);
+      token.cords.y.should.equal(11);
     });
 
     it('resets at the end of the path', function() {
@@ -82,10 +84,10 @@ describe("Token", function() {
     });
   });
 
-  describe("moveTo", function() {
+  describe('moveTo', function() {
     it('fires the token.moveTo event, passing the token and coordinates', function() {
       token.moveTo({x: 5, y: 15});
-      game.emit.should.be.calledWith("token.moveTo", { token: token, cords: {x: 5, y: 15} });
+      game.emit.should.be.calledWith('token.moveTo', { token: token, cords: {x: 5, y: 15} });
     });
 
     it('updates the cords with the new coordinates', function() {
@@ -97,7 +99,7 @@ describe("Token", function() {
     it('creates blockade if 1 or more tokens are at that cord');
   });
 
-  describe("killed", function() {
+  describe('killed', function() {
     it('sets active to false');
   });
 });

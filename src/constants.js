@@ -100,32 +100,32 @@ var Grid = exports.Grid = {
   ],
   heaven: {
     bl: [
-      [8,14],
-      [8,13],
-      [8,12],
-      [8,11],
-      [8,10]
+      [8, 14],
+      [8, 13],
+      [8, 12],
+      [8, 11],
+      [8, 10]
     ],
     br: [
-      [14,8],
-      [13,8],
-      [12,8],
-      [11,8],
-      [10,8]
+      [14, 8],
+      [13, 8],
+      [12, 8],
+      [11, 8],
+      [10, 8]
     ],
     tl: [
-      [2,8],
-      [3,8],
-      [4,8],
-      [5,8],
-      [6,8]
+      [2, 8],
+      [3, 8],
+      [4, 8],
+      [5, 8],
+      [6, 8]
     ],
     tr: [
-      [8,2],
-      [8,3],
-      [8,4],
-      [8,5],
-      [8,6]
+      [8, 2],
+      [8, 3],
+      [8, 4],
+      [8, 5],
+      [8, 6]
     ]
   },
   startPoint: {
@@ -143,7 +143,6 @@ var Grid = exports.Grid = {
   allCordsForTeam: {}
 };
 
-
 for (var i = 0; i <= 3; i++) {
   t = exports.Teams[i];
   exports.Grid.allCordsForTeam[t] = [Grid.startPoint[t]]
@@ -153,8 +152,8 @@ for (var i = 0; i <= 3; i++) {
 
 function _listTeamAreaFrom(c) {
   var area = [];
-  for (var y = c[1]; y <= c[1]+5; y++) {
-    for (var x = c[0]; x <= c[0]+5; x++) {
+  for (var y = c[1]; y <= c[1] + 5; y++) {
+    for (var x = c[0]; x <= c[0] + 5; x++) {
       area.push([x, y]);
     }
   }

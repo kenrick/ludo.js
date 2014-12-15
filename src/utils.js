@@ -27,13 +27,15 @@ if (!Array.prototype.findIndex) {
 
 var findCordsInArray = exports.findCordsInArray = function(needle, haystack) {
   return haystack.findIndex(function(e, index) {
-    if(e[0] == needle[0] && e[1] == needle[1] ) return 1;
+    if (e[0] == needle[0] && e[1] == needle[1]) {
+      return 1;
+    }
   });
 };
 
 exports.cordBelongsTo = function(cordArray) {
   for (var i = 0; i <= 3; i++) {
-    if(findCordsInArray(cordArray, Grid.allCordsForTeam[Teams[i]]) !== -1) {
+    if (findCordsInArray(cordArray, Grid.allCordsForTeam[Teams[i]]) !== -1) {
       return Teams[i];
     }
   }

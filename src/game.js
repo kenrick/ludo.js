@@ -18,15 +18,15 @@ inherits(Game, EventEmitter);
 Game.prototype._attachEvents = function _attachEvents(events) {
   var event;
 
-  if(typeof events !== "undefined") {
-    for(event in events) {
+  if (typeof events !== 'undefined') {
+    for (event in events) {
       this.on(event, events[event]);
     }
   }
 };
 
 Game.prototype.addPlayer = function addPlayer(player) {
-  if(this.players.length <= 3) {
+  if (this.players.length <= 3) {
     player.joinGame(this);
     player.setTeam(constants.Teams[this.players.length]);
 
@@ -39,15 +39,15 @@ Game.prototype.start = function start() {
   var readies = 0;
   var i;
 
-  if(!this.started) {
+  if (!this.started) {
 
     for (i = 0; i < this.players.length; i++) {
-      if(this.players[i].getReady()) {
+      if (this.players[i].getReady()) {
         readies++;
       }
     }
 
-    if(!this.players.length) {
+    if (!this.players.length) {
       this.emit(Events.ERROR, { message: 'Not enough players to start game' });
     } else if (this.players.length != readies) {
       this.emit(Events.ERROR, { message: 'Not all players are ready' });
@@ -79,12 +79,11 @@ Game.prototype.invokeTurn = function invokeTurn(player) {
 Game.prototype.nextPlayersTurn = function nextPlayersTurn() {
   var nextPlayer;
 
-  if(this.currentPlayersTurn) {
+  if (this.currentPlayersTurn) {
     var playerIndex = this.players.indexOf(this.currentPlayersTurn);
-    if(playerIndex !== this.players.length - 1) {
+    if (playerIndex !== this.players.length - 1) {
       nextPlayer = this.players[playerIndex + 1];
-    }
-    else {
+    } else {
       nextPlayer = this.players[0];
     }
   }
@@ -93,6 +92,5 @@ Game.prototype.nextPlayersTurn = function nextPlayersTurn() {
   }
   return nextPlayer;
 };
-
 
 module.exports = Game;

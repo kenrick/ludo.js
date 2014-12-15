@@ -3,7 +3,7 @@ var mocha = require('gulp-mocha');
 var browserify = require('browserify');
 var transform = require('vinyl-transform');
 var uglify = require('gulp-uglify');
-var rename = require("gulp-rename");
+var rename = require('gulp-rename');
 var karma = require('karma').server;
 var jshint = require('gulp-jshint');
 
@@ -25,20 +25,20 @@ gulp.task('test', ['lint'], function() {
     .pipe(mocha({reporter: 'dot'}));
 });
 
-gulp.task('browserify', function () {
+gulp.task('browserify', function() {
   var browserified = transform(function(filename) {
-    var b = browserify(filename, {standalone: "Ludo"});
+    var b = browserify(filename, {standalone: 'Ludo'});
     return b.bundle();
   });
 
   return gulp.src(paths.index)
     .pipe(browserified)
     // .pipe(uglify())
-    .pipe(rename("Ludo.js"))
+    .pipe(rename('Ludo.js'))
     .pipe(gulp.dest('./dist'));
 });
 
-gulp.task('test-all', function (done) {
+gulp.task('test-all', function(done) {
   karma.start({
     configFile: __dirname + '/karma.conf.js',
     singleRun: true

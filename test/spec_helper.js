@@ -1,5 +1,5 @@
 var chai = exports.chai = require('chai');
-var sinonChai = exports.sinonChai = require("sinon-chai");
+var sinonChai = exports.sinonChai = require('sinon-chai');
 var sinon = exports.sinon = require('sinon');
 var Player = require('../src/player');
 exports.should = chai.should();
