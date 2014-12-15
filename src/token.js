@@ -17,7 +17,7 @@ function Token(options) {
 Token.prototype.getPossibleActions = function getPossibleActions(rolled) {
   var actions = [];
 
-  if (this.active0) {
+  if (this.active) {
     actions.push({type: ActionTypes.MOVE_BY, token: this, rolled: rolled});
   }
   else {

@@ -1,9 +1,9 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Ludo=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-exports.Game = require("./src/game");
-exports.Player = require("./src/player");
-exports.Token = require("./src/token");
-exports.Dice = require("./src/dice");
-exports.utils = require("./src/utils");
+exports.Game = require('./src/game');
+exports.Player = require('./src/player');
+exports.Token = require('./src/token');
+exports.Dice = require('./src/dice');
+exports.utils = require('./src/utils');
 
 },{"./src/dice":8,"./src/game":9,"./src/player":10,"./src/token":11,"./src/utils":12}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
@@ -1121,32 +1121,32 @@ var Grid = exports.Grid = {
   ],
   heaven: {
     bl: [
-      [8,14],
-      [8,13],
-      [8,12],
-      [8,11],
-      [8,10]
+      [8, 14],
+      [8, 13],
+      [8, 12],
+      [8, 11],
+      [8, 10]
     ],
     br: [
-      [14,8],
-      [13,8],
-      [12,8],
-      [11,8],
-      [10,8]
+      [14, 8],
+      [13, 8],
+      [12, 8],
+      [11, 8],
+      [10, 8]
     ],
     tl: [
-      [2,8],
-      [3,8],
-      [4,8],
-      [5,8],
-      [6,8]
+      [2, 8],
+      [3, 8],
+      [4, 8],
+      [5, 8],
+      [6, 8]
     ],
     tr: [
-      [8,2],
-      [8,3],
-      [8,4],
-      [8,5],
-      [8,6]
+      [8, 2],
+      [8, 3],
+      [8, 4],
+      [8, 5],
+      [8, 6]
     ]
   },
   startPoint: {
@@ -1164,7 +1164,6 @@ var Grid = exports.Grid = {
   allCordsForTeam: {}
 };
 
-
 for (var i = 0; i <= 3; i++) {
   t = exports.Teams[i];
   exports.Grid.allCordsForTeam[t] = [Grid.startPoint[t]]
@@ -1174,8 +1173,8 @@ for (var i = 0; i <= 3; i++) {
 
 function _listTeamAreaFrom(c) {
   var area = [];
-  for (var y = c[1]; y <= c[1]+5; y++) {
-    for (var x = c[0]; x <= c[0]+5; x++) {
+  for (var y = c[1]; y <= c[1] + 5; y++) {
+    for (var x = c[0]; x <= c[0] + 5; x++) {
       area.push([x, y]);
     }
   }
@@ -1190,8 +1189,8 @@ function Dice(options) {
 }
 
 Dice.prototype.roll = function() {
-  if(this.rolled === false) {
-    this.rolled = Math.floor( 6 * Math.random() ) + 1;
+  if (this.rolled === false) {
+    this.rolled = Math.floor(6 * Math.random()) + 1;
   }
 
   return this.rolled;
@@ -1220,15 +1219,15 @@ inherits(Game, EventEmitter);
 Game.prototype._attachEvents = function _attachEvents(events) {
   var event;
 
-  if(typeof events !== "undefined") {
-    for(event in events) {
+  if (typeof events !== 'undefined') {
+    for (event in events) {
       this.on(event, events[event]);
     }
   }
 };
 
 Game.prototype.addPlayer = function addPlayer(player) {
-  if(this.players.length <= 3) {
+  if (this.players.length <= 3) {
     player.joinGame(this);
     player.setTeam(constants.Teams[this.players.length]);
 
@@ -1241,15 +1240,15 @@ Game.prototype.start = function start() {
   var readies = 0;
   var i;
 
-  if(!this.started) {
+  if (!this.started) {
 
     for (i = 0; i < this.players.length; i++) {
-      if(this.players[i].getReady()) {
+      if (this.players[i].getReady()) {
         readies++;
       }
     }
 
-    if(!this.players.length) {
+    if (!this.players.length) {
       this.emit(Events.ERROR, { message: 'Not enough players to start game' });
     } else if (this.players.length != readies) {
       this.emit(Events.ERROR, { message: 'Not all players are ready' });
@@ -1281,12 +1280,11 @@ Game.prototype.invokeTurn = function invokeTurn(player) {
 Game.prototype.nextPlayersTurn = function nextPlayersTurn() {
   var nextPlayer;
 
-  if(this.currentPlayersTurn) {
+  if (this.currentPlayersTurn) {
     var playerIndex = this.players.indexOf(this.currentPlayersTurn);
-    if(playerIndex !== this.players.length - 1) {
+    if (playerIndex !== this.players.length - 1) {
       nextPlayer = this.players[playerIndex + 1];
-    }
-    else {
+    } else {
       nextPlayer = this.players[0];
     }
   }
@@ -1295,7 +1293,6 @@ Game.prototype.nextPlayersTurn = function nextPlayersTurn() {
   }
   return nextPlayer;
 };
-
 
 module.exports = Game;
 
@@ -1338,7 +1335,7 @@ Player.prototype.getActionsByDice = function getActionsByDice(dice) {
   var rolled = dice.rolled;
   var possibleActions = this.generatePossibleActions(rolled);
 
-  if(possibleActions.length) {
+  if (possibleActions.length) {
     this.game.emit(Events.PLAYER_ACTIONS, {
       player: this,
       actions: possibleActions,
@@ -1380,7 +1377,7 @@ Player.prototype.generatePossibleActions = function generatePossibleActions(roll
 Player.prototype.executeAction = function(action) {
   action.token.executeAction(action);
 
-  if(action.rolled === 6) {
+  if (action.rolled === 6) {
     this.game.emit(Events.REPEAT_TURN, { player: this });
 
     this.beginTurn();
@@ -1422,11 +1419,11 @@ function Token(options) {
 Token.prototype.getPossibleActions = function getPossibleActions(rolled) {
   var actions = [];
 
-  if(this.active) {
+  if (this.active) {
     actions.push({type: ActionTypes.MOVE_BY, token: this, rolled: rolled});
   }
   else {
-    if(rolled === 6) {
+    if (rolled === 6) {
       actions.push({type: ActionTypes.BORN, token: this, rolled: rolled});
     }
   }
@@ -1438,7 +1435,7 @@ Token.prototype.executeAction = function executeAction(action) {
 
   switch (action.type) {
   case ActionTypes.BORN:
-      this.born();
+    this.born();
     break;
 
   case ActionTypes.MOVE_BY:
@@ -1459,13 +1456,12 @@ Token.prototype.moveBy = function moveBy(rolled) {
   var cordArray = [this.cords.x, this.cords.y];
   var index = utils.findCordsInArray(cordArray, Grid.path);
   index += rolled;
-  if(index > (Grid.path.length - 1) ) {
+  if (index > (Grid.path.length - 1)) {
     index -= (Grid.path.length);
   }
   newCord = Grid.path[index];
   this.moveTo({x: newCord[0], y: newCord[1]});
 };
-
 
 Token.prototype.moveTo = function moveTo(cords) {
   this.cords = cords;
@@ -1504,13 +1500,15 @@ if (!Array.prototype.findIndex) {
 
 var findCordsInArray = exports.findCordsInArray = function(needle, haystack) {
   return haystack.findIndex(function(e, index) {
-    if(e[0] == needle[0] && e[1] == needle[1] ) return 1;
+    if (e[0] == needle[0] && e[1] == needle[1]) {
+      return 1;
+    }
   });
 };
 
 exports.cordBelongsTo = function(cordArray) {
   for (var i = 0; i <= 3; i++) {
-    if(findCordsInArray(cordArray, Grid.allCordsForTeam[Teams[i]]) !== -1) {
+    if (findCordsInArray(cordArray, Grid.allCordsForTeam[Teams[i]]) !== -1) {
       return Teams[i];
     }
   }
