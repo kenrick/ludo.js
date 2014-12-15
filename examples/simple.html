@@ -176,8 +176,14 @@
             moveTo(el, cords);
           },
 
-          'token.turn.repeat': function(player) {
-            log(player.metadata.name + " gets another turn");
+          'token.turn.repeat': function(data) {
+            log(data.player.metadata.name + " gets another turn");
+          },
+
+          'token.killed': function(data) {
+            var killed = data.killed;
+            el = $('#' + killed.team + '-' + killed.id);
+            moveTo(el, {x: 0, y: 0});
           },
 
           'error': function(data) {
@@ -200,6 +206,8 @@
         player2.readyUp();
         player3.readyUp();
         player4.readyUp();
+
+        game.currentPlayersTurn = player1;
 
         dialog({
           button: "Start Game",

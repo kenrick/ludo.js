@@ -10,7 +10,8 @@ exports.mockGame = function() {
   return {
     on: sinon.spy(),
     emit: sinon.spy(),
-    continueGame: sinon.spy()
+    continueGame: sinon.spy(),
+    findTokenAt: sinon.spy()
   };
 };
 
@@ -19,6 +20,9 @@ exports.mockPlayer = function(name, team) {
     name: name,
     team: team,
     getReady: sinon.stub().returns(true),
+    enemyTokenAt: sinon.stub().returns(false),
+    tokenLocatedAt: sinon.stub(),
+    allyTokenAt: sinon.stub().returns(false),
     beginTurn: sinon.spy(),
     setTeam: sinon.spy(),
     joinGame: sinon.spy(),

@@ -75,7 +75,7 @@ Player.prototype.generatePossibleActions = function generatePossibleActions(roll
   return totalActions;
 };
 
-Player.prototype.executeAction = function(action) {
+Player.prototype.executeAction = function executeAction(action) {
   action.token.executeAction(action);
 
   if (action.rolled === 6) {
@@ -88,14 +88,32 @@ Player.prototype.executeAction = function(action) {
 
 };
 
-Player.prototype.endTurn = function() {
+Player.prototype.endTurn = function endTurn() {
   this.game.emit(Events.TURN_END, { player: this });
   this.game.continueGame();
 };
 
-Player.prototype.joinGame = function(game) {
+Player.prototype.joinGame = function joinGame(game) {
   this.game = game;
   return true;
+};
+
+Player.prototype.tokenLocatedAt = function tokenLocatedAt(cords) {
+  var token;
+  var i;
+
+  for (i = 0; i < this._tokens.length; i++) {
+    token = this._tokens[i];
+    if (token.cords.x === cords[0] && token.cords.y === cords[1]) {
+      return token;
+    }
+  }
+
+  return false;
+};
+
+Player.prototype.enemyTokenAt = function enemyTokenAt(cords) {
+  return this.game.findTokenAt(cords, this);
 };
 
 module.exports = Player;

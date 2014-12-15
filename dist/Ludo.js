@@ -1044,13 +1044,15 @@ exports.Events = {
 
   TOKEN_BORN:      'token.born',
   TOKEN_MOVE_TO:   'token.moveTo',
+  TOKEN_KILLED:    'token.killed',
 
   ERROR:           'error'
 };
 
 exports.ActionTypes = {
-  BORN:     'born',
-  MOVE_BY:  'moveBy'
+  BORN:      'born',
+  MOVE_BY:   'moveBy',
+  KILL_MOVE: 'killMove'
 };
 
 var Grid = exports.Grid = {
@@ -1294,6 +1296,29 @@ Game.prototype.nextPlayersTurn = function nextPlayersTurn() {
   return nextPlayer;
 };
 
+Game.prototype.findTokenAt = function findTokenAt(cords, excludedPlayer) {
+  var i;
+  var token;
+  var players = this.players;
+
+  for (i = 0; i < players.length; i++) {
+    player = players[i];
+
+    if (excludedPlayer !== undefined && player.team === excludedPlayer.team) {
+      continue;
+    }
+
+    token = player.tokenLocatedAt(cords);
+
+    if (token) {
+      return token;
+    }
+
+  }
+
+  return false;
+};
+
 module.exports = Game;
 
 },{"./constants":7,"events":2,"util":6}],10:[function(require,module,exports){
@@ -1374,7 +1399,7 @@ Player.prototype.generatePossibleActions = function generatePossibleActions(roll
   return totalActions;
 };
 
-Player.prototype.executeAction = function(action) {
+Player.prototype.executeAction = function executeAction(action) {
   action.token.executeAction(action);
 
   if (action.rolled === 6) {
@@ -1387,14 +1412,32 @@ Player.prototype.executeAction = function(action) {
 
 };
 
-Player.prototype.endTurn = function() {
+Player.prototype.endTurn = function endTurn() {
   this.game.emit(Events.TURN_END, { player: this });
   this.game.continueGame();
 };
 
-Player.prototype.joinGame = function(game) {
+Player.prototype.joinGame = function joinGame(game) {
   this.game = game;
   return true;
+};
+
+Player.prototype.tokenLocatedAt = function tokenLocatedAt(cords) {
+  var token;
+  var i;
+
+  for (i = 0; i < this._tokens.length; i++) {
+    token = this._tokens[i];
+    if (token.cords.x === cords[0] && token.cords.y === cords[1]) {
+      return token;
+    }
+  }
+
+  return false;
+};
+
+Player.prototype.enemyTokenAt = function enemyTokenAt(cords) {
+  return this.game.findTokenAt(cords, this);
 };
 
 module.exports = Player;
@@ -1418,9 +1461,29 @@ function Token(options) {
 
 Token.prototype.getPossibleActions = function getPossibleActions(rolled) {
   var actions = [];
+  var forecast;
+  var enemyToken;
 
   if (this.active) {
-    actions.push({type: ActionTypes.MOVE_BY, token: this, rolled: rolled});
+    forecast = this._forecastCords(rolled);
+    enemyToken = this.player.enemyTokenAt(forecast);
+
+    if (enemyToken) {
+      actions.push({
+        type: ActionTypes.KILL_MOVE,
+        token: this,
+        rolled: rolled,
+        enemyToken: enemyToken,
+        forecast: forecast
+      });
+    } else {
+      actions.push({
+        type: ActionTypes.MOVE_BY,
+        token: this,
+        rolled: rolled,
+        forecast: forecast
+      });
+    }
   }
   else {
     if (rolled === 6) {
@@ -1441,6 +1504,11 @@ Token.prototype.executeAction = function executeAction(action) {
   case ActionTypes.MOVE_BY:
     this.moveBy(action.rolled);
     break;
+
+  case ActionTypes.KILL_MOVE:
+    this.kill(action.enemyToken);
+    this.moveBy(action.rolled);
+    break;
   }
 };
 
@@ -1452,20 +1520,34 @@ Token.prototype.born = function born() {
   this.moveTo({x: startPoint[0], y: startPoint[1]});
 };
 
-Token.prototype.moveBy = function moveBy(rolled) {
+Token.prototype._forecastCords = function _forecastCords(rolled) {
   var cordArray = [this.cords.x, this.cords.y];
   var index = utils.findCordsInArray(cordArray, Grid.path);
   index += rolled;
   if (index > (Grid.path.length - 1)) {
     index -= (Grid.path.length);
   }
-  newCord = Grid.path[index];
+  return Grid.path[index];
+};
+
+Token.prototype.moveBy = function moveBy(rolled) {
+  var newCord = this._forecastCords(rolled);
   this.moveTo({x: newCord[0], y: newCord[1]});
 };
 
 Token.prototype.moveTo = function moveTo(cords) {
   this.cords = cords;
   this.game.emit(Events.TOKEN_MOVE_TO, { token: this, cords: this.cords});
+};
+
+Token.prototype.killedBy = function killedBy(otherToken) {
+  this.active = false;
+  this.cords = { x: 0, y: 0 };
+};
+
+Token.prototype.kill = function kill(killedToken) {
+  killedToken.killedBy(this);
+  this.game.emit(Events.TOKEN_KILLED, { killed: killedToken, by: this });
 };
 
 module.exports = Token;

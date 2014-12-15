@@ -49,3 +49,5 @@ gulp.task('watch', function() {
   gulp.watch([paths.tests, paths.src], ['test']);
   gulp.watch([paths.src], ['browserify']);
 });
+
+gulp.task('default', ['test', 'browserify']);

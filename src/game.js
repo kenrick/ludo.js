@@ -93,4 +93,27 @@ Game.prototype.nextPlayersTurn = function nextPlayersTurn() {
   return nextPlayer;
 };
 
+Game.prototype.findTokenAt = function findTokenAt(cords, excludedPlayer) {
+  var i;
+  var token;
+  var players = this.players;
+
+  for (i = 0; i < players.length; i++) {
+    player = players[i];
+
+    if (excludedPlayer !== undefined && player.team === excludedPlayer.team) {
+      continue;
+    }
+
+    token = player.tokenLocatedAt(cords);
+
+    if (token) {
+      return token;
+    }
+
+  }
+
+  return false;
+};
+
 module.exports = Game;

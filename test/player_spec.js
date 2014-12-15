@@ -8,6 +8,7 @@ describe('Player', function() {
   beforeEach(function() {
     game = helper.mockGame();
     player = new Player();
+    player.game = game;
     player.setTeam('bl');
   });
 
@@ -18,12 +19,14 @@ describe('Player', function() {
 
   describe('joinGame', function() {
     it('can join a game', function() {
-      player.joinGame(game).should.equal(true);
+      var game2 = helper.mockGame();
+      player.joinGame(game2).should.equal(true);
     });
 
     it('sets the game that it was joined to', function() {
-      player.joinGame(game);
-      player.game.should.equal(game);
+      var game2 = helper.mockGame();
+      player.joinGame(game2);
+      player.game.should.equal(game2);
     });
   });
 
@@ -75,6 +78,23 @@ describe('Player', function() {
       for (var i = 0; i <= 3; i++) {
         actions[0].type.should.eql('born');
       }
+    });
+  });
+
+  describe('tokenLocatedAt', function() {
+    it('returns a token if at a cord', function() {
+      player.game = game;
+      player._tokens[0].born();
+      player._tokens[0].moveBy(6);
+      var token = player.tokenLocatedAt([5, 9]);
+      token.should.equal(player._tokens[0]);
+    });
+  });
+
+  describe('enemyTokenAt', function() {
+    it('calls game.findTokenAt ', function() {
+      player.enemyTokenAt([5, 9]);
+      game.findTokenAt.should.be.calledWith([5, 9], player);
     });
   });
 

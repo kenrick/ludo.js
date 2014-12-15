@@ -111,6 +111,38 @@ describe('Game', function() {
 
   });
 
+  describe('findTokenAt', function() {
+    it('calls tokenLocatedAt on all players', function() {
+      game.addPlayer(player);
+      game.addPlayer(player2);
+
+      game.findTokenAt([5, 9]).should.equal(false);
+
+      player.tokenLocatedAt.calledOnce.should.equal(true);
+      player2.tokenLocatedAt.calledOnce.should.equal(true);
+    });
+
+    it('calls tokenLocatedAt on all players except one specified', function() {
+      player.team = 'bl';
+      player2.team = 'br';
+      game.addPlayer(player);
+      game.addPlayer(player2);
+
+      game.findTokenAt([5, 9], player).should.equal(false);
+
+      player.tokenLocatedAt.calledOnce.should.equal(false);
+      player2.tokenLocatedAt.calledOnce.should.equal(true);
+    });
+
+    it('returns a token any player has that token at the cords', function() {
+      game.addPlayer(player);
+      game.addPlayer(player2);
+      player.tokenLocatedAt.returns(true);
+
+      game.findTokenAt([5, 9]).should.equal(true);
+    });
+  });
+
   describe('events', function() {
     it('can listen for and trigger', function(done) {
       game.on('test', function(data) {
