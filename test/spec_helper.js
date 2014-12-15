@@ -29,3 +29,21 @@ exports.mockPlayer = function(name, team) {
     game: exports.mockGame()
   };
 };
+
+function Plan(count, done) {
+  this.done = done;
+  this.count = count;
+}
+
+Plan.prototype.ok = function() {
+
+  this.count--;
+
+  if (this.count === 0) {
+    this.done();
+  }
+};
+
+exports.plan = function(count, done) {
+  return new Plan(count, done);
+};
