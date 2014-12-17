@@ -133,8 +133,6 @@ describe('Integration', function() {
       player1._tokens[1].born();
       player1._tokens[1].moveTo({ x: 7, y: 13 });
 
-      player1._tokens[1].createBlockade([7, 13], [player1._tokens[0]]);
-
       game.currentPlayersTurn = player2;
 
       game.once('player.turn.rollDice', function(data) {
@@ -155,7 +153,6 @@ describe('Integration', function() {
 
       game.once('token.moveTo', function(data) {
         expect(player1._tokens[0].cords).to.eql({x: 7, y: 12});
-        // console.log(player1);
         expect(player1._tokens[0].inBlockade).to.be.false();
         expect(player1._tokens[1].inBlockade).to.be.false();
         plan.ok();

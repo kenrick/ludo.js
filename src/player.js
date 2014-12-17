@@ -63,14 +63,14 @@ Player.prototype.beginTurn = function beginTurn() {
 };
 
 Player.prototype.generatePossibleActions = function generatePossibleActions(rolled) {
-  var actions;
+  var action;
   var totalActions = [];
   var i;
 
   for (i = 0; i <= 3; i++) {
-    actions = this._tokens[i].getPossibleActions(rolled);
+    action = this._tokens[i].getPossibleAction(rolled);
 
-    totalActions = totalActions.concat(actions);
+    if (action) totalActions.push(action);
   }
 
   return totalActions;

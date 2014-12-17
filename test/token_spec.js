@@ -29,14 +29,14 @@ describe('Token', function() {
   describe('getPossibleActions', function() {
     it('returns the born action when rolled is 6', function() {
       token.active.should.equal(false);
-      actions = token.getPossibleActions(6);
-      actions[0].should.eql({type: ActionTypes.BORN, token: token, rolled: 6});
+      action = token.getPossibleAction(6);
+      expect(action).to.eql({type: ActionTypes.BORN, token: token, rolled: 6});
     });
 
     it('returns the move by action when rolled is 4 and already active', function() {
       token.born();
-      actions = token.getPossibleActions(4);
-      actions[0].should.eql({type: ActionTypes.MOVE_BY, token: token, rolled: 4, forecast: [7, 10]});
+      action = token.getPossibleAction(4);
+      expect(action).to.eql({type: ActionTypes.MOVE_BY, token: token, rolled: 4, forecast: [7, 10]});
     });
 
     it('returns the kill move action if there is a token in the forecast cord', function() {
@@ -44,16 +44,16 @@ describe('Token', function() {
       token2 = new Token({ player: player2, id: 0 });
       token.born();
       token.player.enemyTokenAt.returns(token2);
-      actions = token.getPossibleActions(4);
-      actions[0].should.eql({type: ActionTypes.KILL_MOVE, token: token, enemyToken: token2, rolled: 4, forecast: [7, 10]});
+      action = token.getPossibleAction(4);
+      expect(action).to.eql({type: ActionTypes.KILL_MOVE, token: token, enemyToken: token2, rolled: 4, forecast: [7, 10]});
     });
 
     it('returns the create blockade action if there is a ally token in the forecast cord', function() {
       token2 = new Token({ player: player, id: 1 });
       token.born();
       token.player.allyTokensAt.returns([token2]);
-      actions = token.getPossibleActions(4);
-      actions[0].should.eql({type: ActionTypes.CREATE_BLOCKADE, token: token, allyTokens: [token2], rolled: 4, forecast: [7, 10]});
+      action = token.getPossibleAction(4);
+      expect(action).to.eql({type: ActionTypes.CREATE_BLOCKADE, token: token, allyTokens: [token2], rolled: 4, forecast: [7, 10]});
     });
   });
   describe('born', function() {
@@ -120,14 +120,14 @@ describe('Token', function() {
     it('creates blockade if 1 or more tokens are at that cord', function() {
       token2 = new Token({ player: player, id: 1 });
       token.born();
-      token.createBlockade([5, 9], [token2]);
+      token._createBlockade([5, 9], [token2]);
       player.registerBlockade.should.be.calledWith([5, 9], [token2, token]);
     });
 
     it('fires token.blockade', function() {
       token2 = new Token({ player: player, id: 1 });
       token.born();
-      token.createBlockade([5, 9], [token2]);
+      token._createBlockade([5, 9], [token2]);
 
       game.emit.should.be.calledWith('token.blockade', { cords: [5, 9], tokens: [token2, token] });
     });
@@ -163,13 +163,13 @@ describe('Token', function() {
       var spy = helper.sinon.spy();
 
       token2.killedBy = spy;
-      token.kill(token2);
+      token._kill(token2);
 
       token2.killedBy.calledOnce.should.equal(true);
     });
 
     it('fires token.killed with the killed and by', function() {
-      token.kill(token2);
+      token._kill(token2);
       game.emit.should.be.calledWith('token.killed', { killed: token2, by: token });
     });
 

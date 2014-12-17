@@ -15,49 +15,38 @@ function Token(options) {
   this.cords  = {x: 0, y: 0};
 }
 
-Token.prototype.getPossibleActions = function getPossibleActions(rolled) {
-  var actions = [];
+Token.prototype.getPossibleAction = function getPossibleAction(rolled) {
+  var action = {};
   var forecast;
   var enemyToken;
-  var allToken;
+  var allyToken;
+
+  action.token = this;
+  action.rolled = rolled;
 
   if (this.active) {
     forecast = this._forecastCords(rolled);
     enemyToken = this.player.enemyTokenAt(forecast);
     allyTokens = this.player.allyTokensAt(forecast, this);
 
+    action.forecast = forecast;
+
     if (enemyToken) {
-      actions.push({
-        type: ActionTypes.KILL_MOVE,
-        token: this,
-        rolled: rolled,
-        enemyToken: enemyToken,
-        forecast: forecast
-      });
+      action.type = ActionTypes.KILL_MOVE;
+      action.enemyToken = enemyToken;
     } else if (allyTokens) {
-      actions.push({
-        type: ActionTypes.CREATE_BLOCKADE,
-        token: this,
-        rolled: rolled,
-        allyTokens: allyTokens,
-        forecast: forecast
-      });
+      action.type = ActionTypes.CREATE_BLOCKADE;
+      action.allyTokens = allyTokens;
     } else {
-      actions.push({
-        type: ActionTypes.MOVE_BY,
-        token: this,
-        rolled: rolled,
-        forecast: forecast
-      });
+      action.type = ActionTypes.MOVE_BY;
     }
-  }
-  else {
-    if (rolled === 6) {
-      actions.push({type: ActionTypes.BORN, token: this, rolled: rolled});
-    }
+  } else if (rolled === 6) {
+    action.type = ActionTypes.BORN;
   }
 
-  return actions;
+  if (action.type) return action;
+
+  return false;
 };
 
 Token.prototype.executeAction = function executeAction(action) {
@@ -68,16 +57,8 @@ Token.prototype.executeAction = function executeAction(action) {
     break;
 
   case ActionTypes.MOVE_BY:
-    this.moveTo({x: action.forecast[0], y: action.forecast[1]});
-    break;
-
   case ActionTypes.CREATE_BLOCKADE:
-    this.moveTo({x: action.forecast[0], y: action.forecast[1]});
-    this.createBlockade(action.forecast, action.allyTokens);
-    break;
-
   case ActionTypes.KILL_MOVE:
-    this.kill(action.enemyToken);
     this.moveTo({x: action.forecast[0], y: action.forecast[1]});
     break;
   }
@@ -101,10 +82,10 @@ Token.prototype._forecastCords = function _forecastCords(rolled) {
   return Grid.path[index];
 };
 
-Token.prototype.createBlockade = function createBlockade(cords, allytokens) {
-  allytokens.push(this);
-  this.player.registerBlockade(cords, allytokens);
-  this.game.emit(Events.TOKEN_BLOCKADE, { tokens: allytokens, cords: cords });
+Token.prototype._createBlockade = function _createBlockade(cords, allyTokens) {
+  allyTokens.push(this);
+  this.player.registerBlockade(cords, allyTokens);
+  this.game.emit(Events.TOKEN_BLOCKADE, { tokens: allyTokens, cords: cords });
 };
 
 //TODO: Remove this function no longer in use
@@ -114,17 +95,25 @@ Token.prototype.moveBy = function moveBy(rolled) {
 };
 
 Token.prototype.moveTo = function moveTo(cords) {
-  var allyTokens;
+  var cordArray = [cords.x, cords.y];
+  var enemyToken = this.player.enemyTokenAt(cordArray);
+  var allyTokens = this.player.allyTokensAt(cordArray, this);
 
-  if (this.inBlockade) {
-    this.inBlockade = false;
-    allyTokens = this.player.allyTokensAt([this.cords.x, this.cords.y], this);
-    this.player.registerBlockade(cords, allyTokens);
-  }
+  if (this.inBlockade) this._leaveBlockade();
+  if (enemyToken) this._kill(enemyToken);
+  if (allyTokens) this._createBlockade(cordArray, allyTokens);
 
   this.cords.x = cords.x;
   this.cords.y = cords.y;
   this.game.emit(Events.TOKEN_MOVE_TO, { token: this, cords: this.cords});
+};
+
+Token.prototype._leaveBlockade = function _leaveBlockade() {
+  var cords = [this.cords.x, this.cords.y];
+  var allyTokens;
+  this.inBlockade = false;
+  allyTokens = this.player.allyTokensAt(cords, this);
+  this.player.registerBlockade(cords, allyTokens);
 };
 
 Token.prototype.killedBy = function killedBy(otherToken) {
@@ -132,7 +121,7 @@ Token.prototype.killedBy = function killedBy(otherToken) {
   this.cords = { x: 0, y: 0 };
 };
 
-Token.prototype.kill = function kill(killedToken) {
+Token.prototype._kill = function _kill(killedToken) {
   killedToken.killedBy(this);
   this.game.emit(Events.TOKEN_KILLED, { killed: killedToken, by: this });
 };
