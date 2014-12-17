@@ -11,6 +11,7 @@ function Token(options) {
   this.team   = this.player.team;
 
   this.active = false;
+  this.inBlockade = false;
   this.cords  = {x: 0, y: 0};
 }
 
@@ -18,10 +19,12 @@ Token.prototype.getPossibleActions = function getPossibleActions(rolled) {
   var actions = [];
   var forecast;
   var enemyToken;
+  var allToken;
 
   if (this.active) {
     forecast = this._forecastCords(rolled);
     enemyToken = this.player.enemyTokenAt(forecast);
+    allyTokens = this.player.allyTokensAt(forecast, this);
 
     if (enemyToken) {
       actions.push({
@@ -29,6 +32,14 @@ Token.prototype.getPossibleActions = function getPossibleActions(rolled) {
         token: this,
         rolled: rolled,
         enemyToken: enemyToken,
+        forecast: forecast
+      });
+    } else if (allyTokens) {
+      actions.push({
+        type: ActionTypes.CREATE_BLOCKADE,
+        token: this,
+        rolled: rolled,
+        allyTokens: allyTokens,
         forecast: forecast
       });
     } else {
@@ -57,12 +68,17 @@ Token.prototype.executeAction = function executeAction(action) {
     break;
 
   case ActionTypes.MOVE_BY:
-    this.moveBy(action.rolled);
+    this.moveTo({x: action.forecast[0], y: action.forecast[1]});
+    break;
+
+  case ActionTypes.CREATE_BLOCKADE:
+    this.moveTo({x: action.forecast[0], y: action.forecast[1]});
+    this.createBlockade(action.forecast, action.allyTokens);
     break;
 
   case ActionTypes.KILL_MOVE:
     this.kill(action.enemyToken);
-    this.moveBy(action.rolled);
+    this.moveTo({x: action.forecast[0], y: action.forecast[1]});
     break;
   }
 };
@@ -85,13 +101,29 @@ Token.prototype._forecastCords = function _forecastCords(rolled) {
   return Grid.path[index];
 };
 
+Token.prototype.createBlockade = function createBlockade(cords, allytokens) {
+  allytokens.push(this);
+  this.player.registerBlockade(cords, allytokens);
+  this.game.emit(Events.TOKEN_BLOCKADE, { tokens: allytokens, cords: cords });
+};
+
+//TODO: Remove this function no longer in use
 Token.prototype.moveBy = function moveBy(rolled) {
   var newCord = this._forecastCords(rolled);
   this.moveTo({x: newCord[0], y: newCord[1]});
 };
 
 Token.prototype.moveTo = function moveTo(cords) {
-  this.cords = cords;
+  var allyTokens;
+
+  if (this.inBlockade) {
+    this.inBlockade = false;
+    allyTokens = this.player.allyTokensAt([this.cords.x, this.cords.y], this);
+    this.player.registerBlockade(cords, allyTokens);
+  }
+
+  this.cords.x = cords.x;
+  this.cords.y = cords.y;
   this.game.emit(Events.TOKEN_MOVE_TO, { token: this, cords: this.cords});
 };
 

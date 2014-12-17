@@ -3,6 +3,7 @@ var sinonChai = exports.sinonChai = require('sinon-chai');
 var sinon = exports.sinon = require('sinon');
 var Player = require('../src/player');
 exports.should = chai.should();
+global.expect = chai.expect;
 chai.use(sinonChai);
 
 // Helper functions
@@ -11,7 +12,8 @@ exports.mockGame = function() {
     on: sinon.spy(),
     emit: sinon.spy(),
     continueGame: sinon.spy(),
-    findTokenAt: sinon.spy()
+    findTokenAt: sinon.spy(),
+    registerBlockade: sinon.spy()
   };
 };
 
@@ -20,9 +22,10 @@ exports.mockPlayer = function(name, team) {
     name: name,
     team: team,
     getReady: sinon.stub().returns(true),
+    registerBlockade: sinon.spy(),
     enemyTokenAt: sinon.stub().returns(false),
     tokenLocatedAt: sinon.stub(),
-    allyTokenAt: sinon.stub().returns(false),
+    allyTokensAt: sinon.stub().returns(false),
     beginTurn: sinon.spy(),
     setTeam: sinon.spy(),
     joinGame: sinon.spy(),

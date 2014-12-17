@@ -1,6 +1,6 @@
 var constants = require('./constants');
-var Events = constants.Events;
 var Token = require('./token');
+var Events = constants.Events;
 
 function Player(metadata) {
   this.metadata = metadata;
@@ -8,6 +8,7 @@ function Player(metadata) {
   this.game = false;
   this.team = false;
   this._tokens = [];
+  this.blockades = {};
 }
 
 Player.prototype.setTeam = function setTeam(team) {
@@ -98,12 +99,51 @@ Player.prototype.joinGame = function joinGame(game) {
   return true;
 };
 
-Player.prototype.tokenLocatedAt = function tokenLocatedAt(cords) {
+Player.prototype.registerBlockade = function registerBlockade(cords, tokens) {
+  if (tokens.length >= 2) {
+    this.blockades[cords] = {tokens: tokens};
+
+    for (i = 0; i < tokens.length; i++) {
+      tokens[i].inBlockade = true;
+    }
+  } else {
+    if (tokens[0] !== undefined) tokens[0].inBlockade = false;
+    delete this.blockades[cords];
+  }
+};
+
+Player.prototype.allyTokensAt = function allyTokensAt(cords, excludedToken) {
+  var tokens = [];
+  var token;
+
+  for (i = 0; i < this._tokens.length; i++) {
+    token = this._tokens[i];
+
+    if (excludedToken !== undefined && token.id === excludedToken.id) {
+      continue;
+    }
+
+    if (token.cords.x === cords[0] && token.cords.y === cords[1]) {
+      tokens.push(token);
+    }
+  }
+
+  if (!tokens.length) return false;
+
+  return tokens;
+};
+
+Player.prototype.tokenLocatedAt = function tokenLocatedAt(cords, excludedToken) {
   var token;
   var i;
 
   for (i = 0; i < this._tokens.length; i++) {
     token = this._tokens[i];
+
+    if (excludedToken !== undefined && token.id === excludedToken.id) {
+      continue;
+    }
+
     if (token.cords.x === cords[0] && token.cords.y === cords[1]) {
       return token;
     }

@@ -70,6 +70,26 @@ describe('Player', function() {
     });
   });
 
+  describe('registerBlockade', function() {
+    it('registers a blockade', function() {
+      player.registerBlockade([5, 9], [player._tokens[0], player._tokens[1]]);
+      player.blockades[[5, 9]].tokens.should.eql([player._tokens[0], player._tokens[1]]);
+    });
+
+    it('sets in the inBlockade property on token to true', function() {
+      player.registerBlockade([5, 9], [player._tokens[0], player._tokens[1]]);
+      expect(player._tokens[1].inBlockade).to.be.true();
+      expect(player._tokens[0].inBlockade).to.be.true();
+    });
+
+    it('disbands blockade if there is only one token', function() {
+      player.registerBlockade([5, 9], [player._tokens[0], player._tokens[1]]);
+      player.registerBlockade([5, 9], [player._tokens[1]]);
+      expect(player._tokens[1].inBlockade).to.be.false();
+      expect(player.blockades).not.to.have.property([5, 9]);
+    });
+  });
+
   describe('generatePossibleActions', function() {
     it('returns born actions for inactive tokens when 6 is rolled', function() {
       actions = player.generatePossibleActions(6);
@@ -88,6 +108,14 @@ describe('Player', function() {
       player._tokens[0].moveBy(6);
       var token = player.tokenLocatedAt([5, 9]);
       token.should.equal(player._tokens[0]);
+    });
+
+    it('returns does not return the token if it excluded', function() {
+      player.game = game;
+      player._tokens[0].born();
+      player._tokens[0].moveBy(6);
+      var token = player.tokenLocatedAt([5, 9], player._tokens[0]);
+      token.should.equal(false);
     });
   });
 

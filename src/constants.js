@@ -24,14 +24,16 @@ exports.Events = {
   TOKEN_BORN:      'token.born',
   TOKEN_MOVE_TO:   'token.moveTo',
   TOKEN_KILLED:    'token.killed',
+  TOKEN_BLOCKADE:  'token.blockade',
 
   ERROR:           'error'
 };
 
 exports.ActionTypes = {
-  BORN:      'born',
-  MOVE_BY:   'moveBy',
-  KILL_MOVE: 'killMove'
+  BORN:            'born',
+  MOVE_BY:         'moveBy',
+  KILL_MOVE:       'killMove',
+  CREATE_BLOCKADE: 'createBlockade'
 };
 
 var Grid = exports.Grid = {

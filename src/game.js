@@ -107,10 +107,7 @@ Game.prototype.findTokenAt = function findTokenAt(cords, excludedPlayer) {
 
     token = player.tokenLocatedAt(cords);
 
-    if (token) {
-      return token;
-    }
-
+    if (token) return token;
   }
 
   return false;
