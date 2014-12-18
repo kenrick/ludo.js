@@ -18,7 +18,7 @@ inherits(Game, EventEmitter);
 Game.prototype._attachEvents = function _attachEvents(events) {
   var event;
 
-  if (typeof events !== 'undefined') {
+  if (typeof events !== undefined) {
     for (event in events) {
       this.on(event, events[event]);
     }
@@ -94,9 +94,9 @@ Game.prototype.nextPlayersTurn = function nextPlayersTurn() {
 };
 
 Game.prototype.findTokenAt = function findTokenAt(cords, excludedPlayer) {
-  var i;
-  var token;
   var players = this.players;
+  var token;
+  var i;
 
   for (i = 0; i < players.length; i++) {
     player = players[i];
@@ -108,6 +108,26 @@ Game.prototype.findTokenAt = function findTokenAt(cords, excludedPlayer) {
     token = player.tokenLocatedAt(cords);
 
     if (token) return token;
+  }
+
+  return false;
+};
+
+Game.prototype.anyBlockadeIn = function anyBlockadeIn(cords, excludedPlayer) {
+  var players = this.players;
+  var blockade;
+  var i;
+
+  for (i = 0; i < players.length; i++) {
+    player = players[i];
+
+    if (excludedPlayer !== undefined && player.team === excludedPlayer.team) {
+      continue;
+    }
+
+    blockade = player.hasBlockadeAt(cords);
+
+    if (blockade) return blockade;
   }
 
   return false;

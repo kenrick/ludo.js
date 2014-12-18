@@ -6,7 +6,7 @@ Conversions;
  GREEN  = TL
 **/
 
-exports.Teams = ['bl', 'br', 'tl', 'tr'];
+exports.Teams = ['bl', 'br', 'tr', 'tl'];
 
 exports.Messages = {
 };
@@ -25,6 +25,7 @@ exports.Events = {
   TOKEN_MOVE_TO:   'token.moveTo',
   TOKEN_KILLED:    'token.killed',
   TOKEN_BLOCKADE:  'token.blockade',
+  TOKEN_BLOCKED:   'token.blocked',
 
   ERROR:           'error'
 };

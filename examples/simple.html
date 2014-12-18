@@ -176,7 +176,7 @@
             moveTo(el, cords);
           },
 
-          'token.turn.repeat': function(data) {
+          'player.turn.repeat': function(data) {
             log(data.player.metadata.name + " gets another turn");
           },
 
@@ -184,6 +184,12 @@
             var killed = data.killed;
             el = $('#' + killed.team + '-' + killed.id);
             moveTo(el, {x: 0, y: 0});
+          },
+
+          'token.blocked': function(data) {
+            var token = data.token;
+
+            log(token.player.metadata.name + "'s token " + (token.id + 1) + "is being blocked");
           },
 
           'error': function(data) {

@@ -133,6 +133,20 @@ Player.prototype.allyTokensAt = function allyTokensAt(cords, excludedToken) {
   return tokens;
 };
 
+Player.prototype.hasBlockadeAt = function hasBlockadeAt(cordsArray) {
+  var i;
+  var cords;
+
+  for (i = 0; i < cordsArray.length; i++) {
+    cords = cordsArray[i];
+    if (this.blockades[cords] !== undefined) {
+      return this.blockades[cords];
+    }
+  }
+
+  return false;
+};
+
 Player.prototype.tokenLocatedAt = function tokenLocatedAt(cords, excludedToken) {
   var token;
   var i;
@@ -150,6 +164,10 @@ Player.prototype.tokenLocatedAt = function tokenLocatedAt(cords, excludedToken) 
   }
 
   return false;
+};
+
+Player.prototype.blockadeAhead = function blockadeAhead(cordsArray) {
+  return this.game.anyBlockadeIn(cordsArray, this);
 };
 
 Player.prototype.enemyTokenAt = function enemyTokenAt(cords) {

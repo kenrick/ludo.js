@@ -47,8 +47,8 @@ describe('Game', function() {
 
     game.players[0].setTeam.should.have.been.calledWith('bl');
     game.players[1].setTeam.should.have.been.calledWith('br');
-    game.players[2].setTeam.should.have.been.calledWith('tl');
-    game.players[3].setTeam.should.have.been.calledWith('tr');
+    game.players[2].setTeam.should.have.been.calledWith('tr');
+    game.players[3].setTeam.should.have.been.calledWith('tl');
   });
 
   it('calls joined game on the player, with its game instance', function() {

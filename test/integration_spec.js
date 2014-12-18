@@ -163,4 +163,64 @@ describe('Integration', function() {
 
   });
 
+  describe('Blockade Ahead', function() {
+
+    beforeEach(function() {
+      player1._tokens[0].born();
+      player1._tokens[1].born();
+      player2._tokens[0].born();
+      player2._tokens[0].moveTo({x: 7, y: 15});
+
+      game.currentPlayersTurn = player1;
+
+      game.once('player.turn.rollDice', function(data) {
+        var dice = new Ludo.Dice({ rolled: 1 });
+        dice.roll();
+        data.callback(dice);
+      });
+    });
+
+    it('player1 token:0 and token:1 blocks player2 token:0', function(done) {
+
+      game.once('token.blocked', function(data) {
+        expect(data.token).to.eql(player2._tokens[0]);
+        expect(data.blockade.tokens).to.eql([player1._tokens[0], player1._tokens[1]]);
+        done();
+      });
+
+      game.start();
+    });
+
+  });
+
+  describe('Blockade Ahead on Starting Point', function() {
+
+    beforeEach(function() {
+      player2._tokens[0].born();
+      player2._tokens[0].moveTo({x: 7, y: 14});
+      player2._tokens[1].born();
+      player2._tokens[1].moveTo({x: 7, y: 14});
+
+      game.currentPlayersTurn = player2;
+
+      game.once('player.turn.rollDice', function(data) {
+        var dice = new Ludo.Dice({ rolled: 6 });
+        dice.roll();
+        data.callback(dice);
+      });
+    });
+
+    it('player2 token:0 and token:1 blocks player1 token:0 from borning', function(done) {
+
+      game.once('token.blocked', function(data) {
+        expect(data.token).to.eql(player1._tokens[0]);
+        expect(data.blockade.tokens).to.eql([player2._tokens[0], player2._tokens[1]]);
+        done();
+      });
+
+      game.start();
+    });
+
+  });
+
 });

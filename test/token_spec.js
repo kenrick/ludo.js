@@ -30,7 +30,7 @@ describe('Token', function() {
     it('returns the born action when rolled is 6', function() {
       token.active.should.equal(false);
       action = token.getPossibleAction(6);
-      expect(action).to.eql({type: ActionTypes.BORN, token: token, rolled: 6});
+      expect(action).to.eql({type: ActionTypes.BORN, token: token, rolled: 6, forecast: [7, 14]});
     });
 
     it('returns the move by action when rolled is 4 and already active', function() {
@@ -130,6 +130,25 @@ describe('Token', function() {
       token._createBlockade([5, 9], [token2]);
 
       game.emit.should.be.calledWith('token.blockade', { cords: [5, 9], tokens: [token2, token] });
+    });
+  });
+
+  describe('findAllCordsAhead', function() {
+    it('returns a list of cords ahead of a cord', function() {
+      token.born();
+      expect(token._findAllCordsAhead(3)).to.eql([[7, 13], [7, 12], [7, 11]]);
+    });
+
+    it('returns a list of cords ahead of a cord and wrapping Grid.path', function() {
+      token.born();
+      token.moveTo({x: 7, y: 4});
+      expect(token._findAllCordsAhead(3)).to.eql([[7, 3], [7, 2], [7, 1]]);
+    });
+
+    it('returns a list of cords ahead of a cord move by 1', function() {
+      token.born();
+      token.moveTo({x: 7, y: 4});
+      expect(token._findAllCordsAhead(1)).to.eql([[7, 3]]);
     });
   });
 

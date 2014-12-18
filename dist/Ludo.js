@@ -1027,7 +1027,7 @@ Conversions;
  GREEN  = TL
 **/
 
-exports.Teams = ['bl', 'br', 'tl', 'tr'];
+exports.Teams = ['bl', 'br', 'tr', 'tl'];
 
 exports.Messages = {
 };
@@ -1046,6 +1046,7 @@ exports.Events = {
   TOKEN_MOVE_TO:   'token.moveTo',
   TOKEN_KILLED:    'token.killed',
   TOKEN_BLOCKADE:  'token.blockade',
+  TOKEN_BLOCKED:   'token.blocked',
 
   ERROR:           'error'
 };
@@ -1223,7 +1224,7 @@ inherits(Game, EventEmitter);
 Game.prototype._attachEvents = function _attachEvents(events) {
   var event;
 
-  if (typeof events !== 'undefined') {
+  if (typeof events !== undefined) {
     for (event in events) {
       this.on(event, events[event]);
     }
@@ -1299,9 +1300,9 @@ Game.prototype.nextPlayersTurn = function nextPlayersTurn() {
 };
 
 Game.prototype.findTokenAt = function findTokenAt(cords, excludedPlayer) {
-  var i;
-  var token;
   var players = this.players;
+  var token;
+  var i;
 
   for (i = 0; i < players.length; i++) {
     player = players[i];
@@ -1313,6 +1314,26 @@ Game.prototype.findTokenAt = function findTokenAt(cords, excludedPlayer) {
     token = player.tokenLocatedAt(cords);
 
     if (token) return token;
+  }
+
+  return false;
+};
+
+Game.prototype.anyBlockadeIn = function anyBlockadeIn(cords, excludedPlayer) {
+  var players = this.players;
+  var blockade;
+  var i;
+
+  for (i = 0; i < players.length; i++) {
+    player = players[i];
+
+    if (excludedPlayer !== undefined && player.team === excludedPlayer.team) {
+      continue;
+    }
+
+    blockade = player.hasBlockadeAt(cords);
+
+    if (blockade) return blockade;
   }
 
   return false;
@@ -1456,6 +1477,20 @@ Player.prototype.allyTokensAt = function allyTokensAt(cords, excludedToken) {
   return tokens;
 };
 
+Player.prototype.hasBlockadeAt = function hasBlockadeAt(cordsArray) {
+  var i;
+  var cords;
+
+  for (i = 0; i < cordsArray.length; i++) {
+    cords = cordsArray[i];
+    if (this.blockades[cords] !== undefined) {
+      return this.blockades[cords];
+    }
+  }
+
+  return false;
+};
+
 Player.prototype.tokenLocatedAt = function tokenLocatedAt(cords, excludedToken) {
   var token;
   var i;
@@ -1473,6 +1508,10 @@ Player.prototype.tokenLocatedAt = function tokenLocatedAt(cords, excludedToken) 
   }
 
   return false;
+};
+
+Player.prototype.blockadeAhead = function blockadeAhead(cordsArray) {
+  return this.game.anyBlockadeIn(cordsArray, this);
 };
 
 Player.prototype.enemyTokenAt = function enemyTokenAt(cords) {
@@ -1504,31 +1543,35 @@ Token.prototype.getPossibleAction = function getPossibleAction(rolled) {
   var forecast;
   var enemyToken;
   var allyToken;
+  var blockadeAhead;
 
-  action.token = this;
-  action.rolled = rolled;
+  forecast = this._forecastCords(rolled);
+  blockadeAhead = this._blockadeAhead(rolled);
 
-  if (this.active) {
-    forecast = this._forecastCords(rolled);
-    enemyToken = this.player.enemyTokenAt(forecast);
-    allyTokens = this.player.allyTokensAt(forecast, this);
-
+  if (!blockadeAhead) {
     action.forecast = forecast;
+    action.token = this;
+    action.rolled = rolled;
 
-    if (enemyToken) {
-      action.type = ActionTypes.KILL_MOVE;
-      action.enemyToken = enemyToken;
-    } else if (allyTokens) {
-      action.type = ActionTypes.CREATE_BLOCKADE;
-      action.allyTokens = allyTokens;
-    } else {
-      action.type = ActionTypes.MOVE_BY;
+    if (this.active) {
+      enemyToken = this.player.enemyTokenAt(forecast);
+      allyTokens = this.player.allyTokensAt(forecast, this);
+
+      if (enemyToken) {
+        action.type = ActionTypes.KILL_MOVE;
+        action.enemyToken = enemyToken;
+      } else if (allyTokens) {
+        action.type = ActionTypes.CREATE_BLOCKADE;
+        action.allyTokens = allyTokens;
+      } else {
+        action.type = ActionTypes.MOVE_BY;
+      }
+    } else if (rolled === 6) {
+      action.type = ActionTypes.BORN;
     }
-  } else if (rolled === 6) {
-    action.type = ActionTypes.BORN;
-  }
 
-  if (action.type) return action;
+    if (action.type) return action;
+  }
 
   return false;
 };
@@ -1558,12 +1601,56 @@ Token.prototype.born = function born() {
 
 Token.prototype._forecastCords = function _forecastCords(rolled) {
   var cordArray = [this.cords.x, this.cords.y];
-  var index = utils.findCordsInArray(cordArray, Grid.path);
-  index += rolled;
-  if (index > (Grid.path.length - 1)) {
-    index -= (Grid.path.length);
+  var index;
+  var cords;
+
+  if (this.active) {
+    index = utils.findCordsInArray(cordArray, Grid.path);
+    index += rolled;
+    if (index > (Grid.path.length - 1)) {
+      index -= (Grid.path.length);
+    }
+    cords = Grid.path[index];
+  } else if (rolled === 6) {
+    cords = Grid.startPoint[this.team];
   }
-  return Grid.path[index];
+
+  return cords;
+};
+
+Token.prototype._findAllCordsAhead = function _findAllCordsAhead(rolled) {
+  var cordArray = [this.cords.x, this.cords.y];
+  var initialIndex;
+  var endingIndex;
+  var cordsList = [];
+
+  if (this.active) {
+    initialIndex = utils.findCordsInArray(cordArray, Grid.path);
+    endingIndex = initialIndex + rolled;
+    initialIndex += 1; //Excludes first element in slice
+    endingIndex += 1; //Includes last element in slice
+
+    cordsList = Grid.path.slice(initialIndex, endingIndex);
+
+    if (endingIndex > (Grid.path.length - 1)) {
+      endingIndex -= (Grid.path.length);
+      cordsList = cordsList.concat(Grid.path.slice(0, endingIndex));
+    }
+  } else if (rolled === 6) {
+    cordsList = [Grid.startPoint[this.team]];
+  }
+
+  return cordsList;
+};
+
+Token.prototype._blockadeAhead = function _blockadeAhead(rolled) {
+  var blockade = this.player.blockadeAhead(this._findAllCordsAhead(rolled));
+
+  if (blockade) {
+    this.game.emit(Events.TOKEN_BLOCKED, { token: this, blockade: blockade });
+  }
+
+  return blockade;
 };
 
 Token.prototype._createBlockade = function _createBlockade(cords, allyTokens) {

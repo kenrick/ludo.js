@@ -13,7 +13,8 @@ exports.mockGame = function() {
     emit: sinon.spy(),
     continueGame: sinon.spy(),
     findTokenAt: sinon.spy(),
-    registerBlockade: sinon.spy()
+    registerBlockade: sinon.spy(),
+    anyBlockadeIn: sinon.spy()
   };
 };
 
@@ -22,6 +23,7 @@ exports.mockPlayer = function(name, team) {
     name: name,
     team: team,
     getReady: sinon.stub().returns(true),
+    blockadeAhead: sinon.stub().returns(false),
     registerBlockade: sinon.spy(),
     enemyTokenAt: sinon.stub().returns(false),
     tokenLocatedAt: sinon.stub(),
