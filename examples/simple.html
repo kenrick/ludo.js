@@ -126,6 +126,10 @@
           'game.start': function() {
             log("Game Started");
           },
+          'game.won': function(data) {
+            var player = data.player;
+            log("its " + player.metadata.name + "is the winner!");
+          },
           'player.turn.rollDice': function(data) {
             var player = data.player;
             var diceRolledCallback = data.callback;
@@ -213,8 +217,6 @@
         player2.readyUp();
         player3.readyUp();
         player4.readyUp();
-
-        game.currentPlayersTurn = player1;
 
         dialog({
           button: "Start Game",

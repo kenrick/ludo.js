@@ -1678,7 +1678,7 @@ Token.prototype._forecastCords = function _forecastCords(rolled) {
       path = Grid.allCordsForHeaven[this.team];
     }
 
-    if (switchToHeaven != -1) {
+    if (switchToHeaven !== -1 && switchToHeaven !== (cordsAhead.length - 1)) {
       cords = this._switchToHeavenPath((switchToHeaven + 1), cordsAhead.length);
     } else {
       index = utils.findCordsInArray(cordArray, path);
