@@ -202,15 +202,14 @@ describe('Integration', function() {
 
   });
 
-
   describe('Ascending', function() {
 
     beforeEach(function() {
       game.currentPlayersTurn = player2;
     });
 
-    it('Ascendeds token 0 when it reaches thhe ascendingPoint', function(done) {
-      var plan = helper.plan(2, done);
+    it('Ascendeds token 0 when it reaches the ascendingPoint', function(done) {
+      var plan = helper.plan(3, done);
 
       player1._tokens[0].born();
       player1._tokens[0].moveTo({ x: 8, y: 10 });
@@ -235,6 +234,56 @@ describe('Integration', function() {
 
       game.once('token.ascend', function(data) {
         expect(player1._tokens[0]).to.eql(data.token);
+        plan.ok();
+      });
+
+      game.start();
+    });
+  });
+
+  describe('Win', function() {
+
+    beforeEach(function() {
+      game.currentPlayersTurn = player2;
+    });
+
+    it('Ascendeds token 0 when it reaches the ascendingPoint', function(done) {
+      var plan = helper.plan(4, done);
+
+      player1._tokens[0].born();
+      player1._tokens[0].moveTo({ x: 8, y: 9 });
+      player1._tokens[1].born();
+      player1._tokens[1].moveTo({ x: 8, y: 9 });
+      player1._tokens[2].born();
+      player1._tokens[2].moveTo({ x: 8, y: 9 });
+      player1._tokens[3].born();
+      player1._tokens[3].moveTo({ x: 8, y: 10 });
+
+      game.once('player.turn.rollDice', function(data) {
+        var dice = new Ludo.Dice({ rolled: 1 });
+        dice.roll();
+        data.callback(dice);
+      });
+
+      game.once('player.actions', function(data) {
+        expect(data.actions[0].type).to.equal('ascend');
+        data.callback(data.actions[0]);
+        plan.ok();
+      });
+
+      game.once('token.moveTo', function(data) {
+        expect(player1._tokens[3].cords).to.eql({x: 8, y: 9});
+        expect(player1._tokens[3].ascended).to.be.true();
+        plan.ok();
+      });
+
+      game.once('token.ascend', function(data) {
+        expect(player1._tokens[3]).to.eql(data.token);
+        plan.ok();
+      });
+
+      game.once('game.won', function(data) {
+        expect(player1).to.eql(data.player);
         plan.ok();
       });
 

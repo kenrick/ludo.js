@@ -200,6 +200,11 @@ describe('Game', function() {
       game.nextPlayersTurn().should.equal(player3);
     });
 
-    it('can check to see if the game was won');
+    it('can check to see if the game was won', function() {
+      game.addPlayer(player);
+      game.addPlayer(player2);
+      game.start();
+      expect(player.allTokensAscended.called).to.be.true();
+    });
   });
 });

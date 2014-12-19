@@ -62,9 +62,16 @@ Game.prototype.start = function start() {
 };
 
 Game.prototype._loop = function _loop() {
-  //Calls the next players turn in line.
-  var player = this.nextPlayersTurn();
-  this.invokeTurn(player);
+  var playerWon = this.playerTokensAscended();
+
+  if (playerWon) {
+    this.emit(Events.GAME_WON, { player: playerWon });
+  } else {
+    //Calls the next players turn in line.
+    var player = this.nextPlayersTurn();
+    this.invokeTurn(player);
+  }
+
 };
 
 Game.prototype.continueGame = function continueGame() {
@@ -108,6 +115,20 @@ Game.prototype.findTokenAt = function findTokenAt(cords, excludedPlayer) {
     token = player.tokenLocatedAt(cords);
 
     if (token) return token;
+  }
+
+  return false;
+};
+
+Game.prototype.playerTokensAscended = function playerTokensAscended() {
+  var players = this.players;
+  var token;
+  var i;
+
+  for (i = 0; i < players.length; i++) {
+    player = players[i];
+
+    if (player.allTokensAscended()) return player;
   }
 
   return false;

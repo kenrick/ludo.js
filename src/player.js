@@ -112,6 +112,19 @@ Player.prototype.registerBlockade = function registerBlockade(cords, tokens) {
   }
 };
 
+Player.prototype.allTokensAscended = function allTokensAscended() {
+  var tokens = [];
+  var token;
+  var count = 0;
+
+  for (i = 0; i < this._tokens.length; i++) {
+    token = this._tokens[i];
+    if (token.ascended) count++;
+  }
+
+  return count === this._tokens.length;
+};
+
 Player.prototype.allyTokensAt = function allyTokensAt(cords, excludedToken) {
   var tokens = [];
   var token;

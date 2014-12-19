@@ -1034,6 +1034,7 @@ exports.Messages = {
 
 exports.Events = {
   GAME_START:      'game.start',
+  GAME_WON:        'game.won',
 
   PLAYER_JOIN:     'player.join',
   TURN_BEGIN:      'player.turn.begin',
@@ -1288,9 +1289,16 @@ Game.prototype.start = function start() {
 };
 
 Game.prototype._loop = function _loop() {
-  //Calls the next players turn in line.
-  var player = this.nextPlayersTurn();
-  this.invokeTurn(player);
+  var playerWon = this.playerTokensAscended();
+
+  if (playerWon) {
+    this.emit(Events.GAME_WON, { player: playerWon });
+  } else {
+    //Calls the next players turn in line.
+    var player = this.nextPlayersTurn();
+    this.invokeTurn(player);
+  }
+
 };
 
 Game.prototype.continueGame = function continueGame() {
@@ -1334,6 +1342,20 @@ Game.prototype.findTokenAt = function findTokenAt(cords, excludedPlayer) {
     token = player.tokenLocatedAt(cords);
 
     if (token) return token;
+  }
+
+  return false;
+};
+
+Game.prototype.playerTokensAscended = function playerTokensAscended() {
+  var players = this.players;
+  var token;
+  var i;
+
+  for (i = 0; i < players.length; i++) {
+    player = players[i];
+
+    if (player.allTokensAscended()) return player;
   }
 
   return false;
@@ -1474,6 +1496,19 @@ Player.prototype.registerBlockade = function registerBlockade(cords, tokens) {
     if (tokens[0] !== undefined) tokens[0].inBlockade = false;
     delete this.blockades[cords];
   }
+};
+
+Player.prototype.allTokensAscended = function allTokensAscended() {
+  var tokens = [];
+  var token;
+  var count = 0;
+
+  for (i = 0; i < this._tokens.length; i++) {
+    token = this._tokens[i];
+    if (token.ascended) count++;
+  }
+
+  return count === this._tokens.length;
 };
 
 Player.prototype.allyTokensAt = function allyTokensAt(cords, excludedToken) {

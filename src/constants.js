@@ -13,6 +13,7 @@ exports.Messages = {
 
 exports.Events = {
   GAME_START:      'game.start',
+  GAME_WON:        'game.won',
 
   PLAYER_JOIN:     'player.join',
   TURN_BEGIN:      'player.turn.begin',
