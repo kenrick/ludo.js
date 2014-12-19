@@ -26,6 +26,8 @@ exports.Events = {
   TOKEN_KILLED:    'token.killed',
   TOKEN_BLOCKADE:  'token.blockade',
   TOKEN_BLOCKED:   'token.blocked',
+  TOKEN_ASCEND:    'token.ascend',
+  OVER_SHOOT:      'token.overShotAscension',
 
   ERROR:           'error'
 };
@@ -34,7 +36,8 @@ exports.ActionTypes = {
   BORN:            'born',
   MOVE_BY:         'moveBy',
   KILL_MOVE:       'killMove',
-  CREATE_BLOCKADE: 'createBlockade'
+  CREATE_BLOCKADE: 'createBlockade',
+  ASCEND:          'ascend'
 };
 
 var Grid = exports.Grid = {
@@ -103,6 +106,18 @@ var Grid = exports.Grid = {
     [8, 9],
     [9, 9]
   ],
+  switchPoint: {
+    bl: [8, 15],
+    br: [15, 8],
+    tr: [8, 1],
+    tl: [1, 8]
+  },
+  ascendingPoint: {
+    bl: [8, 9],
+    br: [9, 8],
+    tr: [8, 7],
+    tl: [7, 8]
+  },
   heaven: {
     bl: [
       [8, 14],
@@ -145,7 +160,8 @@ var Grid = exports.Grid = {
     bl: _listTeamAreaFrom([1, 10]),
     br: _listTeamAreaFrom([10, 10])
   },
-  allCordsForTeam: {}
+  allCordsForTeam: {},
+  allCordsForHeaven: {}
 };
 
 for (var i = 0; i <= 3; i++) {
@@ -153,6 +169,10 @@ for (var i = 0; i <= 3; i++) {
   exports.Grid.allCordsForTeam[t] = [Grid.startPoint[t]]
     .concat(Grid.heaven[t])
     .concat(Grid.teamAreas[t]);
+
+  exports.Grid.allCordsForHeaven[t] = [Grid.switchPoint[t]]
+  .concat(Grid.heaven[t])
+  .concat([Grid.ascendingPoint[t]]);
 }
 
 function _listTeamAreaFrom(c) {

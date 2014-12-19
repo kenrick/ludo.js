@@ -55,6 +55,14 @@ describe('Token', function() {
       action = token.getPossibleAction(4);
       expect(action).to.eql({type: ActionTypes.CREATE_BLOCKADE, token: token, allyTokens: [token2], rolled: 4, forecast: [7, 10]});
     });
+
+    it('returns the ascending when forecast is on the acesndingPoint', function() {
+      token2 = new Token({ player: player, id: 1 });
+      token.born();
+      token.moveTo({x: 8, y: 15});
+      action = token.getPossibleAction(6);
+      expect(action).to.eql({type: ActionTypes.ASCEND, token: token, rolled: 6, forecast: [8, 9]});
+    });
   });
   describe('born', function() {
     it('sets active to true', function() {

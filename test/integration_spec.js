@@ -90,6 +90,158 @@ describe('Integration', function() {
 
   });
 
+  describe('Switch to heaven path', function() {
+
+    beforeEach(function() {
+      game.currentPlayersTurn = player2;
+    });
+
+    it('moves token unto the heaven path by 2', function(done) {
+      var plan = helper.plan(2, done);
+
+      player1._tokens[0].born();
+      player1._tokens[0].moveTo({ x: 9, y: 15 });
+
+      game.once('player.turn.rollDice', function(data) {
+        var dice = new Ludo.Dice({ rolled: 3 });
+        dice.roll();
+        data.callback(dice);
+      });
+
+      game.once('player.actions', function(data) {
+        expect(data.actions[0].type).to.equal('moveBy');
+        data.callback(data.actions[0]);
+        plan.ok();
+      });
+
+      game.once('token.moveTo', function(data) {
+        expect(player1._tokens[0].cords).to.eql({x: 8, y: 13});
+        expect(player1._tokens[0].isOnHeavenPath).to.be.true();
+        plan.ok();
+      });
+
+      game.start();
+    });
+
+    it('moves token unto the heaven path by 3', function(done) {
+      var plan = helper.plan(2, done);
+
+      player1._tokens[0].born();
+      player1._tokens[0].moveTo({ x: 9, y: 15 });
+
+      game.once('player.turn.rollDice', function(data) {
+        var dice = new Ludo.Dice({ rolled: 4 });
+        dice.roll();
+        data.callback(dice);
+      });
+
+      game.once('player.actions', function(data) {
+        expect(data.actions[0].type).to.equal('moveBy');
+        data.callback(data.actions[0]);
+        plan.ok();
+      });
+
+      game.once('token.moveTo', function(data) {
+        expect(player1._tokens[0].cords).to.eql({x: 8, y: 12});
+        expect(player1._tokens[0].isOnHeavenPath).to.be.true();
+        plan.ok();
+      });
+
+      game.start();
+    });
+
+    it('moves token unto the heaven path from startPoint', function(done) {
+      var plan = helper.plan(2, done);
+
+      player1._tokens[0].born();
+      player1._tokens[0].moveTo({ x: 8, y: 15 });
+
+      expect(player1._tokens[0].isOnHeavenPath).to.be.true();
+
+      game.once('player.turn.rollDice', function(data) {
+        var dice = new Ludo.Dice({ rolled: 4 });
+        dice.roll();
+        data.callback(dice);
+      });
+
+      game.once('player.actions', function(data) {
+        expect(data.actions[0].type).to.equal('moveBy');
+        data.callback(data.actions[0]);
+        plan.ok();
+      });
+
+      game.once('token.moveTo', function(data) {
+        expect(player1._tokens[0].cords).to.eql({x: 8, y: 11});
+        plan.ok();
+      });
+
+      game.start();
+    });
+
+    it('moves token unto the heaven path from startPoint', function(done) {
+
+      player1._tokens[0].born();
+      player1._tokens[0].moveTo({ x: 8, y: 14 });
+
+      expect(player1._tokens[0].isOnHeavenPath).to.be.true();
+
+      game.once('player.turn.rollDice', function(data) {
+        var dice = new Ludo.Dice({ rolled: 6 });
+        dice.roll();
+        data.callback(dice);
+      });
+
+      game.once('token.overShotAscension', function(data) {
+        expect(data.token).to.eql(player1._tokens[0]);
+        expect(data.by).to.equal(1);
+        done();
+      });
+
+      game.start();
+    });
+
+  });
+
+
+  describe('Ascending', function() {
+
+    beforeEach(function() {
+      game.currentPlayersTurn = player2;
+    });
+
+    it('Ascendeds token 0 when it reaches thhe ascendingPoint', function(done) {
+      var plan = helper.plan(2, done);
+
+      player1._tokens[0].born();
+      player1._tokens[0].moveTo({ x: 8, y: 10 });
+
+      game.once('player.turn.rollDice', function(data) {
+        var dice = new Ludo.Dice({ rolled: 1 });
+        dice.roll();
+        data.callback(dice);
+      });
+
+      game.once('player.actions', function(data) {
+        expect(data.actions[0].type).to.equal('ascend');
+        data.callback(data.actions[0]);
+        plan.ok();
+      });
+
+      game.once('token.moveTo', function(data) {
+        expect(player1._tokens[0].cords).to.eql({x: 8, y: 9});
+        expect(player1._tokens[0].ascended).to.be.true();
+        plan.ok();
+      });
+
+      game.once('token.ascend', function(data) {
+        expect(player1._tokens[0]).to.eql(data.token);
+        plan.ok();
+      });
+
+      game.start();
+    });
+  });
+
   describe('Create blockade', function() {
 
     beforeEach(function() {
