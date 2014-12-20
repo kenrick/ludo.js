@@ -29,6 +29,15 @@
     "vinyl-transform": "^1.0.0"
   },
   "scripts": {
-    "test": "gulp test"
+    "test": "mocha"
+  },
+  "testling": {
+    "harness": "mocha-bdd",
+    "files": "test/*.js",
+    "browsers": [
+      "ie/8..latest",
+      "chrome/latest",
+      "firefox/latest"
+    ]
   }
 }

@@ -1,5 +1,5 @@
 var constants = require('./constants');
-var Token = require('./token');
+var Token = require('./token').Token;
 var Events = constants.Events;
 
 function Player(metadata) {
@@ -10,6 +10,12 @@ function Player(metadata) {
   this._tokens = [];
   this.blockades = {};
 }
+
+exports.Player = Player;
+
+Player.build = function() {
+
+};
 
 Player.prototype.setTeam = function setTeam(team) {
   this.team = team;
@@ -186,5 +192,3 @@ Player.prototype.blockadeAhead = function blockadeAhead(cordsArray) {
 Player.prototype.enemyTokenAt = function enemyTokenAt(cords) {
   return this.game.findTokenAt(cords, this);
 };
-
-module.exports = Player;

@@ -17,6 +17,8 @@ function Token(options) {
   this.ascended = false;
 }
 
+exports.Token = Token;
+
 Token.prototype.getPossibleAction = function getPossibleAction(rolled) {
   var action = {};
   var forecast;
@@ -245,5 +247,3 @@ Token.prototype._kill = function _kill(killedToken) {
   killedToken.killedBy(this);
   this.game.emit(Events.TOKEN_KILLED, { killed: killedToken, by: this });
 };
-
-module.exports = Token;

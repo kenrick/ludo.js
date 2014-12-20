@@ -15,6 +15,8 @@ function Game(options) {
 
 inherits(Game, EventEmitter);
 
+exports.Game = Game;
+
 Game.prototype._attachEvents = function _attachEvents(events) {
   var event;
 
@@ -153,5 +155,3 @@ Game.prototype.anyBlockadeIn = function anyBlockadeIn(cords, excludedPlayer) {
 
   return false;
 };
-
-module.exports = Game;

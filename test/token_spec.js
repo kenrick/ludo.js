@@ -1,5 +1,5 @@
 var helper = require('./spec_helper');
-var Token = require('../src/token');
+var Token = require('../src/token').Token;
 var constants = require('../src/constants');
 var ActionTypes = constants.ActionTypes;
 var Grid = constants.Grid;

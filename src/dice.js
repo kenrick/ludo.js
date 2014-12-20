@@ -3,6 +3,8 @@ function Dice(options) {
   this.rolled = this.options.rolled || false;
 }
 
+exports.Dice = Dice;
+
 Dice.prototype.roll = function() {
   if (this.rolled === false) {
     this.rolled = Math.floor(6 * Math.random()) + 1;
@@ -10,5 +12,3 @@ Dice.prototype.roll = function() {
 
   return this.rolled;
 };
-
-module.exports = Dice;

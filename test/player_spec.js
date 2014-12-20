@@ -1,5 +1,5 @@
 var helper = require('./spec_helper');
-var Player = require('../src/player');
+var Player = require('../src/player').Player;
 
 describe('Player', function() {
   var game;

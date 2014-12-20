@@ -1,8 +1,8 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Ludo=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-exports.Game = require('./src/game');
-exports.Player = require('./src/player');
-exports.Token = require('./src/token');
-exports.Dice = require('./src/dice');
+exports.Game = require('./src/game').Game;
+exports.Player = require('./src/player').Player;
+exports.Token = require('./src/token').Token;
+exports.Dice = require('./src/dice').Dice;
 exports.utils = require('./src/utils');
 
 },{"./src/dice":8,"./src/game":9,"./src/player":10,"./src/token":11,"./src/utils":12}],2:[function(require,module,exports){
@@ -1214,6 +1214,8 @@ function Dice(options) {
   this.rolled = this.options.rolled || false;
 }
 
+exports.Dice = Dice;
+
 Dice.prototype.roll = function() {
   if (this.rolled === false) {
     this.rolled = Math.floor(6 * Math.random()) + 1;
@@ -1221,8 +1223,6 @@ Dice.prototype.roll = function() {
 
   return this.rolled;
 };
-
-module.exports = Dice;
 
 },{}],9:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter;
@@ -1241,6 +1241,8 @@ function Game(options) {
 }
 
 inherits(Game, EventEmitter);
+
+exports.Game = Game;
 
 Game.prototype._attachEvents = function _attachEvents(events) {
   var event;
@@ -1381,11 +1383,9 @@ Game.prototype.anyBlockadeIn = function anyBlockadeIn(cords, excludedPlayer) {
   return false;
 };
 
-module.exports = Game;
-
 },{"./constants":7,"events":2,"util":6}],10:[function(require,module,exports){
 var constants = require('./constants');
-var Token = require('./token');
+var Token = require('./token').Token;
 var Events = constants.Events;
 
 function Player(metadata) {
@@ -1396,6 +1396,12 @@ function Player(metadata) {
   this._tokens = [];
   this.blockades = {};
 }
+
+exports.Player = Player;
+
+Player.build = function() {
+
+};
 
 Player.prototype.setTeam = function setTeam(team) {
   this.team = team;
@@ -1573,8 +1579,6 @@ Player.prototype.enemyTokenAt = function enemyTokenAt(cords) {
   return this.game.findTokenAt(cords, this);
 };
 
-module.exports = Player;
-
 },{"./constants":7,"./token":11}],11:[function(require,module,exports){
 var constants = require('./constants');
 var Grid = constants.Grid;
@@ -1594,6 +1598,8 @@ function Token(options) {
   this.cords  = {x: 0, y: 0};
   this.ascended = false;
 }
+
+exports.Token = Token;
 
 Token.prototype.getPossibleAction = function getPossibleAction(rolled) {
   var action = {};
@@ -1823,8 +1829,6 @@ Token.prototype._kill = function _kill(killedToken) {
   killedToken.killedBy(this);
   this.game.emit(Events.TOKEN_KILLED, { killed: killedToken, by: this });
 };
-
-module.exports = Token;
 
 },{"./constants":7,"./utils":12}],12:[function(require,module,exports){
 var constants = require('./constants');
