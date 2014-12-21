@@ -26,7 +26,7 @@ exports.mockPlayer = function(name, team) {
     blockadeAhead: sinon.stub().returns(false),
     registerBlockade: sinon.spy(),
     enemyTokenAt: sinon.stub().returns(false),
-    tokenLocatedAt: sinon.stub(),
+    tokenLocatedAt: sinon.stub().returns(false),
     allyTokensAt: sinon.stub().returns(false),
     allTokensAscended: sinon.stub().returns(false),
     beginTurn: sinon.spy(),

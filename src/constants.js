@@ -1,3 +1,5 @@
+require('es5-shim');
+
 /**
 Conversions;
  RED    = BL

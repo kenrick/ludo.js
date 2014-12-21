@@ -39,15 +39,11 @@ Game.prototype.addPlayer = function addPlayer(player) {
 
 Game.prototype.start = function start() {
   var readies = 0;
-  var i;
 
   if (!this.started) {
-
-    for (i = 0; i < this.players.length; i++) {
-      if (this.players[i].getReady()) {
-        readies++;
-      }
-    }
+    this.players.forEach(function(player) {
+      if (player.getReady()) readies++;
+    });
 
     if (!this.players.length) {
       this.emit(Events.ERROR, { message: 'Not enough players to start game' });
@@ -104,22 +100,16 @@ Game.prototype.nextPlayersTurn = function nextPlayersTurn() {
 
 Game.prototype.findTokenAt = function findTokenAt(cords, excludedPlayer) {
   var players = this.players;
-  var token;
-  var i;
+  var token = false;
 
-  for (i = 0; i < players.length; i++) {
-    player = players[i];
-
-    if (excludedPlayer !== undefined && player.team === excludedPlayer.team) {
-      continue;
-    }
-
+  this.players.some(function(player) {
+    if (excludedPlayer && player.team === excludedPlayer.team) return false;
     token = player.tokenLocatedAt(cords);
 
-    if (token) return token;
-  }
+    return token;
+  });
 
-  return false;
+  return token;
 };
 
 Game.prototype.playerTokensAscended = function playerTokensAscended() {

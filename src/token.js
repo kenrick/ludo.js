@@ -19,6 +19,10 @@ function Token(options) {
 
 exports.Token = Token;
 
+Token.prototype.atCords = function atCords(cords) {
+  return [this.cords.x, this.cords.y].toString() === cords.toString();
+};
+
 Token.prototype.getPossibleAction = function getPossibleAction(rolled) {
   var action = {};
   var forecast;

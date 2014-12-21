@@ -119,6 +119,22 @@ describe('Player', function() {
     });
   });
 
+  describe('allyTokensAt', function() {
+    it('returns a tokens if at a cord', function() {
+      player.game = game;
+      player._tokens[0].born();
+      player._tokens[0].moveBy(6);
+
+      player._tokens[1].born();
+      player._tokens[1].moveBy(6);
+
+      var tokens = player.allyTokensAt([5, 9]);
+      expect(tokens).to.include(player._tokens[0]);
+      expect(tokens).to.include(player._tokens[1]);
+      expect(tokens).not.to.include(player._tokens[2]);
+    });
+  });
+
   describe('enemyTokenAt', function() {
     it('calls game.findTokenAt ', function() {
       player.enemyTokenAt([5, 9]);

@@ -69,15 +69,12 @@ Player.prototype.beginTurn = function beginTurn() {
 };
 
 Player.prototype.generatePossibleActions = function generatePossibleActions(rolled) {
-  var action;
   var totalActions = [];
-  var i;
 
-  for (i = 0; i <= 3; i++) {
-    action = this._tokens[i].getPossibleAction(rolled);
-
+  this._tokens.forEach(function(token) {
+    var action = token.getPossibleAction(rolled);
     if (action) totalActions.push(action);
-  }
+  });
 
   return totalActions;
 };
@@ -113,7 +110,7 @@ Player.prototype.registerBlockade = function registerBlockade(cords, tokens) {
       tokens[i].inBlockade = true;
     }
   } else {
-    if (tokens[0] !== undefined) tokens[0].inBlockade = false;
+    if (tokens[0]) tokens[0].inBlockade = false;
     delete this.blockades[cords];
   }
 };
@@ -132,20 +129,10 @@ Player.prototype.allTokensAscended = function allTokensAscended() {
 };
 
 Player.prototype.allyTokensAt = function allyTokensAt(cords, excludedToken) {
-  var tokens = [];
-  var token;
-
-  for (i = 0; i < this._tokens.length; i++) {
-    token = this._tokens[i];
-
-    if (excludedToken !== undefined && token.id === excludedToken.id) {
-      continue;
-    }
-
-    if (token.cords.x === cords[0] && token.cords.y === cords[1]) {
-      tokens.push(token);
-    }
-  }
+  var tokens = this._tokens.filter(function(token) {
+    if (excludedToken && token.id === excludedToken.id) return;
+    return token.atCords(cords);
+  });
 
   if (!tokens.length) return false;
 
@@ -158,31 +145,25 @@ Player.prototype.hasBlockadeAt = function hasBlockadeAt(cordsArray) {
 
   for (i = 0; i < cordsArray.length; i++) {
     cords = cordsArray[i];
-    if (this.blockades[cords] !== undefined) {
-      return this.blockades[cords];
-    }
+    if (this.blockades[cords]) return this.blockades[cords];
   }
 
   return false;
 };
 
 Player.prototype.tokenLocatedAt = function tokenLocatedAt(cords, excludedToken) {
-  var token;
+  var foundToken = false;
   var i;
 
-  for (i = 0; i < this._tokens.length; i++) {
-    token = this._tokens[i];
+  this._tokens.some(function(token) {
+    if (excludedToken && token.id === excludedToken.id) return;
 
-    if (excludedToken !== undefined && token.id === excludedToken.id) {
-      continue;
-    }
+    if (token.atCords(cords)) foundToken = token;
 
-    if (token.cords.x === cords[0] && token.cords.y === cords[1]) {
-      return token;
-    }
-  }
+    return foundToken;
+  });
 
-  return false;
+  return foundToken;
 };
 
 Player.prototype.blockadeAhead = function blockadeAhead(cordsArray) {
