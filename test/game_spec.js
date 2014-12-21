@@ -10,10 +10,10 @@ describe('Game', function() {
 
   beforeEach(function() {
     game = new Game();
-    player = helper.mockPlayer('Player1');
-    player2 = helper.mockPlayer('Player2');
-    player3 = helper.mockPlayer('Player3');
-    player4 = helper.mockPlayer('Player4');
+    player = helper.mockPlayer('Player1', 'bl');
+    player2 = helper.mockPlayer('Player2', 'br');
+    player3 = helper.mockPlayer('Player3', 'tr');
+    player4 = helper.mockPlayer('Player4', 'tl');
   });
 
   describe('addPlayer', function() {
@@ -173,7 +173,7 @@ describe('Game', function() {
         game.addPlayer(player);
         game.addPlayer(player2);
         game.invokeTurn(player);
-        game.currentPlayersTurn.should.equal(player);
+        game.currentPlayersTurn.should.equal('bl');
       });
 
       it('sets the next turn to the second player, after invokeTurn is called', function() {

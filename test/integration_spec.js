@@ -1,5 +1,7 @@
 var Ludo = require('../index');
 var helper = require('./spec_helper');
+var newGameState = require('./fixtures/new_game_state');
+var midGameState = require('./fixtures/mid_game_state');
 
 describe('Integration', function() {
   var game;
@@ -21,6 +23,39 @@ describe('Integration', function() {
 
   });
 
+  describe('New Game from existing state', function() {
+    it('creates a new game from existing state', function() {
+      game = new Ludo.Game({ state: midGameState});
+
+      expect(game.started).to.be.true();
+      expect(game.currentPlayersTurn).to.equal('bl');
+
+      expect(game.players.length).to.equal(2);
+      expect(game.players[0]._tokens.length).to.equal(4);
+
+      expect(game.state()).eql(midGameState);
+    });
+  });
+
+  describe('Game State', function() {
+    it('returns a blank game state', function() {
+      expect(game.state()).to.eql(newGameState);
+    });
+
+    it('returns a mid game state', function() {
+      game.start();
+      player1._tokens[0].born();
+      player1._tokens[1].born();
+      player1._tokens[1].moveBy(6);
+      player1._tokens[0].moveBy(6);
+
+      player2._tokens[0].born();
+      player2._tokens[0].moveBy(5);
+
+      expect(game.state()).to.eql(midGameState);
+    });
+  });
+
   describe('Player2 kills Player1\'s token', function() {
 
     beforeEach(function() {
@@ -28,7 +63,7 @@ describe('Integration', function() {
       player2._tokens[0].born();
       player2._tokens[0].moveTo({ x: 7, y: 15 });
 
-      game.currentPlayersTurn = player1;
+      game.currentPlayersTurn = 'bl';
 
       game.once('player.turn.rollDice', function(data) {
         var dice = new Ludo.Dice({ rolled: 1 });
@@ -62,7 +97,7 @@ describe('Integration', function() {
     beforeEach(function() {
       player1._tokens[0].born();
 
-      game.currentPlayersTurn = player2;
+      game.currentPlayersTurn = 'br';
 
       game.once('player.turn.rollDice', function(data) {
         var dice = new Ludo.Dice({ rolled: 1 });
@@ -93,7 +128,7 @@ describe('Integration', function() {
   describe('Switch to heaven path', function() {
 
     beforeEach(function() {
-      game.currentPlayersTurn = player2;
+      game.currentPlayersTurn = 'br';
     });
 
     it('moves token unto the heaven path by 2', function(done) {
@@ -205,7 +240,7 @@ describe('Integration', function() {
   describe('Ascending', function() {
 
     beforeEach(function() {
-      game.currentPlayersTurn = player2;
+      game.currentPlayersTurn = 'br';
     });
 
     it('Ascendeds token 0 when it reaches the ascendingPoint', function(done) {
@@ -244,7 +279,7 @@ describe('Integration', function() {
   describe('Win', function() {
 
     beforeEach(function() {
-      game.currentPlayersTurn = player2;
+      game.currentPlayersTurn = 'br';
     });
 
     it('Ascendeds token 0 when it reaches the ascendingPoint', function(done) {
@@ -298,7 +333,7 @@ describe('Integration', function() {
       player1._tokens[0].moveTo({ x: 7, y: 13 });
       player1._tokens[1].born();
 
-      game.currentPlayersTurn = player2;
+      game.currentPlayersTurn = 'br';
 
       game.once('player.turn.rollDice', function(data) {
         var dice = new Ludo.Dice({ rolled: 1 });
@@ -334,7 +369,7 @@ describe('Integration', function() {
       player1._tokens[1].born();
       player1._tokens[1].moveTo({ x: 7, y: 13 });
 
-      game.currentPlayersTurn = player2;
+      game.currentPlayersTurn = 'br';
 
       game.once('player.turn.rollDice', function(data) {
         var dice = new Ludo.Dice({ rolled: 1 });
@@ -372,7 +407,7 @@ describe('Integration', function() {
       player2._tokens[0].born();
       player2._tokens[0].moveTo({x: 7, y: 15});
 
-      game.currentPlayersTurn = player1;
+      game.currentPlayersTurn = 'bl';
 
       game.once('player.turn.rollDice', function(data) {
         var dice = new Ludo.Dice({ rolled: 1 });
@@ -402,7 +437,7 @@ describe('Integration', function() {
       player2._tokens[1].born();
       player2._tokens[1].moveTo({x: 7, y: 14});
 
-      game.currentPlayersTurn = player2;
+      game.currentPlayersTurn = 'br';
 
       game.once('player.turn.rollDice', function(data) {
         var dice = new Ludo.Dice({ rolled: 6 });

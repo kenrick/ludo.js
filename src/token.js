@@ -19,6 +19,29 @@ function Token(options) {
 
 exports.Token = Token;
 
+Token.build = function build(tokenState, player) {
+  var token = new Token({ player: player, id: tokenState.id });
+
+  if (tokenState.active) {
+    token.born();
+    token.moveTo(tokenState.cords);
+  }
+
+  return token;
+};
+
+Token.prototype.attributes = function attributes() {
+  return {
+    id: this.id,
+    team: this.team,
+    active: this.active,
+    isOnHeavenPath: this.isOnHeavenPath,
+    inBlockade: this.inBlockade,
+    cords: this.cords,
+    ascended: this.ascended
+  };
+};
+
 Token.prototype.atCords = function atCords(cords) {
   return [this.cords.x, this.cords.y].toString() === cords.toString();
 };
@@ -213,7 +236,7 @@ Token.prototype.moveTo = function moveTo(cords) {
   if (allyTokens) this._createBlockade(cordArray, allyTokens);
 
   if (onHeavenPath) this.isOnHeavenPath = true;
-  if (cordArray[0] === ascendCord[0] && cordArray[1] === ascendCord[1]) {
+  if (cordArray.toString() === ascendCord.toString()) {
     this._ascend();
   }
 

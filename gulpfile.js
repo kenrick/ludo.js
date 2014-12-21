@@ -9,6 +9,7 @@ var jshint = require('gulp-jshint');
 
 var paths = {
   tests: 'test/*spec.js',
+  fixtures: 'test/fixtures/*.js',
   index: './index.js',
   src:   'src/*.js'
 };
@@ -33,7 +34,7 @@ gulp.task('browserify', function() {
 
   return gulp.src(paths.index)
     .pipe(browserified)
-    // .pipe(uglify())
+    .pipe(uglify())
     .pipe(rename('Ludo.js'))
     .pipe(gulp.dest('./dist'));
 });
@@ -46,7 +47,7 @@ gulp.task('test-all', function(done) {
 });
 
 gulp.task('watch', function() {
-  gulp.watch([paths.tests, paths.src], ['test']);
+  gulp.watch([paths.tests, paths.src, paths.fixtures], ['test']);
   gulp.watch([paths.src], ['browserify']);
 });
 

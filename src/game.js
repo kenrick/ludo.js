@@ -1,4 +1,5 @@
 var EventEmitter = require('events').EventEmitter;
+var Player = require('./player').Player;
 var constants = require('./constants');
 var Events = constants.Events;
 var inherits = require('util').inherits;
@@ -7,15 +8,48 @@ function Game(options) {
   this.options = (options || {});
   this.players = [];
   this.started = false;
-  this.currentPlayersTurn = false;
+  this.currentPlayersTurn = '';
+  this.won = false;
 
   EventEmitter.call(this);
   this._attachEvents(this.options.events);
+
+  if (this.options.state) {
+    this._setState(this.options.state);
+  }
 }
 
 inherits(Game, EventEmitter);
 
 exports.Game = Game;
+
+Game.prototype.state = function state() {
+  return this._attributes();
+};
+
+Game.prototype._setState = function setState(state) {
+  var _this = this;
+
+  this.started = state.started;
+  this.won = state.won;
+  this.currentPlayersTurn = state.currentPlayersTurn;
+  this.players = state.players.map(function(playerJSON) {
+    return Player.build(playerJSON, _this);
+  });
+
+  this.resumeGame();
+};
+
+Game.prototype._attributes = function _attributes() {
+  return {
+    won: this.won,
+    started: this.started,
+    currentPlayersTurn: this.currentPlayersTurn,
+    players: this.players.map(function(player) {
+      return player.attributes();
+    })
+  };
+};
 
 Game.prototype._attachEvents = function _attachEvents(events) {
   var event;
@@ -35,6 +69,10 @@ Game.prototype.addPlayer = function addPlayer(player) {
     this.players.push(player);
     this.emit(Events.PLAYER_JOIN, { player: player });
   }
+};
+
+//TODO: Implement a joinGame function to add a player to the game
+Game.prototype.joinGame = function joinGame(player) {
 };
 
 Game.prototype.start = function start() {
@@ -76,8 +114,19 @@ Game.prototype.continueGame = function continueGame() {
   this._loop();
 };
 
+Game.prototype.resumeGame = function continueGame() {
+  var _this = this;
+
+  this.players.some(function(player) {
+    if (player.team === _this.currentPlayersTurn) {
+      player.beginTurn();
+      return player;
+    }
+  });
+};
+
 Game.prototype.invokeTurn = function invokeTurn(player) {
-  this.currentPlayersTurn = player;
+  this.currentPlayersTurn = player.team;
   return player.beginTurn();
 };
 
@@ -85,7 +134,10 @@ Game.prototype.nextPlayersTurn = function nextPlayersTurn() {
   var nextPlayer;
 
   if (this.currentPlayersTurn) {
-    var playerIndex = this.players.indexOf(this.currentPlayersTurn);
+    var playerIndex = this.players.map(function(player) {
+      return player.team;
+    }).indexOf(this.currentPlayersTurn);
+
     if (playerIndex !== this.players.length - 1) {
       nextPlayer = this.players[playerIndex + 1];
     } else {
@@ -134,7 +186,7 @@ Game.prototype.anyBlockadeIn = function anyBlockadeIn(cords, excludedPlayer) {
   for (i = 0; i < players.length; i++) {
     player = players[i];
 
-    if (excludedPlayer !== undefined && player.team === excludedPlayer.team) {
+    if (excludedPlayer && player.team === excludedPlayer.team) {
       continue;
     }
 

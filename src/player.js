@@ -6,15 +6,37 @@ function Player(metadata) {
   this.metadata = metadata;
   this._ready = false;
   this.game = false;
-  this.team = false;
+  this.team = '';
   this._tokens = [];
   this.blockades = {};
 }
 
 exports.Player = Player;
 
-Player.build = function() {
+Player.build = function build(playerState, game) {
+  var player = new Player();
 
+  player.metadata = playerState.metadata;
+  player._ready = playerState.ready;
+  player.team = playerState.team;
+  player.game = game;
+
+  playerState.tokens.forEach(function(tokenState) {
+    player._tokens.push(Token.build(tokenState, player));
+  });
+
+  return player;
+};
+
+Player.prototype.attributes = function attributes() {
+  return {
+    metadata: this.metadata,
+    ready: this._ready,
+    team: this.team,
+    tokens: this._tokens.map(function(token) {
+      return token.attributes();
+    })
+  };
 };
 
 Player.prototype.setTeam = function setTeam(team) {
