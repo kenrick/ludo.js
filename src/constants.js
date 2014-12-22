@@ -20,9 +20,7 @@ exports.Events = {
   PLAYER_JOIN:     'player.join',
   TURN_BEGIN:      'player.turn.begin',
   TURN_END:        'player.turn.end',
-  DICE_ROLL:       'player.turn.rollDice',
   REPEAT_TURN:     'player.turn.repeat',
-  PLAYER_ACTIONS:  'player.actions',
 
   TOKEN_BORN:      'token.born',
   TOKEN_MOVE_TO:   'token.moveTo',
