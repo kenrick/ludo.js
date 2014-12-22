@@ -1,2 +1,3381 @@
-!function(t){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=t();else if("function"==typeof define&&define.amd)define([],t);else{var e;"undefined"!=typeof window?e=window:"undefined"!=typeof global?e=global:"undefined"!=typeof self&&(e=self),e.Ludo=t()}}(function(){var e;return function n(t,e,r){function i(s,a){if(!e[s]){if(!t[s]){var u="function"==typeof require&&require;if(!a&&u)return u(s,!0);if(o)return o(s,!0);var l=new Error("Cannot find module '"+s+"'");throw l.code="MODULE_NOT_FOUND",l}var c=e[s]={exports:{}};t[s][0].call(c.exports,function(e){var n=t[s][1][e];return i(n?n:e)},c,c.exports,n,t,e,r)}return e[s].exports}for(var o="function"==typeof require&&require,s=0;s<r.length;s++)i(r[s]);return i}({1:[function(t,e,n){n.Game=t("./src/game").Game,n.Player=t("./src/player").Player,n.Token=t("./src/token").Token,n.Dice=t("./src/dice").Dice,n.utils=t("./src/utils")},{"./src/dice":9,"./src/game":10,"./src/player":11,"./src/token":12,"./src/utils":13}],2:[function(t,e){function n(){this._events=this._events||{},this._maxListeners=this._maxListeners||void 0}function r(t){return"function"==typeof t}function i(t){return"number"==typeof t}function o(t){return"object"==typeof t&&null!==t}function s(t){return void 0===t}e.exports=n,n.EventEmitter=n,n.prototype._events=void 0,n.prototype._maxListeners=void 0,n.defaultMaxListeners=10,n.prototype.setMaxListeners=function(t){if(!i(t)||0>t||isNaN(t))throw TypeError("n must be a positive number");return this._maxListeners=t,this},n.prototype.emit=function(t){var e,n,i,a,u,l;if(this._events||(this._events={}),"error"===t&&(!this._events.error||o(this._events.error)&&!this._events.error.length)){if(e=arguments[1],e instanceof Error)throw e;throw TypeError('Uncaught, unspecified "error" event.')}if(n=this._events[t],s(n))return!1;if(r(n))switch(arguments.length){case 1:n.call(this);break;case 2:n.call(this,arguments[1]);break;case 3:n.call(this,arguments[1],arguments[2]);break;default:for(i=arguments.length,a=new Array(i-1),u=1;i>u;u++)a[u-1]=arguments[u];n.apply(this,a)}else if(o(n)){for(i=arguments.length,a=new Array(i-1),u=1;i>u;u++)a[u-1]=arguments[u];for(l=n.slice(),i=l.length,u=0;i>u;u++)l[u].apply(this,a)}return!0},n.prototype.addListener=function(t,e){var i;if(!r(e))throw TypeError("listener must be a function");if(this._events||(this._events={}),this._events.newListener&&this.emit("newListener",t,r(e.listener)?e.listener:e),this._events[t]?o(this._events[t])?this._events[t].push(e):this._events[t]=[this._events[t],e]:this._events[t]=e,o(this._events[t])&&!this._events[t].warned){var i;i=s(this._maxListeners)?n.defaultMaxListeners:this._maxListeners,i&&i>0&&this._events[t].length>i&&(this._events[t].warned=!0,console.error("(node) warning: possible EventEmitter memory leak detected. %d listeners added. Use emitter.setMaxListeners() to increase limit.",this._events[t].length),"function"==typeof console.trace&&console.trace())}return this},n.prototype.on=n.prototype.addListener,n.prototype.once=function(t,e){function n(){this.removeListener(t,n),i||(i=!0,e.apply(this,arguments))}if(!r(e))throw TypeError("listener must be a function");var i=!1;return n.listener=e,this.on(t,n),this},n.prototype.removeListener=function(t,e){var n,i,s,a;if(!r(e))throw TypeError("listener must be a function");if(!this._events||!this._events[t])return this;if(n=this._events[t],s=n.length,i=-1,n===e||r(n.listener)&&n.listener===e)delete this._events[t],this._events.removeListener&&this.emit("removeListener",t,e);else if(o(n)){for(a=s;a-->0;)if(n[a]===e||n[a].listener&&n[a].listener===e){i=a;break}if(0>i)return this;1===n.length?(n.length=0,delete this._events[t]):n.splice(i,1),this._events.removeListener&&this.emit("removeListener",t,e)}return this},n.prototype.removeAllListeners=function(t){var e,n;if(!this._events)return this;if(!this._events.removeListener)return 0===arguments.length?this._events={}:this._events[t]&&delete this._events[t],this;if(0===arguments.length){for(e in this._events)"removeListener"!==e&&this.removeAllListeners(e);return this.removeAllListeners("removeListener"),this._events={},this}if(n=this._events[t],r(n))this.removeListener(t,n);else for(;n.length;)this.removeListener(t,n[n.length-1]);return delete this._events[t],this},n.prototype.listeners=function(t){var e;return e=this._events&&this._events[t]?r(this._events[t])?[this._events[t]]:this._events[t].slice():[]},n.listenerCount=function(t,e){var n;return n=t._events&&t._events[e]?r(t._events[e])?1:t._events[e].length:0}},{}],3:[function(t,e){e.exports="function"==typeof Object.create?function(t,e){t.super_=e,t.prototype=Object.create(e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}})}:function(t,e){t.super_=e;var n=function(){};n.prototype=e.prototype,t.prototype=new n,t.prototype.constructor=t}},{}],4:[function(t,e){function n(){}var r=e.exports={};r.nextTick=function(){var t="undefined"!=typeof window&&window.setImmediate,e="undefined"!=typeof window&&window.MutationObserver,n="undefined"!=typeof window&&window.postMessage&&window.addEventListener;if(t)return function(t){return window.setImmediate(t)};var r=[];if(e){var i=document.createElement("div"),o=new MutationObserver(function(){var t=r.slice();r.length=0,t.forEach(function(t){t()})});return o.observe(i,{attributes:!0}),function(t){r.length||i.setAttribute("yes","no"),r.push(t)}}return n?(window.addEventListener("message",function(t){var e=t.source;if((e===window||null===e)&&"process-tick"===t.data&&(t.stopPropagation(),r.length>0)){var n=r.shift();n()}},!0),function(t){r.push(t),window.postMessage("process-tick","*")}):function(t){setTimeout(t,0)}}(),r.title="browser",r.browser=!0,r.env={},r.argv=[],r.on=n,r.addListener=n,r.once=n,r.off=n,r.removeListener=n,r.removeAllListeners=n,r.emit=n,r.binding=function(){throw new Error("process.binding is not supported")},r.cwd=function(){return"/"},r.chdir=function(){throw new Error("process.chdir is not supported")}},{}],5:[function(t,e){e.exports=function(t){return t&&"object"==typeof t&&"function"==typeof t.copy&&"function"==typeof t.fill&&"function"==typeof t.readUInt8}},{}],6:[function(t,e,n){(function(e,r){function i(t,e){var r={seen:[],stylize:s};return arguments.length>=3&&(r.depth=arguments[2]),arguments.length>=4&&(r.colors=arguments[3]),y(e)?r.showHidden=e:e&&n._extend(r,e),T(r.showHidden)&&(r.showHidden=!1),T(r.depth)&&(r.depth=2),T(r.colors)&&(r.colors=!1),T(r.customInspect)&&(r.customInspect=!0),r.colors&&(r.stylize=o),u(r,t,r.depth)}function o(t,e){var n=i.styles[e];return n?"["+i.colors[n][0]+"m"+t+"["+i.colors[n][1]+"m":t}function s(t){return t}function a(t){var e={};return t.forEach(function(t){e[t]=!0}),e}function u(t,e,r){if(t.customInspect&&e&&x(e.inspect)&&e.inspect!==n.inspect&&(!e.constructor||e.constructor.prototype!==e)){var i=e.inspect(r,t);return b(i)||(i=u(t,i,r)),i}var o=l(t,e);if(o)return o;var s=Object.keys(e),y=a(s);if(t.showHidden&&(s=Object.getOwnPropertyNames(e)),k(e)&&(s.indexOf("message")>=0||s.indexOf("description")>=0))return c(e);if(0===s.length){if(x(e)){var g=e.name?": "+e.name:"";return t.stylize("[Function"+g+"]","special")}if(_(e))return t.stylize(RegExp.prototype.toString.call(e),"regexp");if(E(e))return t.stylize(Date.prototype.toString.call(e),"date");if(k(e))return c(e)}var v="",m=!1,w=["{","}"];if(d(e)&&(m=!0,w=["[","]"]),x(e)){var T=e.name?": "+e.name:"";v=" [Function"+T+"]"}if(_(e)&&(v=" "+RegExp.prototype.toString.call(e)),E(e)&&(v=" "+Date.prototype.toUTCString.call(e)),k(e)&&(v=" "+c(e)),0===s.length&&(!m||0==e.length))return w[0]+v+w[1];if(0>r)return _(e)?t.stylize(RegExp.prototype.toString.call(e),"regexp"):t.stylize("[Object]","special");t.seen.push(e);var O;return O=m?h(t,e,r,y,s):s.map(function(n){return p(t,e,r,y,n,m)}),t.seen.pop(),f(O,v,w)}function l(t,e){if(T(e))return t.stylize("undefined","undefined");if(b(e)){var n="'"+JSON.stringify(e).replace(/^"|"$/g,"").replace(/'/g,"\\'").replace(/\\"/g,'"')+"'";return t.stylize(n,"string")}return m(e)?t.stylize(""+e,"number"):y(e)?t.stylize(""+e,"boolean"):g(e)?t.stylize("null","null"):void 0}function c(t){return"["+Error.prototype.toString.call(t)+"]"}function h(t,e,n,r,i){for(var o=[],s=0,a=e.length;a>s;++s)o.push(L(e,String(s))?p(t,e,n,r,String(s),!0):"");return i.forEach(function(i){i.match(/^\d+$/)||o.push(p(t,e,n,r,i,!0))}),o}function p(t,e,n,r,i,o){var s,a,l;if(l=Object.getOwnPropertyDescriptor(e,i)||{value:e[i]},l.get?a=l.set?t.stylize("[Getter/Setter]","special"):t.stylize("[Getter]","special"):l.set&&(a=t.stylize("[Setter]","special")),L(r,i)||(s="["+i+"]"),a||(t.seen.indexOf(l.value)<0?(a=g(n)?u(t,l.value,null):u(t,l.value,n-1),a.indexOf("\n")>-1&&(a=o?a.split("\n").map(function(t){return"  "+t}).join("\n").substr(2):"\n"+a.split("\n").map(function(t){return"   "+t}).join("\n"))):a=t.stylize("[Circular]","special")),T(s)){if(o&&i.match(/^\d+$/))return a;s=JSON.stringify(""+i),s.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)?(s=s.substr(1,s.length-2),s=t.stylize(s,"name")):(s=s.replace(/'/g,"\\'").replace(/\\"/g,'"').replace(/(^"|"$)/g,"'"),s=t.stylize(s,"string"))}return s+": "+a}function f(t,e,n){var r=0,i=t.reduce(function(t,e){return r++,e.indexOf("\n")>=0&&r++,t+e.replace(/\u001b\[\d\d?m/g,"").length+1},0);return i>60?n[0]+(""===e?"":e+"\n ")+" "+t.join(",\n  ")+" "+n[1]:n[0]+e+" "+t.join(", ")+" "+n[1]}function d(t){return Array.isArray(t)}function y(t){return"boolean"==typeof t}function g(t){return null===t}function v(t){return null==t}function m(t){return"number"==typeof t}function b(t){return"string"==typeof t}function w(t){return"symbol"==typeof t}function T(t){return void 0===t}function _(t){return O(t)&&"[object RegExp]"===N(t)}function O(t){return"object"==typeof t&&null!==t}function E(t){return O(t)&&"[object Date]"===N(t)}function k(t){return O(t)&&("[object Error]"===N(t)||t instanceof Error)}function x(t){return"function"==typeof t}function A(t){return null===t||"boolean"==typeof t||"number"==typeof t||"string"==typeof t||"symbol"==typeof t||"undefined"==typeof t}function N(t){return Object.prototype.toString.call(t)}function S(t){return 10>t?"0"+t.toString(10):t.toString(10)}function j(){var t=new Date,e=[S(t.getHours()),S(t.getMinutes()),S(t.getSeconds())].join(":");return[t.getDate(),R[t.getMonth()],e].join(" ")}function L(t,e){return Object.prototype.hasOwnProperty.call(t,e)}var P=/%[sdj%]/g;n.format=function(t){if(!b(t)){for(var e=[],n=0;n<arguments.length;n++)e.push(i(arguments[n]));return e.join(" ")}for(var n=1,r=arguments,o=r.length,s=String(t).replace(P,function(t){if("%%"===t)return"%";if(n>=o)return t;switch(t){case"%s":return String(r[n++]);case"%d":return Number(r[n++]);case"%j":try{return JSON.stringify(r[n++])}catch(e){return"[Circular]"}default:return t}}),a=r[n];o>n;a=r[++n])s+=g(a)||!O(a)?" "+a:" "+i(a);return s},n.deprecate=function(t,i){function o(){if(!s){if(e.throwDeprecation)throw new Error(i);e.traceDeprecation?console.trace(i):console.error(i),s=!0}return t.apply(this,arguments)}if(T(r.process))return function(){return n.deprecate(t,i).apply(this,arguments)};if(e.noDeprecation===!0)return t;var s=!1;return o};var D,C={};n.debuglog=function(t){if(T(D)&&(D=e.env.NODE_DEBUG||""),t=t.toUpperCase(),!C[t])if(new RegExp("\\b"+t+"\\b","i").test(D)){var r=e.pid;C[t]=function(){var e=n.format.apply(n,arguments);console.error("%s %d: %s",t,r,e)}}else C[t]=function(){};return C[t]},n.inspect=i,i.colors={bold:[1,22],italic:[3,23],underline:[4,24],inverse:[7,27],white:[37,39],grey:[90,39],black:[30,39],blue:[34,39],cyan:[36,39],green:[32,39],magenta:[35,39],red:[31,39],yellow:[33,39]},i.styles={special:"cyan",number:"yellow","boolean":"yellow",undefined:"grey","null":"bold",string:"green",date:"magenta",regexp:"red"},n.isArray=d,n.isBoolean=y,n.isNull=g,n.isNullOrUndefined=v,n.isNumber=m,n.isString=b,n.isSymbol=w,n.isUndefined=T,n.isRegExp=_,n.isObject=O,n.isDate=E,n.isError=k,n.isFunction=x,n.isPrimitive=A,n.isBuffer=t("./support/isBuffer");var R=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];n.log=function(){console.log("%s - %s",j(),n.format.apply(n,arguments))},n.inherits=t("inherits"),n._extend=function(t,e){if(!e||!O(e))return t;for(var n=Object.keys(e),r=n.length;r--;)t[n[r]]=e[n[r]];return t}}).call(this,t("_process"),"undefined"!=typeof global?global:"undefined"!=typeof self?self:"undefined"!=typeof window?window:{})},{"./support/isBuffer":5,_process:4,inherits:3}],7:[function(t,n,r){!function(t,i){"use strict";"function"==typeof e&&e.amd?e(i):"object"==typeof r?n.exports=i():t.returnExports=i()}(this,function(){function t(t){var e=+t;return e!==e?e=0:0!==e&&e!==1/0&&e!==-(1/0)&&(e=(e>0||-1)*Math.floor(Math.abs(e))),e}function e(t){var e=typeof t;return null===t||"undefined"===e||"boolean"===e||"number"===e||"string"===e}function n(t){var n,r,i;if(e(t))return t;if(r=t.valueOf,y(r)&&(n=r.call(t),e(n)))return n;if(i=t.toString,y(i)&&(n=i.call(t),e(n)))return n;throw new TypeError}var r,i=Array.prototype,o=Object.prototype,s=Function.prototype,a=String.prototype,u=Number.prototype,l=i.slice,c=i.splice,h=i.push,p=i.unshift,f=s.call,d=o.toString,y=function(t){return"[object Function]"===d.call(t)},g=function(t){return"[object RegExp]"===d.call(t)},v=function(t){return"[object Array]"===d.call(t)},m=function(t){return"[object String]"===d.call(t)},b=function(t){var e=d.call(t),n="[object Arguments]"===e;return n||(n=!v(t)&&null!==t&&"object"==typeof t&&"number"==typeof t.length&&t.length>=0&&y(t.callee)),n},w=Object.defineProperty&&function(){try{return Object.defineProperty({},"x",{}),!0}catch(t){return!1}}();r=w?function(t,e,n,r){!r&&e in t||Object.defineProperty(t,e,{configurable:!0,enumerable:!1,writable:!0,value:n})}:function(t,e,n,r){!r&&e in t||(t[e]=n)};var T=function(t,e,n){for(var i in e)o.hasOwnProperty.call(e,i)&&r(t,i,e[i],n)},_={ToObject:function(t){if(null==t)throw new TypeError("can't convert "+t+" to object");return Object(t)},ToUint32:function(t){return t>>>0}},O=function(){};T(s,{bind:function(t){var e=this;if(!y(e))throw new TypeError("Function.prototype.bind called on incompatible "+e);for(var n,r=l.call(arguments,1),i=function(){if(this instanceof n){var i=e.apply(this,r.concat(l.call(arguments)));return Object(i)===i?i:this}return e.apply(t,r.concat(l.call(arguments)))},o=Math.max(0,e.length-r.length),s=[],a=0;o>a;a++)s.push("$"+a);return n=Function("binder","return function ("+s.join(",")+"){ return binder.apply(this, arguments); }")(i),e.prototype&&(O.prototype=e.prototype,n.prototype=new O,O.prototype=null),n}});var E=f.bind(o.hasOwnProperty),k=function(){var t=[1,2],e=t.splice();return 2===t.length&&v(e)&&0===e.length}();T(i,{splice:function(){return 0===arguments.length?[]:c.apply(this,arguments)}},k);var x=function(){var t={};return i.splice.call(t,0,0,1),1===t.length}();T(i,{splice:function(e,n){if(0===arguments.length)return[];var r=arguments;return this.length=Math.max(t(this.length),0),arguments.length>0&&"number"!=typeof n&&(r=l.call(arguments),r.length<2?r.push(this.length-e):r[1]=t(n)),c.apply(this,r)}},!x);var A=1!==[].unshift(0);T(i,{unshift:function(){return p.apply(this,arguments),this.length}},A),T(Array,{isArray:v});var N=Object("a"),S="a"!==N[0]||!(0 in N),j=function(t){var e=!0,n=!0;return t&&(t.call("foo",function(t,n,r){"object"!=typeof r&&(e=!1)}),t.call([1],function(){"use strict";n="string"==typeof this},"x")),!!t&&e&&n};T(i,{forEach:function(t){var e=_.ToObject(this),n=S&&m(this)?this.split(""):e,r=arguments[1],i=-1,o=n.length>>>0;if(!y(t))throw new TypeError;for(;++i<o;)i in n&&t.call(r,n[i],i,e)}},!j(i.forEach)),T(i,{map:function(t){var e=_.ToObject(this),n=S&&m(this)?this.split(""):e,r=n.length>>>0,i=Array(r),o=arguments[1];if(!y(t))throw new TypeError(t+" is not a function");for(var s=0;r>s;s++)s in n&&(i[s]=t.call(o,n[s],s,e));return i}},!j(i.map)),T(i,{filter:function(t){var e,n=_.ToObject(this),r=S&&m(this)?this.split(""):n,i=r.length>>>0,o=[],s=arguments[1];if(!y(t))throw new TypeError(t+" is not a function");for(var a=0;i>a;a++)a in r&&(e=r[a],t.call(s,e,a,n)&&o.push(e));return o}},!j(i.filter)),T(i,{every:function(t){var e=_.ToObject(this),n=S&&m(this)?this.split(""):e,r=n.length>>>0,i=arguments[1];if(!y(t))throw new TypeError(t+" is not a function");for(var o=0;r>o;o++)if(o in n&&!t.call(i,n[o],o,e))return!1;return!0}},!j(i.every)),T(i,{some:function(t){var e=_.ToObject(this),n=S&&m(this)?this.split(""):e,r=n.length>>>0,i=arguments[1];if(!y(t))throw new TypeError(t+" is not a function");for(var o=0;r>o;o++)if(o in n&&t.call(i,n[o],o,e))return!0;return!1}},!j(i.some));var L=!1;i.reduce&&(L="object"==typeof i.reduce.call("es5",function(t,e,n,r){return r})),T(i,{reduce:function(t){var e=_.ToObject(this),n=S&&m(this)?this.split(""):e,r=n.length>>>0;if(!y(t))throw new TypeError(t+" is not a function");if(!r&&1===arguments.length)throw new TypeError("reduce of empty array with no initial value");var i,o=0;if(arguments.length>=2)i=arguments[1];else for(;;){if(o in n){i=n[o++];break}if(++o>=r)throw new TypeError("reduce of empty array with no initial value")}for(;r>o;o++)o in n&&(i=t.call(void 0,i,n[o],o,e));return i}},!L);var P=!1;i.reduceRight&&(P="object"==typeof i.reduceRight.call("es5",function(t,e,n,r){return r})),T(i,{reduceRight:function(t){var e=_.ToObject(this),n=S&&m(this)?this.split(""):e,r=n.length>>>0;if(!y(t))throw new TypeError(t+" is not a function");if(!r&&1===arguments.length)throw new TypeError("reduceRight of empty array with no initial value");var i,o=r-1;if(arguments.length>=2)i=arguments[1];else for(;;){if(o in n){i=n[o--];break}if(--o<0)throw new TypeError("reduceRight of empty array with no initial value")}if(0>o)return i;do o in n&&(i=t.call(void 0,i,n[o],o,e));while(o--);return i}},!P);var D=Array.prototype.indexOf&&-1!==[0,1].indexOf(1,2);T(i,{indexOf:function(e){var n=S&&m(this)?this.split(""):_.ToObject(this),r=n.length>>>0;if(!r)return-1;var i=0;for(arguments.length>1&&(i=t(arguments[1])),i=i>=0?i:Math.max(0,r+i);r>i;i++)if(i in n&&n[i]===e)return i;return-1}},D);var C=Array.prototype.lastIndexOf&&-1!==[0,1].lastIndexOf(0,-3);T(i,{lastIndexOf:function(e){var n=S&&m(this)?this.split(""):_.ToObject(this),r=n.length>>>0;if(!r)return-1;var i=r-1;for(arguments.length>1&&(i=Math.min(i,t(arguments[1]))),i=i>=0?i:r-Math.abs(i);i>=0;i--)if(i in n&&e===n[i])return i;return-1}},C);var R=!{toString:null}.propertyIsEnumerable("toString"),B=function(){}.propertyIsEnumerable("prototype"),I=["toString","toLocaleString","valueOf","hasOwnProperty","isPrototypeOf","propertyIsEnumerable","constructor"],M=I.length;T(Object,{keys:function(t){var e=y(t),n=b(t),r=null!==t&&"object"==typeof t,i=r&&m(t);if(!r&&!e&&!n)throw new TypeError("Object.keys called on a non-object");var o=[],s=B&&e;if(i||n)for(var a=0;a<t.length;++a)o.push(String(a));else for(var u in t)s&&"prototype"===u||!E(t,u)||o.push(String(u));if(R)for(var l=t.constructor,c=l&&l.prototype===t,h=0;M>h;h++){var p=I[h];c&&"constructor"===p||!E(t,p)||o.push(p)}return o}});var F=Object.keys&&function(){return 2===Object.keys(arguments).length}(1,2),U=Object.keys;T(Object,{keys:function(t){return U(b(t)?i.slice.call(t):t)}},!F);var z=-621987552e5,G="-000001",K=Date.prototype.toISOString&&-1===new Date(z).toISOString().indexOf(G);T(Date.prototype,{toISOString:function(){var t,e,n,r,i;if(!isFinite(this))throw new RangeError("Date.prototype.toISOString called on non-finite value.");for(r=this.getUTCFullYear(),i=this.getUTCMonth(),r+=Math.floor(i/12),i=(i%12+12)%12,t=[i+1,this.getUTCDate(),this.getUTCHours(),this.getUTCMinutes(),this.getUTCSeconds()],r=(0>r?"-":r>9999?"+":"")+("00000"+Math.abs(r)).slice(r>=0&&9999>=r?-4:-6),e=t.length;e--;)n=t[e],10>n&&(t[e]="0"+n);return r+"-"+t.slice(0,2).join("-")+"T"+t.slice(2).join(":")+"."+("000"+this.getUTCMilliseconds()).slice(-3)+"Z"}},K);var H=!1;try{H=Date.prototype.toJSON&&null===new Date(0/0).toJSON()&&-1!==new Date(z).toJSON().indexOf(G)&&Date.prototype.toJSON.call({toISOString:function(){return!0}})}catch(J){}H||(Date.prototype.toJSON=function(){var t,e=Object(this),r=n(e);if("number"==typeof r&&!isFinite(r))return null;if(t=e.toISOString,"function"!=typeof t)throw new TypeError("toISOString property is not callable");return t.call(e)});var V=1e15===Date.parse("+033658-09-27T01:46:40.000Z"),$=!isNaN(Date.parse("2012-04-04T24:00:00.500Z"))||!isNaN(Date.parse("2012-11-31T23:59:59.000Z")),Y=isNaN(Date.parse("2000-01-01T00:00:00.000Z"));(!Date.parse||Y||$||!V)&&(Date=function(t){function e(n,r,i,o,s,a,u){var l=arguments.length;if(this instanceof t){var c=1===l&&String(n)===n?new t(e.parse(n)):l>=7?new t(n,r,i,o,s,a,u):l>=6?new t(n,r,i,o,s,a):l>=5?new t(n,r,i,o,s):l>=4?new t(n,r,i,o):l>=3?new t(n,r,i):l>=2?new t(n,r):l>=1?new t(n):new t;return c.constructor=e,c}return t.apply(this,arguments)}function n(t,e){var n=e>1?1:0;return o[e]+Math.floor((t-1969+n)/4)-Math.floor((t-1901+n)/100)+Math.floor((t-1601+n)/400)+365*(t-1970)}function r(e){return Number(new t(1970,0,1,0,0,0,e))}var i=new RegExp("^(\\d{4}|[+-]\\d{6})(?:-(\\d{2})(?:-(\\d{2})(?:T(\\d{2}):(\\d{2})(?::(\\d{2})(?:(\\.\\d{1,}))?)?(Z|(?:([-+])(\\d{2}):(\\d{2})))?)?)?)?$"),o=[0,31,59,90,120,151,181,212,243,273,304,334,365];for(var s in t)e[s]=t[s];return e.now=t.now,e.UTC=t.UTC,e.prototype=t.prototype,e.prototype.constructor=e,e.parse=function(e){var o=i.exec(e);if(o){var s,a=Number(o[1]),u=Number(o[2]||1)-1,l=Number(o[3]||1)-1,c=Number(o[4]||0),h=Number(o[5]||0),p=Number(o[6]||0),f=Math.floor(1e3*Number(o[7]||0)),d=Boolean(o[4]&&!o[8]),y="-"===o[9]?1:-1,g=Number(o[10]||0),v=Number(o[11]||0);return(h>0||p>0||f>0?24:25)>c&&60>h&&60>p&&1e3>f&&u>-1&&12>u&&24>g&&60>v&&l>-1&&l<n(a,u+1)-n(a,u)&&(s=60*(24*(n(a,u)+l)+c+g*y),s=1e3*(60*(s+h+v*y)+p)+f,d&&(s=r(s)),s>=-864e13&&864e13>=s)?s:0/0}return t.parse.apply(this,arguments)},e}(Date)),Date.now||(Date.now=function(){return(new Date).getTime()});var Z=u.toFixed&&("0.000"!==8e-5.toFixed(3)||"1"!==.9.toFixed(0)||"1.25"!==1.255.toFixed(2)||"1000000000000000128"!==0xde0b6b3a7640080.toFixed(0)),q={base:1e7,size:6,data:[0,0,0,0,0,0],multiply:function(t,e){for(var n=-1;++n<q.size;)e+=t*q.data[n],q.data[n]=e%q.base,e=Math.floor(e/q.base)},divide:function(t){for(var e=q.size,n=0;--e>=0;)n+=q.data[e],q.data[e]=Math.floor(n/t),n=n%t*q.base},numToString:function(){for(var t=q.size,e="";--t>=0;)if(""!==e||0===t||0!==q.data[t]){var n=String(q.data[t]);""===e?e=n:e+="0000000".slice(0,7-n.length)+n}return e},pow:function ue(t,e,n){return 0===e?n:e%2===1?ue(t,e-1,n*t):ue(t*t,e/2,n)},log:function(t){for(var e=0;t>=4096;)e+=12,t/=4096;for(;t>=2;)e+=1,t/=2;return e}};T(u,{toFixed:function(t){var e,n,r,i,o,s,a,u;if(e=Number(t),e=e!==e?0:Math.floor(e),0>e||e>20)throw new RangeError("Number.toFixed called with invalid number of decimals");if(n=Number(this),n!==n)return"NaN";if(-1e21>=n||n>=1e21)return String(n);if(r="",0>n&&(r="-",n=-n),i="0",n>1e-21)if(o=q.log(n*q.pow(2,69,1))-69,s=0>o?n*q.pow(2,-o,1):n/q.pow(2,o,1),s*=4503599627370496,o=52-o,o>0){for(q.multiply(0,s),a=e;a>=7;)q.multiply(1e7,0),a-=7;for(q.multiply(q.pow(10,a,1),0),a=o-1;a>=23;)q.divide(1<<23),a-=23;q.divide(1<<a),q.multiply(1,1),q.divide(2),i=q.numToString()}else q.multiply(0,s),q.multiply(1<<-o,0),i=q.numToString()+"0.00000000000000000000".slice(2,2+e);return e>0?(u=i.length,i=e>=u?r+"0.0000000000000000000".slice(0,e-u+2)+i:r+i.slice(0,u-e)+"."+i.slice(u-e)):i=r+i,i}},Z);var W=a.split;2!=="ab".split(/(?:ab)*/).length||4!==".".split(/(.?)(.?)/).length||"t"==="tesst".split(/(s)*/)[1]||4!=="test".split(/(?:)/,-1).length||"".split(/.?/).length||".".split(/()()/).length>1?!function(){var t="undefined"==typeof/()??/.exec("")[1];a.split=function(e,n){var r=this;if("undefined"==typeof e&&0===n)return[];if("[object RegExp]"!==d.call(e))return W.call(this,e,n);var i,o,s,a,u=[],l=(e.ignoreCase?"i":"")+(e.multiline?"m":"")+(e.extended?"x":"")+(e.sticky?"y":""),c=0;for(e=new RegExp(e.source,l+"g"),r+="",t||(i=new RegExp("^"+e.source+"$(?!\\s)",l)),n="undefined"==typeof n?-1>>>0:_.ToUint32(n);(o=e.exec(r))&&(s=o.index+o[0].length,!(s>c&&(u.push(r.slice(c,o.index)),!t&&o.length>1&&o[0].replace(i,function(){for(var t=1;t<arguments.length-2;t++)"undefined"==typeof arguments[t]&&(o[t]=void 0)}),o.length>1&&o.index<r.length&&h.apply(u,o.slice(1)),a=o[0].length,c=s,u.length>=n)));)e.lastIndex===o.index&&e.lastIndex++;return c===r.length?(a||!e.test(""))&&u.push(""):u.push(r.slice(c)),u.length>n?u.slice(0,n):u}}():"0".split(void 0,0).length&&(a.split=function(t,e){return"undefined"==typeof t&&0===e?[]:W.call(this,t,e)});var X=a.replace,Q=function(){var t=[];return"x".replace(/x(.)?/g,function(e,n){t.push(n)}),1===t.length&&"undefined"==typeof t[0]}();Q||(a.replace=function(t,e){var n=y(e),r=g(t)&&/\)[*?]/.test(t.source);if(n&&r){var i=function(n){var r=arguments.length,i=t.lastIndex;t.lastIndex=0;var o=t.exec(n)||[];return t.lastIndex=i,o.push(arguments[r-2],arguments[r-1]),e.apply(this,o)};return X.call(this,t,i)}return X.call(this,t,e)});var te=a.substr,ee="".substr&&"b"!=="0b".substr(-1);T(a,{substr:function(t,e){return te.call(this,0>t&&(t=this.length+t)<0?0:t,e)}},ee);var ne="	\n\f\r   ᠎             　\u2028\u2029﻿",re="​",ie="["+ne+"]",oe=new RegExp("^"+ie+ie+"*"),se=new RegExp(ie+ie+"*$"),ae=a.trim&&(ne.trim()||!re.trim());T(a,{trim:function(){if("undefined"==typeof this||null===this)throw new TypeError("can't convert "+this+" to object");return String(this).replace(oe,"").replace(se,"")}},ae),(8!==parseInt(ne+"08")||22!==parseInt(ne+"0x16"))&&(parseInt=function(t){var e=/^0[xX]/;return function(n,r){return n=String(n).trim(),Number(r)||(r=e.test(n)?16:10),t(n,r)}}(parseInt))})},{}],8:[function(e,n,r){function i(t){for(var e=[],n=t[1];n<=t[1]+5;n++)for(var r=t[0];r<=t[0]+5;r++)e.push([r,n]);return e}e("es5-shim"),r.Teams=["bl","br","tr","tl"],r.Messages={},r.Events={GAME_START:"game.start",GAME_WON:"game.won",PLAYER_JOIN:"player.join",TURN_BEGIN:"player.turn.begin",TURN_END:"player.turn.end",DICE_ROLL:"player.turn.rollDice",REPEAT_TURN:"player.turn.repeat",PLAYER_ACTIONS:"player.actions",TOKEN_BORN:"token.born",TOKEN_MOVE_TO:"token.moveTo",TOKEN_KILLED:"token.killed",TOKEN_BLOCKADE:"token.blockade",TOKEN_BLOCKED:"token.blocked",TOKEN_ASCEND:"token.ascend",OVER_SHOOT:"token.overShotAscension",ERROR:"error"},r.ActionTypes={BORN:"born",MOVE_BY:"moveBy",KILL_MOVE:"killMove",CREATE_BLOCKADE:"createBlockade",ASCEND:"ascend"};for(var o=r.Grid={path:[[7,1],[8,1],[9,1],[9,2],[9,3],[9,4],[9,5],[9,6],[10,7],[11,7],[12,7],[13,7],[14,7],[15,7],[15,8],[15,9],[14,9],[13,9],[12,9],[11,9],[10,9],[9,10],[9,11],[9,12],[9,13],[9,14],[9,15],[8,15],[7,15],[7,14],[7,13],[7,12],[7,11],[7,10],[6,9],[5,9],[4,9],[3,9],[2,9],[1,9],[1,8],[1,7],[2,7],[3,7],[4,7],[5,7],[6,7],[7,6],[7,5],[7,4],[7,3],[7,2]],center:[[7,7],[8,7],[9,7],[7,8],[8,8],[9,8],[7,9],[8,9],[9,9]],switchPoint:{bl:[8,15],br:[15,8],tr:[8,1],tl:[1,8]},ascendingPoint:{bl:[8,9],br:[9,8],tr:[8,7],tl:[7,8]},heaven:{bl:[[8,14],[8,13],[8,12],[8,11],[8,10]],br:[[14,8],[13,8],[12,8],[11,8],[10,8]],tl:[[2,8],[3,8],[4,8],[5,8],[6,8]],tr:[[8,2],[8,3],[8,4],[8,5],[8,6]]},startPoint:{bl:[7,14],br:[14,9],tr:[9,2],tl:[2,7]},teamAreas:{tl:i([1,1]),tr:i([10,1]),bl:i([1,10]),br:i([10,10])},allCordsForTeam:{},allCordsForHeaven:{}},s=0;3>=s;s++)t=r.Teams[s],r.Grid.allCordsForTeam[t]=[o.startPoint[t]].concat(o.heaven[t]).concat(o.teamAreas[t]),r.Grid.allCordsForHeaven[t]=[o.switchPoint[t]].concat(o.heaven[t]).concat([o.ascendingPoint[t]])},{"es5-shim":7}],9:[function(t,e,n){function r(t){this.options=t||{},this.rolled=this.options.rolled||!1}n.Dice=r,r.prototype.roll=function(){return this.rolled===!1&&(this.rolled=Math.floor(6*Math.random())+1),this.rolled}},{}],10:[function(t,e,n){function r(t){this.options=t||{},this.players=[],this.started=!1,this.currentPlayersTurn="",this.won=!1,i.call(this),this._attachEvents(this.options.events),this.options.state&&this._setState(this.options.state)}var i=t("events").EventEmitter,o=t("./player").Player,s=t("./constants"),a=s.Events,u=t("util").inherits;u(r,i),n.Game=r,r.prototype.state=function(){return this._attributes()},r.prototype._setState=function(t){var e=this;this.started=t.started,this.won=t.won,this.currentPlayersTurn=t.currentPlayersTurn,this.players=t.players.map(function(t){return o.build(t,e)}),this.resumeGame()},r.prototype._attributes=function(){return{won:this.won,started:this.started,currentPlayersTurn:this.currentPlayersTurn,players:this.players.map(function(t){return t.attributes()})}},r.prototype._attachEvents=function(t){var e;if(void 0!==typeof t)for(e in t)this.on(e,t[e])},r.prototype.addPlayer=function(t){this.players.length<=3&&(t.joinGame(this),t.setTeam(s.Teams[this.players.length]),this.players.push(t),this.emit(a.PLAYER_JOIN,{player:t}))},r.prototype.joinGame=function(){},r.prototype.start=function(){var t=0;return this.started||(this.players.forEach(function(e){e.getReady()&&t++}),this.players.length?this.players.length!=t?this.emit(a.ERROR,{message:"Not all players are ready"}):(this.started=!0,this.emit(a.GAME_START),this._loop()):this.emit(a.ERROR,{message:"Not enough players to start game"})),this},r.prototype._loop=function(){var t=this.playerTokensAscended();if(t)this.emit(a.GAME_WON,{player:t});else{var e=this.nextPlayersTurn();this.invokeTurn(e)}},r.prototype.continueGame=function(){this._loop()},r.prototype.resumeGame=function(){var t=this;this.players.some(function(e){return e.team===t.currentPlayersTurn?(e.beginTurn(),e):void 0})},r.prototype.invokeTurn=function(t){return this.currentPlayersTurn=t.team,t.beginTurn()},r.prototype.nextPlayersTurn=function(){var t;if(this.currentPlayersTurn){var e=this.players.map(function(t){return t.team}).indexOf(this.currentPlayersTurn);t=e!==this.players.length-1?this.players[e+1]:this.players[0]}else t=this.players[0];return t},r.prototype.findTokenAt=function(t,e){var n=(this.players,!1);return this.players.some(function(r){return e&&r.team===e.team?!1:n=r.tokenLocatedAt(t)}),n},r.prototype.playerTokensAscended=function(){var t,e=this.players;for(t=0;t<e.length;t++)if(player=e[t],player.allTokensAscended())return player;return!1},r.prototype.anyBlockadeIn=function(t,e){var n,r,i=this.players;for(r=0;r<i.length;r++)if(player=i[r],(!e||player.team!==e.team)&&(n=player.hasBlockadeAt(t)))return n;return!1}},{"./constants":8,"./player":11,events:2,util:6}],11:[function(t,e,n){function r(t){this.metadata=t,this._ready=!1,this.game=!1,this.team="",this._tokens=[],this.blockades={}}var o=t("./constants"),s=t("./token").Token,a=o.Events;n.Player=r,r.build=function(t,e){var n=new r;return n.metadata=t.metadata,n._ready=t.ready,n.team=t.team,n.game=e,t.tokens.forEach(function(t){n._tokens.push(s.build(t,n))}),n},r.prototype.attributes=function(){return{metadata:this.metadata,ready:this._ready,team:this.team,tokens:this._tokens.map(function(t){return t.attributes()})}},r.prototype.setTeam=function(t){this.team=t,this.createTokensForTeam()},r.prototype.createTokensForTeam=function(){var t;for(t=0;3>=t;t++)this._tokens.push(new s({player:this,id:t}))},r.prototype.readyUp=function(){this.ready=!0},r.prototype.getReady=function(){return this.ready},r.prototype.getActionsByDice=function(t){var e=this,n=t.rolled,r=this.generatePossibleActions(n);r.length?this.game.emit(a.PLAYER_ACTIONS,{player:this,actions:r,callback:function(t){e.executeAction(t)}}):this.endTurn()},r.prototype.beginTurn=function(){var t=this;this.game.emit(a.TURN_BEGIN,{player:this}),this.game.emit(a.DICE_ROLL,{player:this,callback:function(e){t.getActionsByDice(e)}})},r.prototype.generatePossibleActions=function(t){var e=[];return this._tokens.forEach(function(n){var r=n.getPossibleAction(t);r&&e.push(r)}),e},r.prototype.executeAction=function(t){t.token.executeAction(t),6===t.rolled?(this.game.emit(a.REPEAT_TURN,{player:this}),this.beginTurn()):this.endTurn()},r.prototype.endTurn=function(){this.game.emit(a.TURN_END,{player:this}),this.game.continueGame()},r.prototype.joinGame=function(t){return this.game=t,!0},r.prototype.registerBlockade=function(t,e){if(e.length>=2)for(this.blockades[t]={tokens:e},i=0;i<e.length;i++)e[i].inBlockade=!0;
-else e[0]&&(e[0].inBlockade=!1),delete this.blockades[t]},r.prototype.allTokensAscended=function(){var t,e=0;for(i=0;i<this._tokens.length;i++)t=this._tokens[i],t.ascended&&e++;return e===this._tokens.length},r.prototype.allyTokensAt=function(t,e){var n=this._tokens.filter(function(n){return e&&n.id===e.id?void 0:n.atCords(t)});return n.length?n:!1},r.prototype.hasBlockadeAt=function(t){var e,n;for(e=0;e<t.length;e++)if(n=t[e],this.blockades[n])return this.blockades[n];return!1},r.prototype.tokenLocatedAt=function(t,e){var n=!1;return this._tokens.some(function(r){return e&&r.id===e.id?void 0:(r.atCords(t)&&(n=r),n)}),n},r.prototype.blockadeAhead=function(t){return this.game.anyBlockadeIn(t,this)},r.prototype.enemyTokenAt=function(t){return this.game.findTokenAt(t,this)}},{"./constants":8,"./token":12}],12:[function(t,e,n){function r(t){this.player=t.player,this.id=t.id,this.game=this.player.game,this.team=this.player.team,this.active=!1,this.isOnHeavenPath=!1,this.inBlockade=!1,this.cords={x:0,y:0},this.ascended=!1}var i=t("./constants"),o=i.Grid,s=i.ActionTypes,a=i.Events,u=t("./utils");n.Token=r,r.build=function(t,e){var n=new r({player:e,id:t.id});return t.active&&(n.born(),n.moveTo(t.cords)),n},r.prototype.attributes=function(){return{id:this.id,team:this.team,active:this.active,isOnHeavenPath:this.isOnHeavenPath,inBlockade:this.inBlockade,cords:this.cords,ascended:this.ascended}},r.prototype.atCords=function(t){return[this.cords.x,this.cords.y].toString()===t.toString()},r.prototype.getPossibleAction=function(t){var e,n,r,i,o,a={};return e=this._forecastCords(t),r=this._blockadeAhead(t),i=this._willOverShootAscendingPoint(t),r||i||this.ascended||(a.forecast=e,a.token=this,a.rolled=t,this.active?(n=this.player.enemyTokenAt(e),allyTokens=this.player.allyTokensAt(e,this),o=this._willAscend(e),o?a.type=s.ASCEND:n?(a.type=s.KILL_MOVE,a.enemyToken=n):allyTokens?(a.type=s.CREATE_BLOCKADE,a.allyTokens=allyTokens):a.type=s.MOVE_BY):6===t&&(a.type=s.BORN),!a.type)?!1:a},r.prototype.executeAction=function(t){switch(t.type){case s.BORN:this.born();break;case s.MOVE_BY:case s.CREATE_BLOCKADE:case s.KILL_MOVE:case s.ASCEND:this.moveTo({x:t.forecast[0],y:t.forecast[1]})}},r.prototype.born=function(){var t=o.startPoint[this.team];this.active=!0,this.game.emit(a.TOKEN_BORN,{token:this}),this.moveTo({x:t[0],y:t[1]})},r.prototype._forecastCords=function(t){var e,n,r,i=[this.cords.x,this.cords.y],s=this._findAllCordsAhead(t),a=o.path;return this.active?(e=u.findCordsInArray(o.switchPoint[this.team],s),this.isOnHeavenPath&&(a=o.allCordsForHeaven[this.team]),-1!==e&&e!==s.length-1?r=this._switchToHeavenPath(e+1,s.length):(n=u.findCordsInArray(i,a),n+=t,n>a.length-1&&(n-=a.length),r=a[n])):6===t&&(r=o.startPoint[this.team]),r},r.prototype._findAllCordsAhead=function(t){var e,n,r=[this.cords.x,this.cords.y],i=[];return this.active?(e=u.findCordsInArray(r,o.path),n=e+t,e+=1,n+=1,i=o.path.slice(e,n),n>o.path.length-1&&(n-=o.path.length,i=i.concat(o.path.slice(0,n)))):6===t&&(i=[o.startPoint[this.team]]),i},r.prototype._blockadeAhead=function(t){var e=this.player.blockadeAhead(this._findAllCordsAhead(t));return e&&this.game.emit(a.TOKEN_BLOCKED,{token:this,blockade:e}),e},r.prototype._willAscend=function(t){return t===o.ascendingPoint[this.team]},r.prototype._willOverShootAscendingPoint=function(t){var e=o.allCordsForHeaven[this.team],n=[this.cords.x,this.cords.y],r=u.findCordsInArray(n,e);r+=1;var i,s=e.length-r;return this.isOnHeavenPath&&t>s?(i=t-s,this.game.emit(a.OVER_SHOOT,{token:this,by:i}),!0):!1},r.prototype._createBlockade=function(t,e){e.push(this),this.player.registerBlockade(t,e),this.game.emit(a.TOKEN_BLOCKADE,{tokens:e,cords:t})},r.prototype._switchToHeavenPath=function(t,e){var n,r=o.heaven[this.team];return n=r[e-1-t]},r.prototype.moveBy=function(t){var e=this._forecastCords(t);this.moveTo({x:e[0],y:e[1]})},r.prototype.moveTo=function(t){var e=[t.x,t.y],n=this.player.enemyTokenAt(e),r=this.player.allyTokensAt(e,this),i=this._onHeavenPath(e),s=o.ascendingPoint[this.team];this.inBlockade&&this._leaveBlockade(),n&&this._kill(n),r&&this._createBlockade(e,r),i&&(this.isOnHeavenPath=!0),e.toString()===s.toString()&&this._ascend(),this.cords.x=t.x,this.cords.y=t.y,this.game.emit(a.TOKEN_MOVE_TO,{token:this,cords:this.cords})},r.prototype._leaveBlockade=function(){var t,e=[this.cords.x,this.cords.y];this.inBlockade=!1,t=this.player.allyTokensAt(e,this),this.player.registerBlockade(e,t)},r.prototype._ascend=function(){this.ascended=!0,this.game.emit(a.TOKEN_ASCEND,{token:this})},r.prototype._onHeavenPath=function(t){var e=o.allCordsForHeaven[this.team],n=u.findCordsInArray(t,e);return-1!==n},r.prototype.killedBy=function(){this.active=!1,this.cords={x:0,y:0}},r.prototype._kill=function(t){t.killedBy(this),this.game.emit(a.TOKEN_KILLED,{killed:t,by:this})}},{"./constants":8,"./utils":13}],13:[function(t,e,n){var r=t("./constants"),i=r.Grid,o=r.Teams,s=n.findCordsInArray=function(t,e){return e.map(function(t){return t.toString()}).indexOf(t.toString())};n.cordBelongsTo=function(t){for(var e=0;3>=e;e++)if(-1!==s(t,i.allCordsForTeam[o[e]]))return o[e];return!1}},{"./constants":8}]},{},[1])(1)});
+!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Ludo=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+exports.Game = require('./src/game').Game;
+exports.Player = require('./src/player').Player;
+exports.Token = require('./src/token').Token;
+exports.Dice = require('./src/dice').Dice;
+exports.utils = require('./src/utils');
+
+},{"./src/dice":9,"./src/game":10,"./src/player":11,"./src/token":12,"./src/utils":13}],2:[function(require,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+function EventEmitter() {
+  this._events = this._events || {};
+  this._maxListeners = this._maxListeners || undefined;
+}
+module.exports = EventEmitter;
+
+// Backwards-compat with node 0.10.x
+EventEmitter.EventEmitter = EventEmitter;
+
+EventEmitter.prototype._events = undefined;
+EventEmitter.prototype._maxListeners = undefined;
+
+// By default EventEmitters will print a warning if more than 10 listeners are
+// added to it. This is a useful default which helps finding memory leaks.
+EventEmitter.defaultMaxListeners = 10;
+
+// Obviously not all Emitters should be limited to 10. This function allows
+// that to be increased. Set to zero for unlimited.
+EventEmitter.prototype.setMaxListeners = function(n) {
+  if (!isNumber(n) || n < 0 || isNaN(n))
+    throw TypeError('n must be a positive number');
+  this._maxListeners = n;
+  return this;
+};
+
+EventEmitter.prototype.emit = function(type) {
+  var er, handler, len, args, i, listeners;
+
+  if (!this._events)
+    this._events = {};
+
+  // If there is no 'error' event listener then throw.
+  if (type === 'error') {
+    if (!this._events.error ||
+        (isObject(this._events.error) && !this._events.error.length)) {
+      er = arguments[1];
+      if (er instanceof Error) {
+        throw er; // Unhandled 'error' event
+      }
+      throw TypeError('Uncaught, unspecified "error" event.');
+    }
+  }
+
+  handler = this._events[type];
+
+  if (isUndefined(handler))
+    return false;
+
+  if (isFunction(handler)) {
+    switch (arguments.length) {
+      // fast cases
+      case 1:
+        handler.call(this);
+        break;
+      case 2:
+        handler.call(this, arguments[1]);
+        break;
+      case 3:
+        handler.call(this, arguments[1], arguments[2]);
+        break;
+      // slower
+      default:
+        len = arguments.length;
+        args = new Array(len - 1);
+        for (i = 1; i < len; i++)
+          args[i - 1] = arguments[i];
+        handler.apply(this, args);
+    }
+  } else if (isObject(handler)) {
+    len = arguments.length;
+    args = new Array(len - 1);
+    for (i = 1; i < len; i++)
+      args[i - 1] = arguments[i];
+
+    listeners = handler.slice();
+    len = listeners.length;
+    for (i = 0; i < len; i++)
+      listeners[i].apply(this, args);
+  }
+
+  return true;
+};
+
+EventEmitter.prototype.addListener = function(type, listener) {
+  var m;
+
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  if (!this._events)
+    this._events = {};
+
+  // To avoid recursion in the case that type === "newListener"! Before
+  // adding it to the listeners, first emit "newListener".
+  if (this._events.newListener)
+    this.emit('newListener', type,
+              isFunction(listener.listener) ?
+              listener.listener : listener);
+
+  if (!this._events[type])
+    // Optimize the case of one listener. Don't need the extra array object.
+    this._events[type] = listener;
+  else if (isObject(this._events[type]))
+    // If we've already got an array, just append.
+    this._events[type].push(listener);
+  else
+    // Adding the second element, need to change to array.
+    this._events[type] = [this._events[type], listener];
+
+  // Check for listener leak
+  if (isObject(this._events[type]) && !this._events[type].warned) {
+    var m;
+    if (!isUndefined(this._maxListeners)) {
+      m = this._maxListeners;
+    } else {
+      m = EventEmitter.defaultMaxListeners;
+    }
+
+    if (m && m > 0 && this._events[type].length > m) {
+      this._events[type].warned = true;
+      console.error('(node) warning: possible EventEmitter memory ' +
+                    'leak detected. %d listeners added. ' +
+                    'Use emitter.setMaxListeners() to increase limit.',
+                    this._events[type].length);
+      if (typeof console.trace === 'function') {
+        // not supported in IE 10
+        console.trace();
+      }
+    }
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+EventEmitter.prototype.once = function(type, listener) {
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  var fired = false;
+
+  function g() {
+    this.removeListener(type, g);
+
+    if (!fired) {
+      fired = true;
+      listener.apply(this, arguments);
+    }
+  }
+
+  g.listener = listener;
+  this.on(type, g);
+
+  return this;
+};
+
+// emits a 'removeListener' event iff the listener was removed
+EventEmitter.prototype.removeListener = function(type, listener) {
+  var list, position, length, i;
+
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  if (!this._events || !this._events[type])
+    return this;
+
+  list = this._events[type];
+  length = list.length;
+  position = -1;
+
+  if (list === listener ||
+      (isFunction(list.listener) && list.listener === listener)) {
+    delete this._events[type];
+    if (this._events.removeListener)
+      this.emit('removeListener', type, listener);
+
+  } else if (isObject(list)) {
+    for (i = length; i-- > 0;) {
+      if (list[i] === listener ||
+          (list[i].listener && list[i].listener === listener)) {
+        position = i;
+        break;
+      }
+    }
+
+    if (position < 0)
+      return this;
+
+    if (list.length === 1) {
+      list.length = 0;
+      delete this._events[type];
+    } else {
+      list.splice(position, 1);
+    }
+
+    if (this._events.removeListener)
+      this.emit('removeListener', type, listener);
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.removeAllListeners = function(type) {
+  var key, listeners;
+
+  if (!this._events)
+    return this;
+
+  // not listening for removeListener, no need to emit
+  if (!this._events.removeListener) {
+    if (arguments.length === 0)
+      this._events = {};
+    else if (this._events[type])
+      delete this._events[type];
+    return this;
+  }
+
+  // emit removeListener for all listeners on all events
+  if (arguments.length === 0) {
+    for (key in this._events) {
+      if (key === 'removeListener') continue;
+      this.removeAllListeners(key);
+    }
+    this.removeAllListeners('removeListener');
+    this._events = {};
+    return this;
+  }
+
+  listeners = this._events[type];
+
+  if (isFunction(listeners)) {
+    this.removeListener(type, listeners);
+  } else {
+    // LIFO order
+    while (listeners.length)
+      this.removeListener(type, listeners[listeners.length - 1]);
+  }
+  delete this._events[type];
+
+  return this;
+};
+
+EventEmitter.prototype.listeners = function(type) {
+  var ret;
+  if (!this._events || !this._events[type])
+    ret = [];
+  else if (isFunction(this._events[type]))
+    ret = [this._events[type]];
+  else
+    ret = this._events[type].slice();
+  return ret;
+};
+
+EventEmitter.listenerCount = function(emitter, type) {
+  var ret;
+  if (!emitter._events || !emitter._events[type])
+    ret = 0;
+  else if (isFunction(emitter._events[type]))
+    ret = 1;
+  else
+    ret = emitter._events[type].length;
+  return ret;
+};
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+
+},{}],3:[function(require,module,exports){
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
+}
+
+},{}],4:[function(require,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+
+process.nextTick = (function () {
+    var canSetImmediate = typeof window !== 'undefined'
+    && window.setImmediate;
+    var canMutationObserver = typeof window !== 'undefined'
+    && window.MutationObserver;
+    var canPost = typeof window !== 'undefined'
+    && window.postMessage && window.addEventListener
+    ;
+
+    if (canSetImmediate) {
+        return function (f) { return window.setImmediate(f) };
+    }
+
+    var queue = [];
+
+    if (canMutationObserver) {
+        var hiddenDiv = document.createElement("div");
+        var observer = new MutationObserver(function () {
+            var queueList = queue.slice();
+            queue.length = 0;
+            queueList.forEach(function (fn) {
+                fn();
+            });
+        });
+
+        observer.observe(hiddenDiv, { attributes: true });
+
+        return function nextTick(fn) {
+            if (!queue.length) {
+                hiddenDiv.setAttribute('yes', 'no');
+            }
+            queue.push(fn);
+        };
+    }
+
+    if (canPost) {
+        window.addEventListener('message', function (ev) {
+            var source = ev.source;
+            if ((source === window || source === null) && ev.data === 'process-tick') {
+                ev.stopPropagation();
+                if (queue.length > 0) {
+                    var fn = queue.shift();
+                    fn();
+                }
+            }
+        }, true);
+
+        return function nextTick(fn) {
+            queue.push(fn);
+            window.postMessage('process-tick', '*');
+        };
+    }
+
+    return function nextTick(fn) {
+        setTimeout(fn, 0);
+    };
+})();
+
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+// TODO(shtylman)
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+
+},{}],5:[function(require,module,exports){
+module.exports = function isBuffer(arg) {
+  return arg && typeof arg === 'object'
+    && typeof arg.copy === 'function'
+    && typeof arg.fill === 'function'
+    && typeof arg.readUInt8 === 'function';
+}
+},{}],6:[function(require,module,exports){
+(function (process,global){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var formatRegExp = /%[sdj%]/g;
+exports.format = function(f) {
+  if (!isString(f)) {
+    var objects = [];
+    for (var i = 0; i < arguments.length; i++) {
+      objects.push(inspect(arguments[i]));
+    }
+    return objects.join(' ');
+  }
+
+  var i = 1;
+  var args = arguments;
+  var len = args.length;
+  var str = String(f).replace(formatRegExp, function(x) {
+    if (x === '%%') return '%';
+    if (i >= len) return x;
+    switch (x) {
+      case '%s': return String(args[i++]);
+      case '%d': return Number(args[i++]);
+      case '%j':
+        try {
+          return JSON.stringify(args[i++]);
+        } catch (_) {
+          return '[Circular]';
+        }
+      default:
+        return x;
+    }
+  });
+  for (var x = args[i]; i < len; x = args[++i]) {
+    if (isNull(x) || !isObject(x)) {
+      str += ' ' + x;
+    } else {
+      str += ' ' + inspect(x);
+    }
+  }
+  return str;
+};
+
+
+// Mark that a method should not be used.
+// Returns a modified function which warns once by default.
+// If --no-deprecation is set, then it is a no-op.
+exports.deprecate = function(fn, msg) {
+  // Allow for deprecating things in the process of starting up.
+  if (isUndefined(global.process)) {
+    return function() {
+      return exports.deprecate(fn, msg).apply(this, arguments);
+    };
+  }
+
+  if (process.noDeprecation === true) {
+    return fn;
+  }
+
+  var warned = false;
+  function deprecated() {
+    if (!warned) {
+      if (process.throwDeprecation) {
+        throw new Error(msg);
+      } else if (process.traceDeprecation) {
+        console.trace(msg);
+      } else {
+        console.error(msg);
+      }
+      warned = true;
+    }
+    return fn.apply(this, arguments);
+  }
+
+  return deprecated;
+};
+
+
+var debugs = {};
+var debugEnviron;
+exports.debuglog = function(set) {
+  if (isUndefined(debugEnviron))
+    debugEnviron = process.env.NODE_DEBUG || '';
+  set = set.toUpperCase();
+  if (!debugs[set]) {
+    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
+      var pid = process.pid;
+      debugs[set] = function() {
+        var msg = exports.format.apply(exports, arguments);
+        console.error('%s %d: %s', set, pid, msg);
+      };
+    } else {
+      debugs[set] = function() {};
+    }
+  }
+  return debugs[set];
+};
+
+
+/**
+ * Echos the value of a value. Trys to print the value out
+ * in the best way possible given the different types.
+ *
+ * @param {Object} obj The object to print out.
+ * @param {Object} opts Optional options object that alters the output.
+ */
+/* legacy: obj, showHidden, depth, colors*/
+function inspect(obj, opts) {
+  // default options
+  var ctx = {
+    seen: [],
+    stylize: stylizeNoColor
+  };
+  // legacy...
+  if (arguments.length >= 3) ctx.depth = arguments[2];
+  if (arguments.length >= 4) ctx.colors = arguments[3];
+  if (isBoolean(opts)) {
+    // legacy...
+    ctx.showHidden = opts;
+  } else if (opts) {
+    // got an "options" object
+    exports._extend(ctx, opts);
+  }
+  // set default options
+  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
+  if (isUndefined(ctx.depth)) ctx.depth = 2;
+  if (isUndefined(ctx.colors)) ctx.colors = false;
+  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
+  if (ctx.colors) ctx.stylize = stylizeWithColor;
+  return formatValue(ctx, obj, ctx.depth);
+}
+exports.inspect = inspect;
+
+
+// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+inspect.colors = {
+  'bold' : [1, 22],
+  'italic' : [3, 23],
+  'underline' : [4, 24],
+  'inverse' : [7, 27],
+  'white' : [37, 39],
+  'grey' : [90, 39],
+  'black' : [30, 39],
+  'blue' : [34, 39],
+  'cyan' : [36, 39],
+  'green' : [32, 39],
+  'magenta' : [35, 39],
+  'red' : [31, 39],
+  'yellow' : [33, 39]
+};
+
+// Don't use 'blue' not visible on cmd.exe
+inspect.styles = {
+  'special': 'cyan',
+  'number': 'yellow',
+  'boolean': 'yellow',
+  'undefined': 'grey',
+  'null': 'bold',
+  'string': 'green',
+  'date': 'magenta',
+  // "name": intentionally not styling
+  'regexp': 'red'
+};
+
+
+function stylizeWithColor(str, styleType) {
+  var style = inspect.styles[styleType];
+
+  if (style) {
+    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
+           '\u001b[' + inspect.colors[style][1] + 'm';
+  } else {
+    return str;
+  }
+}
+
+
+function stylizeNoColor(str, styleType) {
+  return str;
+}
+
+
+function arrayToHash(array) {
+  var hash = {};
+
+  array.forEach(function(val, idx) {
+    hash[val] = true;
+  });
+
+  return hash;
+}
+
+
+function formatValue(ctx, value, recurseTimes) {
+  // Provide a hook for user-specified inspect functions.
+  // Check that value is an object with an inspect function on it
+  if (ctx.customInspect &&
+      value &&
+      isFunction(value.inspect) &&
+      // Filter out the util module, it's inspect function is special
+      value.inspect !== exports.inspect &&
+      // Also filter out any prototype objects using the circular check.
+      !(value.constructor && value.constructor.prototype === value)) {
+    var ret = value.inspect(recurseTimes, ctx);
+    if (!isString(ret)) {
+      ret = formatValue(ctx, ret, recurseTimes);
+    }
+    return ret;
+  }
+
+  // Primitive types cannot have properties
+  var primitive = formatPrimitive(ctx, value);
+  if (primitive) {
+    return primitive;
+  }
+
+  // Look up the keys of the object.
+  var keys = Object.keys(value);
+  var visibleKeys = arrayToHash(keys);
+
+  if (ctx.showHidden) {
+    keys = Object.getOwnPropertyNames(value);
+  }
+
+  // IE doesn't make error fields non-enumerable
+  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
+  if (isError(value)
+      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
+    return formatError(value);
+  }
+
+  // Some type of object without properties can be shortcutted.
+  if (keys.length === 0) {
+    if (isFunction(value)) {
+      var name = value.name ? ': ' + value.name : '';
+      return ctx.stylize('[Function' + name + ']', 'special');
+    }
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    }
+    if (isDate(value)) {
+      return ctx.stylize(Date.prototype.toString.call(value), 'date');
+    }
+    if (isError(value)) {
+      return formatError(value);
+    }
+  }
+
+  var base = '', array = false, braces = ['{', '}'];
+
+  // Make Array say that they are Array
+  if (isArray(value)) {
+    array = true;
+    braces = ['[', ']'];
+  }
+
+  // Make functions say that they are functions
+  if (isFunction(value)) {
+    var n = value.name ? ': ' + value.name : '';
+    base = ' [Function' + n + ']';
+  }
+
+  // Make RegExps say that they are RegExps
+  if (isRegExp(value)) {
+    base = ' ' + RegExp.prototype.toString.call(value);
+  }
+
+  // Make dates with properties first say the date
+  if (isDate(value)) {
+    base = ' ' + Date.prototype.toUTCString.call(value);
+  }
+
+  // Make error with message first say the error
+  if (isError(value)) {
+    base = ' ' + formatError(value);
+  }
+
+  if (keys.length === 0 && (!array || value.length == 0)) {
+    return braces[0] + base + braces[1];
+  }
+
+  if (recurseTimes < 0) {
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    } else {
+      return ctx.stylize('[Object]', 'special');
+    }
+  }
+
+  ctx.seen.push(value);
+
+  var output;
+  if (array) {
+    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
+  } else {
+    output = keys.map(function(key) {
+      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
+    });
+  }
+
+  ctx.seen.pop();
+
+  return reduceToSingleString(output, base, braces);
+}
+
+
+function formatPrimitive(ctx, value) {
+  if (isUndefined(value))
+    return ctx.stylize('undefined', 'undefined');
+  if (isString(value)) {
+    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
+                                             .replace(/'/g, "\\'")
+                                             .replace(/\\"/g, '"') + '\'';
+    return ctx.stylize(simple, 'string');
+  }
+  if (isNumber(value))
+    return ctx.stylize('' + value, 'number');
+  if (isBoolean(value))
+    return ctx.stylize('' + value, 'boolean');
+  // For some reason typeof null is "object", so special case here.
+  if (isNull(value))
+    return ctx.stylize('null', 'null');
+}
+
+
+function formatError(value) {
+  return '[' + Error.prototype.toString.call(value) + ']';
+}
+
+
+function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
+  var output = [];
+  for (var i = 0, l = value.length; i < l; ++i) {
+    if (hasOwnProperty(value, String(i))) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          String(i), true));
+    } else {
+      output.push('');
+    }
+  }
+  keys.forEach(function(key) {
+    if (!key.match(/^\d+$/)) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          key, true));
+    }
+  });
+  return output;
+}
+
+
+function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
+  var name, str, desc;
+  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
+  if (desc.get) {
+    if (desc.set) {
+      str = ctx.stylize('[Getter/Setter]', 'special');
+    } else {
+      str = ctx.stylize('[Getter]', 'special');
+    }
+  } else {
+    if (desc.set) {
+      str = ctx.stylize('[Setter]', 'special');
+    }
+  }
+  if (!hasOwnProperty(visibleKeys, key)) {
+    name = '[' + key + ']';
+  }
+  if (!str) {
+    if (ctx.seen.indexOf(desc.value) < 0) {
+      if (isNull(recurseTimes)) {
+        str = formatValue(ctx, desc.value, null);
+      } else {
+        str = formatValue(ctx, desc.value, recurseTimes - 1);
+      }
+      if (str.indexOf('\n') > -1) {
+        if (array) {
+          str = str.split('\n').map(function(line) {
+            return '  ' + line;
+          }).join('\n').substr(2);
+        } else {
+          str = '\n' + str.split('\n').map(function(line) {
+            return '   ' + line;
+          }).join('\n');
+        }
+      }
+    } else {
+      str = ctx.stylize('[Circular]', 'special');
+    }
+  }
+  if (isUndefined(name)) {
+    if (array && key.match(/^\d+$/)) {
+      return str;
+    }
+    name = JSON.stringify('' + key);
+    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
+      name = name.substr(1, name.length - 2);
+      name = ctx.stylize(name, 'name');
+    } else {
+      name = name.replace(/'/g, "\\'")
+                 .replace(/\\"/g, '"')
+                 .replace(/(^"|"$)/g, "'");
+      name = ctx.stylize(name, 'string');
+    }
+  }
+
+  return name + ': ' + str;
+}
+
+
+function reduceToSingleString(output, base, braces) {
+  var numLinesEst = 0;
+  var length = output.reduce(function(prev, cur) {
+    numLinesEst++;
+    if (cur.indexOf('\n') >= 0) numLinesEst++;
+    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
+  }, 0);
+
+  if (length > 60) {
+    return braces[0] +
+           (base === '' ? '' : base + '\n ') +
+           ' ' +
+           output.join(',\n  ') +
+           ' ' +
+           braces[1];
+  }
+
+  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
+}
+
+
+// NOTE: These type checking functions intentionally don't use `instanceof`
+// because it is fragile and can be easily faked with `Object.create()`.
+function isArray(ar) {
+  return Array.isArray(ar);
+}
+exports.isArray = isArray;
+
+function isBoolean(arg) {
+  return typeof arg === 'boolean';
+}
+exports.isBoolean = isBoolean;
+
+function isNull(arg) {
+  return arg === null;
+}
+exports.isNull = isNull;
+
+function isNullOrUndefined(arg) {
+  return arg == null;
+}
+exports.isNullOrUndefined = isNullOrUndefined;
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+exports.isNumber = isNumber;
+
+function isString(arg) {
+  return typeof arg === 'string';
+}
+exports.isString = isString;
+
+function isSymbol(arg) {
+  return typeof arg === 'symbol';
+}
+exports.isSymbol = isSymbol;
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+exports.isUndefined = isUndefined;
+
+function isRegExp(re) {
+  return isObject(re) && objectToString(re) === '[object RegExp]';
+}
+exports.isRegExp = isRegExp;
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+exports.isObject = isObject;
+
+function isDate(d) {
+  return isObject(d) && objectToString(d) === '[object Date]';
+}
+exports.isDate = isDate;
+
+function isError(e) {
+  return isObject(e) &&
+      (objectToString(e) === '[object Error]' || e instanceof Error);
+}
+exports.isError = isError;
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+exports.isFunction = isFunction;
+
+function isPrimitive(arg) {
+  return arg === null ||
+         typeof arg === 'boolean' ||
+         typeof arg === 'number' ||
+         typeof arg === 'string' ||
+         typeof arg === 'symbol' ||  // ES6 symbol
+         typeof arg === 'undefined';
+}
+exports.isPrimitive = isPrimitive;
+
+exports.isBuffer = require('./support/isBuffer');
+
+function objectToString(o) {
+  return Object.prototype.toString.call(o);
+}
+
+
+function pad(n) {
+  return n < 10 ? '0' + n.toString(10) : n.toString(10);
+}
+
+
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+              'Oct', 'Nov', 'Dec'];
+
+// 26 Feb 16:19:34
+function timestamp() {
+  var d = new Date();
+  var time = [pad(d.getHours()),
+              pad(d.getMinutes()),
+              pad(d.getSeconds())].join(':');
+  return [d.getDate(), months[d.getMonth()], time].join(' ');
+}
+
+
+// log is just a thin wrapper to console.log that prepends a timestamp
+exports.log = function() {
+  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
+};
+
+
+/**
+ * Inherit the prototype methods from one constructor into another.
+ *
+ * The Function.prototype.inherits from lang.js rewritten as a standalone
+ * function (not on Function.prototype). NOTE: If this file is to be loaded
+ * during bootstrapping this function needs to be rewritten using some native
+ * functions as prototype setup using normal JavaScript does not work as
+ * expected during bootstrapping (see mirror.js in r114903).
+ *
+ * @param {function} ctor Constructor function which needs to inherit the
+ *     prototype.
+ * @param {function} superCtor Constructor function to inherit prototype from.
+ */
+exports.inherits = require('inherits');
+
+exports._extend = function(origin, add) {
+  // Don't do anything if add isn't an object
+  if (!add || !isObject(add)) return origin;
+
+  var keys = Object.keys(add);
+  var i = keys.length;
+  while (i--) {
+    origin[keys[i]] = add[keys[i]];
+  }
+  return origin;
+};
+
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./support/isBuffer":5,"_process":4,"inherits":3}],7:[function(require,module,exports){
+/*!
+ * https://github.com/es-shims/es5-shim
+ * @license es5-shim Copyright 2009-2014 by contributors, MIT License
+ * see https://github.com/es-shims/es5-shim/blob/master/LICENSE
+ */
+
+// vim: ts=4 sts=4 sw=4 expandtab
+
+
+// UMD (Universal Module Definition)
+// see https://github.com/umdjs/umd/blob/master/returnExports.js
+// Add semicolon to prevent IIFE from being passed as argument to concatenated code.
+;(function (root, factory) {
+    'use strict';
+    /*global define, exports, module */
+    if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(factory);
+    } else if (typeof exports === 'object') {
+        // Node. Does not work with strict CommonJS, but
+        // only CommonJS-like enviroments that support module.exports,
+        // like Node.
+        module.exports = factory();
+    } else {
+        // Browser globals (root is window)
+        root.returnExports = factory();
+    }
+}(this, function () {
+
+/**
+ * Brings an environment as close to ECMAScript 5 compliance
+ * as is possible with the facilities of erstwhile engines.
+ *
+ * Annotated ES5: http://es5.github.com/ (specific links below)
+ * ES5 Spec: http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf
+ * Required reading: http://javascriptweblog.wordpress.com/2011/12/05/extending-javascript-natives/
+ */
+
+// Shortcut to an often accessed properties, in order to avoid multiple
+// dereference that costs universally.
+var ArrayPrototype = Array.prototype;
+var ObjectPrototype = Object.prototype;
+var FunctionPrototype = Function.prototype;
+var StringPrototype = String.prototype;
+var NumberPrototype = Number.prototype;
+var array_slice = ArrayPrototype.slice;
+var array_splice = ArrayPrototype.splice;
+var array_push = ArrayPrototype.push;
+var array_unshift = ArrayPrototype.unshift;
+var call = FunctionPrototype.call;
+
+// Having a toString local variable name breaks in Opera so use to_string.
+var to_string = ObjectPrototype.toString;
+
+var isFunction = function (val) {
+    return to_string.call(val) === '[object Function]';
+};
+var isRegex = function (val) {
+    return to_string.call(val) === '[object RegExp]';
+};
+var isArray = function isArray(obj) {
+    return to_string.call(obj) === '[object Array]';
+};
+var isString = function isString(obj) {
+    return to_string.call(obj) === '[object String]';
+};
+var isArguments = function isArguments(value) {
+    var str = to_string.call(value);
+    var isArgs = str === '[object Arguments]';
+    if (!isArgs) {
+        isArgs = !isArray(value) &&
+          value !== null &&
+          typeof value === 'object' &&
+          typeof value.length === 'number' &&
+          value.length >= 0 &&
+          isFunction(value.callee);
+    }
+    return isArgs;
+};
+
+var supportsDescriptors = Object.defineProperty && (function () {
+    try {
+        Object.defineProperty({}, 'x', {});
+        return true;
+    } catch (e) { /* this is ES3 */
+        return false;
+    }
+}());
+
+// Define configurable, writable and non-enumerable props
+// if they don't exist.
+var defineProperty;
+if (supportsDescriptors) {
+    defineProperty = function (object, name, method, forceAssign) {
+        if (!forceAssign && (name in object)) { return; }
+        Object.defineProperty(object, name, {
+            configurable: true,
+            enumerable: false,
+            writable: true,
+            value: method
+        });
+    };
+} else {
+    defineProperty = function (object, name, method, forceAssign) {
+        if (!forceAssign && (name in object)) { return; }
+        object[name] = method;
+    };
+}
+var defineProperties = function (object, map, forceAssign) {
+    for (var name in map) {
+        if (ObjectPrototype.hasOwnProperty.call(map, name)) {
+          defineProperty(object, name, map[name], forceAssign);
+        }
+    }
+};
+
+//
+// Util
+// ======
+//
+
+// ES5 9.4
+// http://es5.github.com/#x9.4
+// http://jsperf.com/to-integer
+
+function toInteger(num) {
+    var n = +num;
+    if (n !== n) { // isNaN
+        n = 0;
+    } else if (n !== 0 && n !== (1 / 0) && n !== -(1 / 0)) {
+        n = (n > 0 || -1) * Math.floor(Math.abs(n));
+    }
+    return n;
+}
+
+function isPrimitive(input) {
+    var type = typeof input;
+    return input === null ||
+        type === 'undefined' ||
+        type === 'boolean' ||
+        type === 'number' ||
+        type === 'string';
+}
+
+function toPrimitive(input) {
+    var val, valueOf, toStr;
+    if (isPrimitive(input)) {
+        return input;
+    }
+    valueOf = input.valueOf;
+    if (isFunction(valueOf)) {
+        val = valueOf.call(input);
+        if (isPrimitive(val)) {
+            return val;
+        }
+    }
+    toStr = input.toString;
+    if (isFunction(toStr)) {
+        val = toStr.call(input);
+        if (isPrimitive(val)) {
+            return val;
+        }
+    }
+    throw new TypeError();
+}
+
+var ES = {
+    // ES5 9.9
+    // http://es5.github.com/#x9.9
+    ToObject: function (o) {
+        /*jshint eqnull: true */
+        if (o == null) { // this matches both null and undefined
+            throw new TypeError("can't convert " + o + ' to object');
+        }
+        return Object(o);
+    },
+    ToUint32: function ToUint32(x) {
+        return x >>> 0;
+    }
+};
+
+//
+// Function
+// ========
+//
+
+// ES-5 15.3.4.5
+// http://es5.github.com/#x15.3.4.5
+
+var Empty = function Empty() {};
+
+defineProperties(FunctionPrototype, {
+    bind: function bind(that) { // .length is 1
+        // 1. Let Target be the this value.
+        var target = this;
+        // 2. If IsCallable(Target) is false, throw a TypeError exception.
+        if (!isFunction(target)) {
+            throw new TypeError('Function.prototype.bind called on incompatible ' + target);
+        }
+        // 3. Let A be a new (possibly empty) internal list of all of the
+        //   argument values provided after thisArg (arg1, arg2 etc), in order.
+        // XXX slicedArgs will stand in for "A" if used
+        var args = array_slice.call(arguments, 1); // for normal call
+        // 4. Let F be a new native ECMAScript object.
+        // 11. Set the [[Prototype]] internal property of F to the standard
+        //   built-in Function prototype object as specified in 15.3.3.1.
+        // 12. Set the [[Call]] internal property of F as described in
+        //   15.3.4.5.1.
+        // 13. Set the [[Construct]] internal property of F as described in
+        //   15.3.4.5.2.
+        // 14. Set the [[HasInstance]] internal property of F as described in
+        //   15.3.4.5.3.
+        var bound;
+        var binder = function () {
+
+            if (this instanceof bound) {
+                // 15.3.4.5.2 [[Construct]]
+                // When the [[Construct]] internal method of a function object,
+                // F that was created using the bind function is called with a
+                // list of arguments ExtraArgs, the following steps are taken:
+                // 1. Let target be the value of F's [[TargetFunction]]
+                //   internal property.
+                // 2. If target has no [[Construct]] internal method, a
+                //   TypeError exception is thrown.
+                // 3. Let boundArgs be the value of F's [[BoundArgs]] internal
+                //   property.
+                // 4. Let args be a new list containing the same values as the
+                //   list boundArgs in the same order followed by the same
+                //   values as the list ExtraArgs in the same order.
+                // 5. Return the result of calling the [[Construct]] internal
+                //   method of target providing args as the arguments.
+
+                var result = target.apply(
+                    this,
+                    args.concat(array_slice.call(arguments))
+                );
+                if (Object(result) === result) {
+                    return result;
+                }
+                return this;
+
+            } else {
+                // 15.3.4.5.1 [[Call]]
+                // When the [[Call]] internal method of a function object, F,
+                // which was created using the bind function is called with a
+                // this value and a list of arguments ExtraArgs, the following
+                // steps are taken:
+                // 1. Let boundArgs be the value of F's [[BoundArgs]] internal
+                //   property.
+                // 2. Let boundThis be the value of F's [[BoundThis]] internal
+                //   property.
+                // 3. Let target be the value of F's [[TargetFunction]] internal
+                //   property.
+                // 4. Let args be a new list containing the same values as the
+                //   list boundArgs in the same order followed by the same
+                //   values as the list ExtraArgs in the same order.
+                // 5. Return the result of calling the [[Call]] internal method
+                //   of target providing boundThis as the this value and
+                //   providing args as the arguments.
+
+                // equiv: target.call(this, ...boundArgs, ...args)
+                return target.apply(
+                    that,
+                    args.concat(array_slice.call(arguments))
+                );
+
+            }
+
+        };
+
+        // 15. If the [[Class]] internal property of Target is "Function", then
+        //     a. Let L be the length property of Target minus the length of A.
+        //     b. Set the length own property of F to either 0 or L, whichever is
+        //       larger.
+        // 16. Else set the length own property of F to 0.
+
+        var boundLength = Math.max(0, target.length - args.length);
+
+        // 17. Set the attributes of the length own property of F to the values
+        //   specified in 15.3.5.1.
+        var boundArgs = [];
+        for (var i = 0; i < boundLength; i++) {
+            boundArgs.push('$' + i);
+        }
+
+        // XXX Build a dynamic function with desired amount of arguments is the only
+        // way to set the length property of a function.
+        // In environments where Content Security Policies enabled (Chrome extensions,
+        // for ex.) all use of eval or Function costructor throws an exception.
+        // However in all of these environments Function.prototype.bind exists
+        // and so this code will never be executed.
+        bound = Function('binder', 'return function (' + boundArgs.join(',') + '){ return binder.apply(this, arguments); }')(binder);
+
+        if (target.prototype) {
+            Empty.prototype = target.prototype;
+            bound.prototype = new Empty();
+            // Clean up dangling references.
+            Empty.prototype = null;
+        }
+
+        // TODO
+        // 18. Set the [[Extensible]] internal property of F to true.
+
+        // TODO
+        // 19. Let thrower be the [[ThrowTypeError]] function Object (13.2.3).
+        // 20. Call the [[DefineOwnProperty]] internal method of F with
+        //   arguments "caller", PropertyDescriptor {[[Get]]: thrower, [[Set]]:
+        //   thrower, [[Enumerable]]: false, [[Configurable]]: false}, and
+        //   false.
+        // 21. Call the [[DefineOwnProperty]] internal method of F with
+        //   arguments "arguments", PropertyDescriptor {[[Get]]: thrower,
+        //   [[Set]]: thrower, [[Enumerable]]: false, [[Configurable]]: false},
+        //   and false.
+
+        // TODO
+        // NOTE Function objects created using Function.prototype.bind do not
+        // have a prototype property or the [[Code]], [[FormalParameters]], and
+        // [[Scope]] internal properties.
+        // XXX can't delete prototype in pure-js.
+
+        // 22. Return F.
+        return bound;
+    }
+});
+
+// _Please note: Shortcuts are defined after `Function.prototype.bind` as we
+// us it in defining shortcuts.
+var owns = call.bind(ObjectPrototype.hasOwnProperty);
+
+//
+// Array
+// =====
+//
+
+// ES5 15.4.4.12
+// http://es5.github.com/#x15.4.4.12
+var spliceNoopReturnsEmptyArray = (function () {
+    var a = [1, 2];
+    var result = a.splice();
+    return a.length === 2 && isArray(result) && result.length === 0;
+}());
+defineProperties(ArrayPrototype, {
+    // Safari 5.0 bug where .splice() returns undefined
+    splice: function splice(start, deleteCount) {
+        if (arguments.length === 0) {
+            return [];
+        } else {
+            return array_splice.apply(this, arguments);
+        }
+    }
+}, spliceNoopReturnsEmptyArray);
+
+var spliceWorksWithEmptyObject = (function () {
+    var obj = {};
+    ArrayPrototype.splice.call(obj, 0, 0, 1);
+    return obj.length === 1;
+}());
+defineProperties(ArrayPrototype, {
+    splice: function splice(start, deleteCount) {
+        if (arguments.length === 0) { return []; }
+        var args = arguments;
+        this.length = Math.max(toInteger(this.length), 0);
+        if (arguments.length > 0 && typeof deleteCount !== 'number') {
+            args = array_slice.call(arguments);
+            if (args.length < 2) {
+                args.push(this.length - start);
+            } else {
+                args[1] = toInteger(deleteCount);
+            }
+        }
+        return array_splice.apply(this, args);
+    }
+}, !spliceWorksWithEmptyObject);
+
+// ES5 15.4.4.12
+// http://es5.github.com/#x15.4.4.13
+// Return len+argCount.
+// [bugfix, ielt8]
+// IE < 8 bug: [].unshift(0) === undefined but should be "1"
+var hasUnshiftReturnValueBug = [].unshift(0) !== 1;
+defineProperties(ArrayPrototype, {
+    unshift: function () {
+        array_unshift.apply(this, arguments);
+        return this.length;
+    }
+}, hasUnshiftReturnValueBug);
+
+// ES5 15.4.3.2
+// http://es5.github.com/#x15.4.3.2
+// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/isArray
+defineProperties(Array, { isArray: isArray });
+
+// The IsCallable() check in the Array functions
+// has been replaced with a strict check on the
+// internal class of the object to trap cases where
+// the provided function was actually a regular
+// expression literal, which in V8 and
+// JavaScriptCore is a typeof "function".  Only in
+// V8 are regular expression literals permitted as
+// reduce parameters, so it is desirable in the
+// general case for the shim to match the more
+// strict and common behavior of rejecting regular
+// expressions.
+
+// ES5 15.4.4.18
+// http://es5.github.com/#x15.4.4.18
+// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/forEach
+
+// Check failure of by-index access of string characters (IE < 9)
+// and failure of `0 in boxedString` (Rhino)
+var boxedString = Object('a');
+var splitString = boxedString[0] !== 'a' || !(0 in boxedString);
+
+var properlyBoxesContext = function properlyBoxed(method) {
+    // Check node 0.6.21 bug where third parameter is not boxed
+    var properlyBoxesNonStrict = true;
+    var properlyBoxesStrict = true;
+    if (method) {
+        method.call('foo', function (_, __, context) {
+            if (typeof context !== 'object') { properlyBoxesNonStrict = false; }
+        });
+
+        method.call([1], function () {
+            'use strict';
+            properlyBoxesStrict = typeof this === 'string';
+        }, 'x');
+    }
+    return !!method && properlyBoxesNonStrict && properlyBoxesStrict;
+};
+
+defineProperties(ArrayPrototype, {
+    forEach: function forEach(fun /*, thisp*/) {
+        var object = ES.ToObject(this),
+            self = splitString && isString(this) ? this.split('') : object,
+            thisp = arguments[1],
+            i = -1,
+            length = self.length >>> 0;
+
+        // If no callback function or if callback is not a callable function
+        if (!isFunction(fun)) {
+            throw new TypeError(); // TODO message
+        }
+
+        while (++i < length) {
+            if (i in self) {
+                // Invoke the callback function with call, passing arguments:
+                // context, property value, property key, thisArg object
+                // context
+                fun.call(thisp, self[i], i, object);
+            }
+        }
+    }
+}, !properlyBoxesContext(ArrayPrototype.forEach));
+
+// ES5 15.4.4.19
+// http://es5.github.com/#x15.4.4.19
+// https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Objects/Array/map
+defineProperties(ArrayPrototype, {
+    map: function map(fun /*, thisp*/) {
+        var object = ES.ToObject(this),
+            self = splitString && isString(this) ? this.split('') : object,
+            length = self.length >>> 0,
+            result = Array(length),
+            thisp = arguments[1];
+
+        // If no callback function or if callback is not a callable function
+        if (!isFunction(fun)) {
+            throw new TypeError(fun + ' is not a function');
+        }
+
+        for (var i = 0; i < length; i++) {
+            if (i in self) {
+                result[i] = fun.call(thisp, self[i], i, object);
+            }
+        }
+        return result;
+    }
+}, !properlyBoxesContext(ArrayPrototype.map));
+
+// ES5 15.4.4.20
+// http://es5.github.com/#x15.4.4.20
+// https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Objects/Array/filter
+defineProperties(ArrayPrototype, {
+    filter: function filter(fun /*, thisp */) {
+        var object = ES.ToObject(this),
+            self = splitString && isString(this) ? this.split('') : object,
+            length = self.length >>> 0,
+            result = [],
+            value,
+            thisp = arguments[1];
+
+        // If no callback function or if callback is not a callable function
+        if (!isFunction(fun)) {
+            throw new TypeError(fun + ' is not a function');
+        }
+
+        for (var i = 0; i < length; i++) {
+            if (i in self) {
+                value = self[i];
+                if (fun.call(thisp, value, i, object)) {
+                    result.push(value);
+                }
+            }
+        }
+        return result;
+    }
+}, !properlyBoxesContext(ArrayPrototype.filter));
+
+// ES5 15.4.4.16
+// http://es5.github.com/#x15.4.4.16
+// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/every
+defineProperties(ArrayPrototype, {
+    every: function every(fun /*, thisp */) {
+        var object = ES.ToObject(this),
+            self = splitString && isString(this) ? this.split('') : object,
+            length = self.length >>> 0,
+            thisp = arguments[1];
+
+        // If no callback function or if callback is not a callable function
+        if (!isFunction(fun)) {
+            throw new TypeError(fun + ' is not a function');
+        }
+
+        for (var i = 0; i < length; i++) {
+            if (i in self && !fun.call(thisp, self[i], i, object)) {
+                return false;
+            }
+        }
+        return true;
+    }
+}, !properlyBoxesContext(ArrayPrototype.every));
+
+// ES5 15.4.4.17
+// http://es5.github.com/#x15.4.4.17
+// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/some
+defineProperties(ArrayPrototype, {
+    some: function some(fun /*, thisp */) {
+        var object = ES.ToObject(this),
+            self = splitString && isString(this) ? this.split('') : object,
+            length = self.length >>> 0,
+            thisp = arguments[1];
+
+        // If no callback function or if callback is not a callable function
+        if (!isFunction(fun)) {
+            throw new TypeError(fun + ' is not a function');
+        }
+
+        for (var i = 0; i < length; i++) {
+            if (i in self && fun.call(thisp, self[i], i, object)) {
+                return true;
+            }
+        }
+        return false;
+    }
+}, !properlyBoxesContext(ArrayPrototype.some));
+
+// ES5 15.4.4.21
+// http://es5.github.com/#x15.4.4.21
+// https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Objects/Array/reduce
+var reduceCoercesToObject = false;
+if (ArrayPrototype.reduce) {
+    reduceCoercesToObject = typeof ArrayPrototype.reduce.call('es5', function (_, __, ___, list) { return list; }) === 'object';
+}
+defineProperties(ArrayPrototype, {
+    reduce: function reduce(fun /*, initial*/) {
+        var object = ES.ToObject(this),
+            self = splitString && isString(this) ? this.split('') : object,
+            length = self.length >>> 0;
+
+        // If no callback function or if callback is not a callable function
+        if (!isFunction(fun)) {
+            throw new TypeError(fun + ' is not a function');
+        }
+
+        // no value to return if no initial value and an empty array
+        if (!length && arguments.length === 1) {
+            throw new TypeError('reduce of empty array with no initial value');
+        }
+
+        var i = 0;
+        var result;
+        if (arguments.length >= 2) {
+            result = arguments[1];
+        } else {
+            do {
+                if (i in self) {
+                    result = self[i++];
+                    break;
+                }
+
+                // if array contains no values, no initial value to return
+                if (++i >= length) {
+                    throw new TypeError('reduce of empty array with no initial value');
+                }
+            } while (true);
+        }
+
+        for (; i < length; i++) {
+            if (i in self) {
+                result = fun.call(void 0, result, self[i], i, object);
+            }
+        }
+
+        return result;
+    }
+}, !reduceCoercesToObject);
+
+// ES5 15.4.4.22
+// http://es5.github.com/#x15.4.4.22
+// https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Objects/Array/reduceRight
+var reduceRightCoercesToObject = false;
+if (ArrayPrototype.reduceRight) {
+    reduceRightCoercesToObject = typeof ArrayPrototype.reduceRight.call('es5', function (_, __, ___, list) { return list; }) === 'object';
+}
+defineProperties(ArrayPrototype, {
+    reduceRight: function reduceRight(fun /*, initial*/) {
+        var object = ES.ToObject(this),
+            self = splitString && isString(this) ? this.split('') : object,
+            length = self.length >>> 0;
+
+        // If no callback function or if callback is not a callable function
+        if (!isFunction(fun)) {
+            throw new TypeError(fun + ' is not a function');
+        }
+
+        // no value to return if no initial value, empty array
+        if (!length && arguments.length === 1) {
+            throw new TypeError('reduceRight of empty array with no initial value');
+        }
+
+        var result, i = length - 1;
+        if (arguments.length >= 2) {
+            result = arguments[1];
+        } else {
+            do {
+                if (i in self) {
+                    result = self[i--];
+                    break;
+                }
+
+                // if array contains no values, no initial value to return
+                if (--i < 0) {
+                    throw new TypeError('reduceRight of empty array with no initial value');
+                }
+            } while (true);
+        }
+
+        if (i < 0) {
+            return result;
+        }
+
+        do {
+            if (i in self) {
+                result = fun.call(void 0, result, self[i], i, object);
+            }
+        } while (i--);
+
+        return result;
+    }
+}, !reduceRightCoercesToObject);
+
+// ES5 15.4.4.14
+// http://es5.github.com/#x15.4.4.14
+// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/indexOf
+var hasFirefox2IndexOfBug = Array.prototype.indexOf && [0, 1].indexOf(1, 2) !== -1;
+defineProperties(ArrayPrototype, {
+    indexOf: function indexOf(sought /*, fromIndex */) {
+        var self = splitString && isString(this) ? this.split('') : ES.ToObject(this),
+            length = self.length >>> 0;
+
+        if (!length) {
+            return -1;
+        }
+
+        var i = 0;
+        if (arguments.length > 1) {
+            i = toInteger(arguments[1]);
+        }
+
+        // handle negative indices
+        i = i >= 0 ? i : Math.max(0, length + i);
+        for (; i < length; i++) {
+            if (i in self && self[i] === sought) {
+                return i;
+            }
+        }
+        return -1;
+    }
+}, hasFirefox2IndexOfBug);
+
+// ES5 15.4.4.15
+// http://es5.github.com/#x15.4.4.15
+// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/lastIndexOf
+var hasFirefox2LastIndexOfBug = Array.prototype.lastIndexOf && [0, 1].lastIndexOf(0, -3) !== -1;
+defineProperties(ArrayPrototype, {
+    lastIndexOf: function lastIndexOf(sought /*, fromIndex */) {
+        var self = splitString && isString(this) ? this.split('') : ES.ToObject(this),
+            length = self.length >>> 0;
+
+        if (!length) {
+            return -1;
+        }
+        var i = length - 1;
+        if (arguments.length > 1) {
+            i = Math.min(i, toInteger(arguments[1]));
+        }
+        // handle negative indices
+        i = i >= 0 ? i : length - Math.abs(i);
+        for (; i >= 0; i--) {
+            if (i in self && sought === self[i]) {
+                return i;
+            }
+        }
+        return -1;
+    }
+}, hasFirefox2LastIndexOfBug);
+
+//
+// Object
+// ======
+//
+
+// ES5 15.2.3.14
+// http://es5.github.com/#x15.2.3.14
+
+// http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
+var hasDontEnumBug = !({'toString': null}).propertyIsEnumerable('toString'),
+    hasProtoEnumBug = function () {}.propertyIsEnumerable('prototype'),
+    dontEnums = [
+        'toString',
+        'toLocaleString',
+        'valueOf',
+        'hasOwnProperty',
+        'isPrototypeOf',
+        'propertyIsEnumerable',
+        'constructor'
+    ],
+    dontEnumsLength = dontEnums.length;
+
+defineProperties(Object, {
+    keys: function keys(object) {
+        var isFn = isFunction(object),
+            isArgs = isArguments(object),
+            isObject = object !== null && typeof object === 'object',
+            isStr = isObject && isString(object);
+
+        if (!isObject && !isFn && !isArgs) {
+            throw new TypeError('Object.keys called on a non-object');
+        }
+
+        var theKeys = [];
+        var skipProto = hasProtoEnumBug && isFn;
+        if (isStr || isArgs) {
+            for (var i = 0; i < object.length; ++i) {
+                theKeys.push(String(i));
+            }
+        } else {
+            for (var name in object) {
+                if (!(skipProto && name === 'prototype') && owns(object, name)) {
+                    theKeys.push(String(name));
+                }
+            }
+        }
+
+        if (hasDontEnumBug) {
+            var ctor = object.constructor,
+                skipConstructor = ctor && ctor.prototype === object;
+            for (var j = 0; j < dontEnumsLength; j++) {
+                var dontEnum = dontEnums[j];
+                if (!(skipConstructor && dontEnum === 'constructor') && owns(object, dontEnum)) {
+                    theKeys.push(dontEnum);
+                }
+            }
+        }
+        return theKeys;
+    }
+});
+
+var keysWorksWithArguments = Object.keys && (function () {
+    // Safari 5.0 bug
+    return Object.keys(arguments).length === 2;
+}(1, 2));
+var originalKeys = Object.keys;
+defineProperties(Object, {
+    keys: function keys(object) {
+        if (isArguments(object)) {
+            return originalKeys(ArrayPrototype.slice.call(object));
+        } else {
+            return originalKeys(object);
+        }
+    }
+}, !keysWorksWithArguments);
+
+//
+// Date
+// ====
+//
+
+// ES5 15.9.5.43
+// http://es5.github.com/#x15.9.5.43
+// This function returns a String value represent the instance in time
+// represented by this Date object. The format of the String is the Date Time
+// string format defined in 15.9.1.15. All fields are present in the String.
+// The time zone is always UTC, denoted by the suffix Z. If the time value of
+// this object is not a finite Number a RangeError exception is thrown.
+var negativeDate = -62198755200000;
+var negativeYearString = '-000001';
+var hasNegativeDateBug = Date.prototype.toISOString && new Date(negativeDate).toISOString().indexOf(negativeYearString) === -1;
+
+defineProperties(Date.prototype, {
+    toISOString: function toISOString() {
+        var result, length, value, year, month;
+        if (!isFinite(this)) {
+            throw new RangeError('Date.prototype.toISOString called on non-finite value.');
+        }
+
+        year = this.getUTCFullYear();
+
+        month = this.getUTCMonth();
+        // see https://github.com/es-shims/es5-shim/issues/111
+        year += Math.floor(month / 12);
+        month = (month % 12 + 12) % 12;
+
+        // the date time string format is specified in 15.9.1.15.
+        result = [month + 1, this.getUTCDate(), this.getUTCHours(), this.getUTCMinutes(), this.getUTCSeconds()];
+        year = (
+            (year < 0 ? '-' : (year > 9999 ? '+' : '')) +
+            ('00000' + Math.abs(year)).slice(0 <= year && year <= 9999 ? -4 : -6)
+        );
+
+        length = result.length;
+        while (length--) {
+            value = result[length];
+            // pad months, days, hours, minutes, and seconds to have two
+            // digits.
+            if (value < 10) {
+                result[length] = '0' + value;
+            }
+        }
+        // pad milliseconds to have three digits.
+        return (
+            year + '-' + result.slice(0, 2).join('-') +
+            'T' + result.slice(2).join(':') + '.' +
+            ('000' + this.getUTCMilliseconds()).slice(-3) + 'Z'
+        );
+    }
+}, hasNegativeDateBug);
+
+
+// ES5 15.9.5.44
+// http://es5.github.com/#x15.9.5.44
+// This function provides a String representation of a Date object for use by
+// JSON.stringify (15.12.3).
+var dateToJSONIsSupported = false;
+try {
+    dateToJSONIsSupported = (
+        Date.prototype.toJSON &&
+        new Date(NaN).toJSON() === null &&
+        new Date(negativeDate).toJSON().indexOf(negativeYearString) !== -1 &&
+        Date.prototype.toJSON.call({ // generic
+            toISOString: function () {
+                return true;
+            }
+        })
+    );
+} catch (e) {
+}
+if (!dateToJSONIsSupported) {
+    Date.prototype.toJSON = function toJSON(key) {
+        // When the toJSON method is called with argument key, the following
+        // steps are taken:
+
+        // 1.  Let O be the result of calling ToObject, giving it the this
+        // value as its argument.
+        // 2. Let tv be toPrimitive(O, hint Number).
+        var o = Object(this),
+            tv = toPrimitive(o),
+            toISO;
+        // 3. If tv is a Number and is not finite, return null.
+        if (typeof tv === 'number' && !isFinite(tv)) {
+            return null;
+        }
+        // 4. Let toISO be the result of calling the [[Get]] internal method of
+        // O with argument "toISOString".
+        toISO = o.toISOString;
+        // 5. If IsCallable(toISO) is false, throw a TypeError exception.
+        if (typeof toISO !== 'function') {
+            throw new TypeError('toISOString property is not callable');
+        }
+        // 6. Return the result of calling the [[Call]] internal method of
+        //  toISO with O as the this value and an empty argument list.
+        return toISO.call(o);
+
+        // NOTE 1 The argument is ignored.
+
+        // NOTE 2 The toJSON function is intentionally generic; it does not
+        // require that its this value be a Date object. Therefore, it can be
+        // transferred to other kinds of objects for use as a method. However,
+        // it does require that any such object have a toISOString method. An
+        // object is free to use the argument key to filter its
+        // stringification.
+    };
+}
+
+// ES5 15.9.4.2
+// http://es5.github.com/#x15.9.4.2
+// based on work shared by Daniel Friesen (dantman)
+// http://gist.github.com/303249
+var supportsExtendedYears = Date.parse('+033658-09-27T01:46:40.000Z') === 1e15;
+var acceptsInvalidDates = !isNaN(Date.parse('2012-04-04T24:00:00.500Z')) || !isNaN(Date.parse('2012-11-31T23:59:59.000Z'));
+var doesNotParseY2KNewYear = isNaN(Date.parse('2000-01-01T00:00:00.000Z'));
+if (!Date.parse || doesNotParseY2KNewYear || acceptsInvalidDates || !supportsExtendedYears) {
+    // XXX global assignment won't work in embeddings that use
+    // an alternate object for the context.
+    /*global Date: true */
+    Date = (function (NativeDate) {
+
+        // Date.length === 7
+        function Date(Y, M, D, h, m, s, ms) {
+            var length = arguments.length;
+            if (this instanceof NativeDate) {
+                var date = length === 1 && String(Y) === Y ? // isString(Y)
+                    // We explicitly pass it through parse:
+                    new NativeDate(Date.parse(Y)) :
+                    // We have to manually make calls depending on argument
+                    // length here
+                    length >= 7 ? new NativeDate(Y, M, D, h, m, s, ms) :
+                    length >= 6 ? new NativeDate(Y, M, D, h, m, s) :
+                    length >= 5 ? new NativeDate(Y, M, D, h, m) :
+                    length >= 4 ? new NativeDate(Y, M, D, h) :
+                    length >= 3 ? new NativeDate(Y, M, D) :
+                    length >= 2 ? new NativeDate(Y, M) :
+                    length >= 1 ? new NativeDate(Y) :
+                                  new NativeDate();
+                // Prevent mixups with unfixed Date object
+                date.constructor = Date;
+                return date;
+            }
+            return NativeDate.apply(this, arguments);
+        }
+
+        // 15.9.1.15 Date Time String Format.
+        var isoDateExpression = new RegExp('^' +
+            '(\\d{4}|[+-]\\d{6})' + // four-digit year capture or sign +
+                                      // 6-digit extended year
+            '(?:-(\\d{2})' + // optional month capture
+            '(?:-(\\d{2})' + // optional day capture
+            '(?:' + // capture hours:minutes:seconds.milliseconds
+                'T(\\d{2})' + // hours capture
+                ':(\\d{2})' + // minutes capture
+                '(?:' + // optional :seconds.milliseconds
+                    ':(\\d{2})' + // seconds capture
+                    '(?:(\\.\\d{1,}))?' + // milliseconds capture
+                ')?' +
+            '(' + // capture UTC offset component
+                'Z|' + // UTC capture
+                '(?:' + // offset specifier +/-hours:minutes
+                    '([-+])' + // sign capture
+                    '(\\d{2})' + // hours offset capture
+                    ':(\\d{2})' + // minutes offset capture
+                ')' +
+            ')?)?)?)?' +
+        '$');
+
+        var months = [
+            0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365
+        ];
+
+        function dayFromMonth(year, month) {
+            var t = month > 1 ? 1 : 0;
+            return (
+                months[month] +
+                Math.floor((year - 1969 + t) / 4) -
+                Math.floor((year - 1901 + t) / 100) +
+                Math.floor((year - 1601 + t) / 400) +
+                365 * (year - 1970)
+            );
+        }
+
+        function toUTC(t) {
+            return Number(new NativeDate(1970, 0, 1, 0, 0, 0, t));
+        }
+
+        // Copy any custom methods a 3rd party library may have added
+        for (var key in NativeDate) {
+            Date[key] = NativeDate[key];
+        }
+
+        // Copy "native" methods explicitly; they may be non-enumerable
+        Date.now = NativeDate.now;
+        Date.UTC = NativeDate.UTC;
+        Date.prototype = NativeDate.prototype;
+        Date.prototype.constructor = Date;
+
+        // Upgrade Date.parse to handle simplified ISO 8601 strings
+        Date.parse = function parse(string) {
+            var match = isoDateExpression.exec(string);
+            if (match) {
+                // parse months, days, hours, minutes, seconds, and milliseconds
+                // provide default values if necessary
+                // parse the UTC offset component
+                var year = Number(match[1]),
+                    month = Number(match[2] || 1) - 1,
+                    day = Number(match[3] || 1) - 1,
+                    hour = Number(match[4] || 0),
+                    minute = Number(match[5] || 0),
+                    second = Number(match[6] || 0),
+                    millisecond = Math.floor(Number(match[7] || 0) * 1000),
+                    // When time zone is missed, local offset should be used
+                    // (ES 5.1 bug)
+                    // see https://bugs.ecmascript.org/show_bug.cgi?id=112
+                    isLocalTime = Boolean(match[4] && !match[8]),
+                    signOffset = match[9] === '-' ? 1 : -1,
+                    hourOffset = Number(match[10] || 0),
+                    minuteOffset = Number(match[11] || 0),
+                    result;
+                if (
+                    hour < (
+                        minute > 0 || second > 0 || millisecond > 0 ?
+                        24 : 25
+                    ) &&
+                    minute < 60 && second < 60 && millisecond < 1000 &&
+                    month > -1 && month < 12 && hourOffset < 24 &&
+                    minuteOffset < 60 && // detect invalid offsets
+                    day > -1 &&
+                    day < (
+                        dayFromMonth(year, month + 1) -
+                        dayFromMonth(year, month)
+                    )
+                ) {
+                    result = (
+                        (dayFromMonth(year, month) + day) * 24 +
+                        hour +
+                        hourOffset * signOffset
+                    ) * 60;
+                    result = (
+                        (result + minute + minuteOffset * signOffset) * 60 +
+                        second
+                    ) * 1000 + millisecond;
+                    if (isLocalTime) {
+                        result = toUTC(result);
+                    }
+                    if (-8.64e15 <= result && result <= 8.64e15) {
+                        return result;
+                    }
+                }
+                return NaN;
+            }
+            return NativeDate.parse.apply(this, arguments);
+        };
+
+        return Date;
+    }(Date));
+    /*global Date: false */
+}
+
+// ES5 15.9.4.4
+// http://es5.github.com/#x15.9.4.4
+if (!Date.now) {
+    Date.now = function now() {
+        return new Date().getTime();
+    };
+}
+
+
+//
+// Number
+// ======
+//
+
+// ES5.1 15.7.4.5
+// http://es5.github.com/#x15.7.4.5
+var hasToFixedBugs = NumberPrototype.toFixed && (
+  (0.00008).toFixed(3) !== '0.000' ||
+  (0.9).toFixed(0) !== '1' ||
+  (1.255).toFixed(2) !== '1.25' ||
+  (1000000000000000128).toFixed(0) !== '1000000000000000128'
+);
+
+var toFixedHelpers = {
+  base: 1e7,
+  size: 6,
+  data: [0, 0, 0, 0, 0, 0],
+  multiply: function multiply(n, c) {
+      var i = -1;
+      while (++i < toFixedHelpers.size) {
+          c += n * toFixedHelpers.data[i];
+          toFixedHelpers.data[i] = c % toFixedHelpers.base;
+          c = Math.floor(c / toFixedHelpers.base);
+      }
+  },
+  divide: function divide(n) {
+      var i = toFixedHelpers.size, c = 0;
+      while (--i >= 0) {
+          c += toFixedHelpers.data[i];
+          toFixedHelpers.data[i] = Math.floor(c / n);
+          c = (c % n) * toFixedHelpers.base;
+      }
+  },
+  numToString: function numToString() {
+      var i = toFixedHelpers.size;
+      var s = '';
+      while (--i >= 0) {
+          if (s !== '' || i === 0 || toFixedHelpers.data[i] !== 0) {
+              var t = String(toFixedHelpers.data[i]);
+              if (s === '') {
+                  s = t;
+              } else {
+                  s += '0000000'.slice(0, 7 - t.length) + t;
+              }
+          }
+      }
+      return s;
+  },
+  pow: function pow(x, n, acc) {
+      return (n === 0 ? acc : (n % 2 === 1 ? pow(x, n - 1, acc * x) : pow(x * x, n / 2, acc)));
+  },
+  log: function log(x) {
+      var n = 0;
+      while (x >= 4096) {
+          n += 12;
+          x /= 4096;
+      }
+      while (x >= 2) {
+          n += 1;
+          x /= 2;
+      }
+      return n;
+  }
+};
+
+defineProperties(NumberPrototype, {
+    toFixed: function toFixed(fractionDigits) {
+        var f, x, s, m, e, z, j, k;
+
+        // Test for NaN and round fractionDigits down
+        f = Number(fractionDigits);
+        f = f !== f ? 0 : Math.floor(f);
+
+        if (f < 0 || f > 20) {
+            throw new RangeError('Number.toFixed called with invalid number of decimals');
+        }
+
+        x = Number(this);
+
+        // Test for NaN
+        if (x !== x) {
+            return 'NaN';
+        }
+
+        // If it is too big or small, return the string value of the number
+        if (x <= -1e21 || x >= 1e21) {
+            return String(x);
+        }
+
+        s = '';
+
+        if (x < 0) {
+            s = '-';
+            x = -x;
+        }
+
+        m = '0';
+
+        if (x > 1e-21) {
+            // 1e-21 < x < 1e21
+            // -70 < log2(x) < 70
+            e = toFixedHelpers.log(x * toFixedHelpers.pow(2, 69, 1)) - 69;
+            z = (e < 0 ? x * toFixedHelpers.pow(2, -e, 1) : x / toFixedHelpers.pow(2, e, 1));
+            z *= 0x10000000000000; // Math.pow(2, 52);
+            e = 52 - e;
+
+            // -18 < e < 122
+            // x = z / 2 ^ e
+            if (e > 0) {
+                toFixedHelpers.multiply(0, z);
+                j = f;
+
+                while (j >= 7) {
+                    toFixedHelpers.multiply(1e7, 0);
+                    j -= 7;
+                }
+
+                toFixedHelpers.multiply(toFixedHelpers.pow(10, j, 1), 0);
+                j = e - 1;
+
+                while (j >= 23) {
+                    toFixedHelpers.divide(1 << 23);
+                    j -= 23;
+                }
+
+                toFixedHelpers.divide(1 << j);
+                toFixedHelpers.multiply(1, 1);
+                toFixedHelpers.divide(2);
+                m = toFixedHelpers.numToString();
+            } else {
+                toFixedHelpers.multiply(0, z);
+                toFixedHelpers.multiply(1 << (-e), 0);
+                m = toFixedHelpers.numToString() + '0.00000000000000000000'.slice(2, 2 + f);
+            }
+        }
+
+        if (f > 0) {
+            k = m.length;
+
+            if (k <= f) {
+                m = s + '0.0000000000000000000'.slice(0, f - k + 2) + m;
+            } else {
+                m = s + m.slice(0, k - f) + '.' + m.slice(k - f);
+            }
+        } else {
+            m = s + m;
+        }
+
+        return m;
+    }
+}, hasToFixedBugs);
+
+
+//
+// String
+// ======
+//
+
+// ES5 15.5.4.14
+// http://es5.github.com/#x15.5.4.14
+
+// [bugfix, IE lt 9, firefox 4, Konqueror, Opera, obscure browsers]
+// Many browsers do not split properly with regular expressions or they
+// do not perform the split correctly under obscure conditions.
+// See http://blog.stevenlevithan.com/archives/cross-browser-split
+// I've tested in many browsers and this seems to cover the deviant ones:
+//    'ab'.split(/(?:ab)*/) should be ["", ""], not [""]
+//    '.'.split(/(.?)(.?)/) should be ["", ".", "", ""], not ["", ""]
+//    'tesst'.split(/(s)*/) should be ["t", undefined, "e", "s", "t"], not
+//       [undefined, "t", undefined, "e", ...]
+//    ''.split(/.?/) should be [], not [""]
+//    '.'.split(/()()/) should be ["."], not ["", "", "."]
+
+var string_split = StringPrototype.split;
+if (
+    'ab'.split(/(?:ab)*/).length !== 2 ||
+    '.'.split(/(.?)(.?)/).length !== 4 ||
+    'tesst'.split(/(s)*/)[1] === 't' ||
+    'test'.split(/(?:)/, -1).length !== 4 ||
+    ''.split(/.?/).length ||
+    '.'.split(/()()/).length > 1
+) {
+    (function () {
+        var compliantExecNpcg = typeof (/()??/).exec('')[1] === 'undefined'; // NPCG: nonparticipating capturing group
+
+        StringPrototype.split = function (separator, limit) {
+            var string = this;
+            if (typeof separator === 'undefined' && limit === 0) {
+                return [];
+            }
+
+            // If `separator` is not a regex, use native split
+            if (to_string.call(separator) !== '[object RegExp]') {
+                return string_split.call(this, separator, limit);
+            }
+
+            var output = [],
+                flags = (separator.ignoreCase ? 'i' : '') +
+                        (separator.multiline ? 'm' : '') +
+                        (separator.extended ? 'x' : '') + // Proposed for ES6
+                        (separator.sticky ? 'y' : ''), // Firefox 3+
+                lastLastIndex = 0,
+                // Make `global` and avoid `lastIndex` issues by working with a copy
+                separator2, match, lastIndex, lastLength;
+            separator = new RegExp(separator.source, flags + 'g');
+            string += ''; // Type-convert
+            if (!compliantExecNpcg) {
+                // Doesn't need flags gy, but they don't hurt
+                separator2 = new RegExp('^' + separator.source + '$(?!\\s)', flags);
+            }
+            /* Values for `limit`, per the spec:
+             * If undefined: 4294967295 // Math.pow(2, 32) - 1
+             * If 0, Infinity, or NaN: 0
+             * If positive number: limit = Math.floor(limit); if (limit > 4294967295) limit -= 4294967296;
+             * If negative number: 4294967296 - Math.floor(Math.abs(limit))
+             * If other: Type-convert, then use the above rules
+             */
+            limit = typeof limit === 'undefined' ?
+                -1 >>> 0 : // Math.pow(2, 32) - 1
+                ES.ToUint32(limit);
+            while (match = separator.exec(string)) {
+                // `separator.lastIndex` is not reliable cross-browser
+                lastIndex = match.index + match[0].length;
+                if (lastIndex > lastLastIndex) {
+                    output.push(string.slice(lastLastIndex, match.index));
+                    // Fix browsers whose `exec` methods don't consistently return `undefined` for
+                    // nonparticipating capturing groups
+                    if (!compliantExecNpcg && match.length > 1) {
+                        match[0].replace(separator2, function () {
+                            for (var i = 1; i < arguments.length - 2; i++) {
+                                if (typeof arguments[i] === 'undefined') {
+                                    match[i] = void 0;
+                                }
+                            }
+                        });
+                    }
+                    if (match.length > 1 && match.index < string.length) {
+                        array_push.apply(output, match.slice(1));
+                    }
+                    lastLength = match[0].length;
+                    lastLastIndex = lastIndex;
+                    if (output.length >= limit) {
+                        break;
+                    }
+                }
+                if (separator.lastIndex === match.index) {
+                    separator.lastIndex++; // Avoid an infinite loop
+                }
+            }
+            if (lastLastIndex === string.length) {
+                if (lastLength || !separator.test('')) {
+                    output.push('');
+                }
+            } else {
+                output.push(string.slice(lastLastIndex));
+            }
+            return output.length > limit ? output.slice(0, limit) : output;
+        };
+    }());
+
+// [bugfix, chrome]
+// If separator is undefined, then the result array contains just one String,
+// which is the this value (converted to a String). If limit is not undefined,
+// then the output array is truncated so that it contains no more than limit
+// elements.
+// "0".split(undefined, 0) -> []
+} else if ('0'.split(void 0, 0).length) {
+    StringPrototype.split = function split(separator, limit) {
+        if (typeof separator === 'undefined' && limit === 0) { return []; }
+        return string_split.call(this, separator, limit);
+    };
+}
+
+var str_replace = StringPrototype.replace;
+var replaceReportsGroupsCorrectly = (function () {
+    var groups = [];
+    'x'.replace(/x(.)?/g, function (match, group) {
+        groups.push(group);
+    });
+    return groups.length === 1 && typeof groups[0] === 'undefined';
+}());
+
+if (!replaceReportsGroupsCorrectly) {
+    StringPrototype.replace = function replace(searchValue, replaceValue) {
+        var isFn = isFunction(replaceValue);
+        var hasCapturingGroups = isRegex(searchValue) && (/\)[*?]/).test(searchValue.source);
+        if (!isFn || !hasCapturingGroups) {
+            return str_replace.call(this, searchValue, replaceValue);
+        } else {
+            var wrappedReplaceValue = function (match) {
+                var length = arguments.length;
+                var originalLastIndex = searchValue.lastIndex;
+                searchValue.lastIndex = 0;
+                var args = searchValue.exec(match) || [];
+                searchValue.lastIndex = originalLastIndex;
+                args.push(arguments[length - 2], arguments[length - 1]);
+                return replaceValue.apply(this, args);
+            };
+            return str_replace.call(this, searchValue, wrappedReplaceValue);
+        }
+    };
+}
+
+// ECMA-262, 3rd B.2.3
+// Not an ECMAScript standard, although ECMAScript 3rd Edition has a
+// non-normative section suggesting uniform semantics and it should be
+// normalized across all browsers
+// [bugfix, IE lt 9] IE < 9 substr() with negative value not working in IE
+var string_substr = StringPrototype.substr;
+var hasNegativeSubstrBug = ''.substr && '0b'.substr(-1) !== 'b';
+defineProperties(StringPrototype, {
+    substr: function substr(start, length) {
+        return string_substr.call(
+            this,
+            start < 0 ? ((start = this.length + start) < 0 ? 0 : start) : start,
+            length
+        );
+    }
+}, hasNegativeSubstrBug);
+
+// ES5 15.5.4.20
+// whitespace from: http://es5.github.io/#x15.5.4.20
+var ws = '\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u180E\u2000\u2001\u2002\u2003' +
+    '\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028' +
+    '\u2029\uFEFF';
+var zeroWidth = '\u200b';
+var wsRegexChars = '[' + ws + ']';
+var trimBeginRegexp = new RegExp('^' + wsRegexChars + wsRegexChars + '*');
+var trimEndRegexp = new RegExp(wsRegexChars + wsRegexChars + '*$');
+var hasTrimWhitespaceBug = StringPrototype.trim && (ws.trim() || !zeroWidth.trim());
+defineProperties(StringPrototype, {
+    // http://blog.stevenlevithan.com/archives/faster-trim-javascript
+    // http://perfectionkills.com/whitespace-deviations/
+    trim: function trim() {
+        if (typeof this === 'undefined' || this === null) {
+            throw new TypeError("can't convert " + this + ' to object');
+        }
+        return String(this).replace(trimBeginRegexp, '').replace(trimEndRegexp, '');
+    }
+}, hasTrimWhitespaceBug);
+
+// ES-5 15.1.2.2
+if (parseInt(ws + '08') !== 8 || parseInt(ws + '0x16') !== 22) {
+    /*global parseInt: true */
+    parseInt = (function (origParseInt) {
+        var hexRegex = /^0[xX]/;
+        return function parseIntES5(str, radix) {
+            str = String(str).trim();
+            if (!Number(radix)) {
+                radix = hexRegex.test(str) ? 16 : 10;
+            }
+            return origParseInt(str, radix);
+        };
+    }(parseInt));
+}
+
+}));
+
+},{}],8:[function(require,module,exports){
+require('es5-shim');
+
+/**
+Conversions;
+ RED    = BL
+ BLUE   = BR
+ YELLOW = TR
+ GREEN  = TL
+**/
+
+exports.Teams = ['bl', 'br', 'tr', 'tl'];
+
+exports.Messages = {
+};
+
+exports.Events = {
+  GAME_START:      'game.start',
+  GAME_WON:        'game.won',
+
+  PLAYER_JOIN:     'player.join',
+  TURN_BEGIN:      'player.turn.begin',
+  TURN_END:        'player.turn.end',
+  DICE_ROLL:       'player.turn.rollDice',
+  REPEAT_TURN:     'player.turn.repeat',
+  PLAYER_ACTIONS:  'player.actions',
+
+  TOKEN_BORN:      'token.born',
+  TOKEN_MOVE_TO:   'token.moveTo',
+  TOKEN_KILLED:    'token.killed',
+  TOKEN_BLOCKADE:  'token.blockade',
+  TOKEN_BLOCKED:   'token.blocked',
+  TOKEN_ASCEND:    'token.ascend',
+  OVER_SHOOT:      'token.overShotAscension',
+
+  ERROR:           'error'
+};
+
+exports.ActionTypes = {
+  BORN:            'born',
+  MOVE_BY:         'moveBy',
+  KILL_MOVE:       'killMove',
+  CREATE_BLOCKADE: 'createBlockade',
+  ASCEND:          'ascend'
+};
+
+var Grid = exports.Grid = {
+  path: [
+    [7, 1],
+    [8, 1],
+    [9, 1],
+    [9, 2],
+    [9, 3],
+    [9, 4],
+    [9, 5],
+    [9, 6],
+    [10, 7],
+    [11, 7],
+    [12, 7],
+    [13, 7],
+    [14, 7],
+    [15, 7],
+    [15, 8],
+    [15, 9],
+    [14, 9],
+    [13, 9],
+    [12, 9],
+    [11, 9],
+    [10, 9],
+    [9, 10],
+    [9, 11],
+    [9, 12],
+    [9, 13],
+    [9, 14],
+    [9, 15],
+    [8, 15],
+    [7, 15],
+    [7, 14],
+    [7, 13],
+    [7, 12],
+    [7, 11],
+    [7, 10],
+    [6, 9],
+    [5, 9],
+    [4, 9],
+    [3, 9],
+    [2, 9],
+    [1, 9],
+    [1, 8],
+    [1, 7],
+    [2, 7],
+    [3, 7],
+    [4, 7],
+    [5, 7],
+    [6, 7],
+    [7, 6],
+    [7, 5],
+    [7, 4],
+    [7, 3],
+    [7, 2]
+  ],
+  center: [
+    [7, 7],
+    [8, 7],
+    [9, 7],
+    [7, 8],
+    [8, 8],
+    [9, 8],
+    [7, 9],
+    [8, 9],
+    [9, 9]
+  ],
+  switchPoint: {
+    bl: [8, 15],
+    br: [15, 8],
+    tr: [8, 1],
+    tl: [1, 8]
+  },
+  ascendingPoint: {
+    bl: [8, 9],
+    br: [9, 8],
+    tr: [8, 7],
+    tl: [7, 8]
+  },
+  heaven: {
+    bl: [
+      [8, 14],
+      [8, 13],
+      [8, 12],
+      [8, 11],
+      [8, 10]
+    ],
+    br: [
+      [14, 8],
+      [13, 8],
+      [12, 8],
+      [11, 8],
+      [10, 8]
+    ],
+    tl: [
+      [2, 8],
+      [3, 8],
+      [4, 8],
+      [5, 8],
+      [6, 8]
+    ],
+    tr: [
+      [8, 2],
+      [8, 3],
+      [8, 4],
+      [8, 5],
+      [8, 6]
+    ]
+  },
+  startPoint: {
+    bl: [7, 14],
+    br: [14, 9],
+    tr: [9, 2],
+    tl: [2, 7]
+  },
+  teamAreas: {
+    tl: _listTeamAreaFrom([1, 1]),
+    tr: _listTeamAreaFrom([10, 1]),
+    bl: _listTeamAreaFrom([1, 10]),
+    br: _listTeamAreaFrom([10, 10])
+  },
+  allCordsForTeam: {},
+  allCordsForHeaven: {}
+};
+
+for (var i = 0; i <= 3; i++) {
+  t = exports.Teams[i];
+  exports.Grid.allCordsForTeam[t] = [Grid.startPoint[t]]
+    .concat(Grid.heaven[t])
+    .concat(Grid.teamAreas[t]);
+
+  exports.Grid.allCordsForHeaven[t] = [Grid.switchPoint[t]]
+  .concat(Grid.heaven[t])
+  .concat([Grid.ascendingPoint[t]]);
+}
+
+function _listTeamAreaFrom(c) {
+  var area = [];
+  for (var y = c[1]; y <= c[1] + 5; y++) {
+    for (var x = c[0]; x <= c[0] + 5; x++) {
+      area.push([x, y]);
+    }
+  }
+
+  return area;
+}
+
+},{"es5-shim":7}],9:[function(require,module,exports){
+function Dice(options) {
+  this.options = (options || {});
+  this.rolled = this.options.rolled || false;
+  this.used = false;
+}
+
+exports.Dice = Dice;
+
+Dice.prototype.roll = function() {
+  if (this.rolled === false) {
+    this.rolled = Math.floor(6 * Math.random()) + 1;
+  }
+
+  return this.rolled;
+};
+
+},{}],10:[function(require,module,exports){
+var EventEmitter = require('events').EventEmitter;
+var Player = require('./player').Player;
+var constants = require('./constants');
+var Events = constants.Events;
+var inherits = require('util').inherits;
+
+function Game(options) {
+  this.options = (options || {});
+  this.players = [];
+  this.started = false;
+  this.currentPlayersTurn = '';
+  this.won = false;
+  this.numberOfDie = (this.options.numberOfDie || 1);
+
+  EventEmitter.call(this);
+  this._attachEvents(this.options.events);
+
+  if (this.options.state) {
+    this._setState(this.options.state);
+  }
+}
+
+inherits(Game, EventEmitter);
+
+exports.Game = Game;
+
+Game.prototype.state = function state() {
+  return this._attributes();
+};
+
+Game.prototype._setState = function setState(state) {
+  var _this = this;
+
+  this.started = state.started;
+  this.won = state.won;
+  this.currentPlayersTurn = state.currentPlayersTurn;
+  this.players = state.players.map(function(playerJSON) {
+    return Player.build(playerJSON, _this);
+  });
+
+  this.resumeGame();
+};
+
+Game.prototype._attributes = function _attributes() {
+  return {
+    won: this.won,
+    started: this.started,
+    currentPlayersTurn: this.currentPlayersTurn,
+    players: this.players.map(function(player) {
+      return player.attributes();
+    })
+  };
+};
+
+Game.prototype._attachEvents = function _attachEvents(events) {
+  var event;
+
+  if (typeof events !== undefined) {
+    for (event in events) {
+      this.on(event, events[event]);
+    }
+  }
+};
+
+Game.prototype.addPlayer = function addPlayer(player) {
+  if (this.players.length <= 3) {
+    player.joinGame(this);
+    player.setTeam(constants.Teams[this.players.length]);
+
+    this.players.push(player);
+    this.emit(Events.PLAYER_JOIN, { player: player });
+  }
+};
+
+//TODO: Implement a joinGame function to add a player to the game
+Game.prototype.joinGame = function joinGame(player) {
+};
+
+Game.prototype.start = function start() {
+  var readies = 0;
+
+  if (!this.started) {
+    this.players.forEach(function(player) {
+      if (player.getReady()) readies++;
+    });
+
+    if (!this.players.length) {
+      this.emit(Events.ERROR, { message: 'Not enough players to start game' });
+    } else if (this.players.length != readies) {
+      this.emit(Events.ERROR, { message: 'Not all players are ready' });
+    } else {
+      this.started = true;
+      this.emit(Events.GAME_START);
+      this._loop();
+    }
+  }
+
+  return this;
+};
+
+Game.prototype._loop = function _loop() {
+  var playerWon = this.playerTokensAscended();
+
+  if (playerWon) {
+    this.emit(Events.GAME_WON, { player: playerWon.attributes() });
+  } else {
+    //Calls the next players turn in line.
+    var player = this.nextPlayersTurn();
+    this.invokeTurn(player);
+  }
+
+};
+
+Game.prototype.continueGame = function continueGame() {
+  this._loop();
+};
+
+Game.prototype.resumeGame = function continueGame() {
+  var _this = this;
+
+  this.players.some(function(player) {
+    if (player.team === _this.currentPlayersTurn) {
+      player.beginTurn();
+      return player;
+    }
+  });
+};
+
+Game.prototype.invokeTurn = function invokeTurn(player) {
+  this.currentPlayersTurn = player.team;
+  return player.beginTurn();
+};
+
+Game.prototype.nextPlayersTurn = function nextPlayersTurn() {
+  var nextPlayer;
+
+  if (this.currentPlayersTurn) {
+    var playerIndex = this.players.map(function(player) {
+      return player.team;
+    }).indexOf(this.currentPlayersTurn);
+
+    if (playerIndex !== this.players.length - 1) {
+      nextPlayer = this.players[playerIndex + 1];
+    } else {
+      nextPlayer = this.players[0];
+    }
+  }
+  else {
+    nextPlayer = this.players[0];
+  }
+  return nextPlayer;
+};
+
+Game.prototype.findTokenAt = function findTokenAt(cords, excludedPlayer) {
+  var players = this.players;
+  var token = false;
+
+  this.players.some(function(player) {
+    if (excludedPlayer && player.team === excludedPlayer.team) return false;
+    token = player.tokenLocatedAt(cords);
+
+    return token;
+  });
+
+  return token;
+};
+
+Game.prototype.playerTokensAscended = function playerTokensAscended() {
+  var players = this.players;
+  var token;
+  var i;
+
+  for (i = 0; i < players.length; i++) {
+    player = players[i];
+
+    if (player.allTokensAscended()) return player;
+  }
+
+  return false;
+};
+
+Game.prototype.anyBlockadeIn = function anyBlockadeIn(cords, excludedPlayer) {
+  var players = this.players;
+  var blockade;
+  var i;
+
+  for (i = 0; i < players.length; i++) {
+    player = players[i];
+
+    if (excludedPlayer && player.team === excludedPlayer.team) {
+      continue;
+    }
+
+    blockade = player.hasBlockadeAt(cords);
+
+    if (blockade) return blockade;
+  }
+
+  return false;
+};
+
+},{"./constants":8,"./player":11,"events":2,"util":6}],11:[function(require,module,exports){
+var constants = require('./constants');
+var Token = require('./token').Token;
+var Events = constants.Events;
+
+function Player(metadata) {
+  this.metadata = metadata;
+  this._ready = false;
+  this.game = false;
+  this.team = '';
+  this.dices = [];
+  this._tokens = [];
+  this.blockades = {};
+}
+
+exports.Player = Player;
+
+Player.build = function build(playerState, game) {
+  var player = new Player();
+
+  player.metadata = playerState.metadata;
+  player._ready = playerState.ready;
+  player.team = playerState.team;
+  player.game = game;
+
+  playerState.tokens.forEach(function(tokenState) {
+    player._tokens.push(Token.build(tokenState, player));
+  });
+
+  return player;
+};
+
+Player.prototype.attributes = function attributes(only) {
+  var attr = {
+    metadata: this.metadata,
+    ready: this._ready,
+    team: this.team
+  };
+
+  if (!only) {
+    attr.tokens = this._tokens.map(function(token) {
+      return token.attributes();
+    });
+  }
+
+  return attr;
+};
+
+Player.prototype.setTeam = function setTeam(team) {
+  this.team = team;
+  this.createTokensForTeam();
+};
+
+Player.prototype.createTokensForTeam = function createTokensForTeam() {
+  var id;
+
+  for (id = 0; id <= 3; id++) {
+    this._tokens.push(new Token({player: this, id: id}));
+  }
+};
+
+Player.prototype.readyUp = function readyUp() {
+  this.ready = true;
+};
+
+Player.prototype.getReady = function getReady() {
+  return this.ready;
+};
+
+Player.prototype.useDice = function useDice(dice) {
+  dice.used = true;
+  var allUsed = this.dices.every(function(d) {
+    return d.used;
+  });
+
+  if (allUsed) this.endTurn();
+};
+
+Player.prototype.registerDice = function registerDice(firstDice, secondDice) {
+  this.dices = [];
+  this.dices.push(firstDice);
+  if (this.game.numberOfDie === 2) this.dices.push(secondDice);
+};
+
+Player.prototype.getActionsForDice = function getActionsForDice(position) {
+  var _this = this;
+  var dice = this.dices[(position - 1)];
+  var totalActions = [];
+
+  this._tokens.forEach(function(token) {
+    var action = token.getPossibleAction(dice.rolled);
+    if (action) {
+      action.dice = dice;
+      totalActions.push(action);
+    }
+  });
+
+  return totalActions;
+};
+
+Player.prototype.beginTurn = function beginTurn() {
+  var _this = this;
+  this.game.emit(Events.TURN_BEGIN, {
+    player: this.attributes(true),
+    registerDice: this.registerDice.bind(this),
+    getActionsForDice: this.getActionsForDice.bind(this),
+    release: function() {
+      _this.endTurn();
+    }
+  });
+};
+
+Player.prototype.endTurn = function endTurn() {
+  var rolledSix = this.dices.some(function(dice) {
+    return dice.rolled === 6;
+  });
+
+  if (rolledSix) {
+    this.game.emit(Events.REPEAT_TURN, { player: this.attributes(true) });
+    this.beginTurn();
+  } else {
+    this.game.emit(Events.TURN_END, { player: this.attributes(true) });
+    this.game.continueGame();
+  }
+};
+
+Player.prototype.joinGame = function joinGame(game) {
+  this.game = game;
+  return true;
+};
+
+Player.prototype.registerBlockade = function registerBlockade(cords, tokens) {
+  if (tokens.length >= 2) {
+    this.blockades[cords] = {tokens: tokens};
+
+    for (i = 0; i < tokens.length; i++) {
+      tokens[i].inBlockade = true;
+    }
+  } else {
+    if (tokens[0]) tokens[0].inBlockade = false;
+    delete this.blockades[cords];
+  }
+};
+
+Player.prototype.allTokensAscended = function allTokensAscended() {
+  var tokens = [];
+  var token;
+  var count = 0;
+
+  for (i = 0; i < this._tokens.length; i++) {
+    token = this._tokens[i];
+    if (token.ascended) count++;
+  }
+
+  return count === this._tokens.length;
+};
+
+Player.prototype.allyTokensAt = function allyTokensAt(cords, excludedToken) {
+  var tokens = this._tokens.filter(function(token) {
+    if (excludedToken && token.id === excludedToken.id) return;
+    return token.atCords(cords);
+  });
+
+  if (!tokens.length) return false;
+
+  return tokens;
+};
+
+Player.prototype.hasBlockadeAt = function hasBlockadeAt(cordsArray) {
+  var i;
+  var cords;
+
+  for (i = 0; i < cordsArray.length; i++) {
+    cords = cordsArray[i];
+    if (this.blockades[cords]) return this.blockades[cords];
+  }
+
+  return false;
+};
+
+Player.prototype.tokenLocatedAt = function tokenLocatedAt(cords, excludedToken) {
+  var foundToken = false;
+  var i;
+
+  this._tokens.some(function(token) {
+    if (excludedToken && token.id === excludedToken.id) return;
+
+    if (token.atCords(cords)) foundToken = token;
+
+    return foundToken;
+  });
+
+  return foundToken;
+};
+
+Player.prototype.blockadeAhead = function blockadeAhead(cordsArray) {
+  return this.game.anyBlockadeIn(cordsArray, this);
+};
+
+Player.prototype.enemyTokenAt = function enemyTokenAt(cords) {
+  return this.game.findTokenAt(cords, this);
+};
+
+},{"./constants":8,"./token":12}],12:[function(require,module,exports){
+var constants = require('./constants');
+var Grid = constants.Grid;
+var ActionTypes = constants.ActionTypes;
+var Events = constants.Events;
+var utils = require('./utils');
+
+function Token(options) {
+  this.player = options.player;
+  this.id     = options.id;
+  this.game   = this.player.game;
+  this.team   = this.player.team;
+
+  this.active = false;
+  this.isOnHeavenPath = false;
+  this.inBlockade = false;
+  this.cords  = {x: 0, y: 0};
+  this.ascended = false;
+}
+
+exports.Token = Token;
+
+Token.build = function build(tokenState, player) {
+  var token = new Token({ player: player, id: tokenState.id });
+
+  if (tokenState.active) {
+    token.born();
+    token.moveTo(tokenState.cords);
+  }
+
+  return token;
+};
+
+Token.prototype.attributes = function attributes() {
+  return {
+    id: this.id,
+    team: this.team,
+    active: this.active,
+    isOnHeavenPath: this.isOnHeavenPath,
+    inBlockade: this.inBlockade,
+    cords: this.cords,
+    ascended: this.ascended
+  };
+};
+
+Token.prototype.atCords = function atCords(cords) {
+  return [this.cords.x, this.cords.y].toString() === cords.toString();
+};
+
+Token.prototype.getPossibleAction = function getPossibleAction(rolled) {
+  var _this = this;
+  var action = {};
+  var forecast;
+  var enemyToken;
+  var allyToken;
+  var blockadeAhead;
+  var overShootAscendingPoint;
+  var willAscend;
+
+  forecast = this._forecastCords(rolled);
+  blockadeAhead = this._blockadeAhead(rolled);
+  overShootAscendingPoint = this._willOverShootAscendingPoint(rolled);
+
+  if (!blockadeAhead && !overShootAscendingPoint && !this.ascended) {
+    action.forecast = forecast;
+    action.token = this.attributes();
+    action.rolled = rolled;
+
+    if (this.active) {
+      enemyToken = this.player.enemyTokenAt(forecast);
+      allyTokens = this.player.allyTokensAt(forecast, this);
+      willAscend = this._willAscend(forecast);
+
+      if (willAscend) {
+        action.type = ActionTypes.ASCEND;
+      } else if (enemyToken) {
+        action.type = ActionTypes.KILL_MOVE;
+        action.enemyToken = enemyToken.attributes();
+      } else if (allyTokens) {
+        action.type = ActionTypes.CREATE_BLOCKADE;
+        action.allyTokens = allyTokens.map(function(token) {
+          return token.attributes();
+        });
+      } else {
+        action.type = ActionTypes.MOVE_BY;
+      }
+    } else if (rolled === 6) {
+      action.type = ActionTypes.BORN;
+    }
+
+    if (action.type) {
+      action.take = function() {
+        if (!this.dice.used) {
+          _this.executeAction(this);
+          _this.player.useDice(this.dice);
+        }
+        return true;
+      };
+
+      return action;
+    }
+  }
+
+  return false;
+};
+
+Token.prototype.executeAction = function executeAction(action) {
+
+  switch (action.type) {
+  case ActionTypes.BORN:
+    this.born();
+    break;
+
+  case ActionTypes.MOVE_BY:
+  case ActionTypes.CREATE_BLOCKADE:
+  case ActionTypes.KILL_MOVE:
+  case ActionTypes.ASCEND:
+    this.moveTo({x: action.forecast[0], y: action.forecast[1]});
+    break;
+  }
+};
+
+Token.prototype.born = function born() {
+  var startPoint = Grid.startPoint[this.team];
+  this.active = true;
+  this.game.emit(Events.TOKEN_BORN, { token: this.attributes() });
+
+  this.moveTo({x: startPoint[0], y: startPoint[1]});
+};
+
+Token.prototype._forecastCords = function _forecastCords(rolled) {
+  var cordArray = [this.cords.x, this.cords.y];
+  var cordsAhead = this._findAllCordsAhead(rolled);
+  var path = Grid.path;
+  var switchToHeaven;
+  var index;
+  var cords;
+
+  if (this.active) {
+    switchToHeaven = utils.findCordsInArray(Grid.switchPoint[this.team], cordsAhead);
+
+    if (this.isOnHeavenPath) {
+      path = Grid.allCordsForHeaven[this.team];
+    }
+
+    if (switchToHeaven !== -1 && switchToHeaven !== (cordsAhead.length - 1)) {
+      cords = this._switchToHeavenPath((switchToHeaven + 1), cordsAhead.length);
+    } else {
+      index = utils.findCordsInArray(cordArray, path);
+      index += rolled;
+      if (index > (path.length - 1)) {
+        index -= (path.length);
+      }
+      cords = path[index];
+    }
+  } else if (rolled === 6) {
+    cords = Grid.startPoint[this.team];
+  }
+
+  return cords;
+};
+
+Token.prototype._findAllCordsAhead = function _findAllCordsAhead(rolled) {
+  var cordArray = [this.cords.x, this.cords.y];
+  var initialIndex;
+  var endingIndex;
+  var cordsList = [];
+
+  if (this.active) {
+    initialIndex = utils.findCordsInArray(cordArray, Grid.path);
+    endingIndex = initialIndex + rolled;
+    initialIndex += 1; //Excludes first element in slice
+    endingIndex += 1; //Includes last element in slice
+
+    cordsList = Grid.path.slice(initialIndex, endingIndex);
+
+    if (endingIndex > (Grid.path.length - 1)) {
+      endingIndex -= (Grid.path.length);
+      cordsList = cordsList.concat(Grid.path.slice(0, endingIndex));
+    }
+  } else if (rolled === 6) {
+    cordsList = [Grid.startPoint[this.team]];
+  }
+
+  return cordsList;
+};
+
+Token.prototype._blockadeAhead = function _blockadeAhead(rolled) {
+  var blockade = this.player.blockadeAhead(this._findAllCordsAhead(rolled));
+
+  if (blockade) {
+
+    this.game.emit(Events.TOKEN_BLOCKED, {
+      token: this.attributes(),
+      blockade: {
+        tokens: blockade.tokens.map(function(token) {
+          return token.attributes();
+        })
+      }
+    });
+  }
+
+  return blockade;
+};
+
+Token.prototype._willAscend = function _willAscend(cords) {
+  return cords === Grid.ascendingPoint[this.team];
+};
+
+Token.prototype._willOverShootAscendingPoint = function _willOverShootAscendingPoint(rolled) {
+  var totalHeavenPath = Grid.allCordsForHeaven[this.team];
+  var cordArray = [this.cords.x, this.cords.y];
+  var index = utils.findCordsInArray(cordArray, totalHeavenPath);
+  index += 1;
+  var exactRolled = totalHeavenPath.length - index;
+  var diff;
+
+  if (this.isOnHeavenPath && rolled > exactRolled) {
+    diff = rolled - exactRolled;
+    this.game.emit(Events.OVER_SHOOT, { token: this.attributes(), by: diff });
+    return true;
+  }
+
+  return false;
+};
+
+Token.prototype._createBlockade = function _createBlockade(cords, allyTokens) {
+  allyTokens.push(this);
+  this.player.registerBlockade(cords, allyTokens);
+  this.game.emit(Events.TOKEN_BLOCKADE, { tokens: allyTokens, cords: cords });
+};
+
+Token.prototype._switchToHeavenPath = function _switchToHeavenPath(intialIndex, cordArrayLength) {
+  var heavenPath = Grid.heaven[this.team];
+  var cordsArray;
+  var cords;
+
+  cords = heavenPath[(cordArrayLength - 1) - intialIndex];
+
+  return cords;
+};
+
+//TODO: Remove this function no longer in use
+Token.prototype.moveBy = function moveBy(rolled) {
+  var newCord = this._forecastCords(rolled);
+  this.moveTo({x: newCord[0], y: newCord[1]});
+};
+
+Token.prototype.moveTo = function moveTo(cords) {
+  var cordArray = [cords.x, cords.y];
+  var enemyToken = this.player.enemyTokenAt(cordArray);
+  var allyTokens = this.player.allyTokensAt(cordArray, this);
+  var onHeavenPath = this._onHeavenPath(cordArray);
+  var ascendCord = Grid.ascendingPoint[this.team];
+
+  if (this.inBlockade) this._leaveBlockade();
+  if (enemyToken) this._kill(enemyToken);
+  if (allyTokens) this._createBlockade(cordArray, allyTokens);
+
+  if (onHeavenPath) this.isOnHeavenPath = true;
+  if (cordArray.toString() === ascendCord.toString()) {
+    this._ascend();
+  }
+
+  this.cords.x = cords.x;
+  this.cords.y = cords.y;
+  this.game.emit(Events.TOKEN_MOVE_TO, { token: this.attributes(), cords: this.cords});
+};
+
+Token.prototype._leaveBlockade = function _leaveBlockade() {
+  var cords = [this.cords.x, this.cords.y];
+  var allyTokens;
+  this.inBlockade = false;
+  allyTokens = this.player.allyTokensAt(cords, this);
+  this.player.registerBlockade(cords, allyTokens);
+};
+
+Token.prototype._ascend = function _ascend() {
+  this.ascended = true;
+  this.game.emit(Events.TOKEN_ASCEND, { token: this.attributes() });
+};
+
+Token.prototype._onHeavenPath = function _onHeavenPath(cords) {
+  var totalHeavenPath = Grid.allCordsForHeaven[this.team];
+  var index = utils.findCordsInArray(cords, totalHeavenPath);
+
+  return index !== -1;
+};
+
+Token.prototype.killedBy = function killedBy(otherToken) {
+  this.active = false;
+  this.cords = { x: 0, y: 0 };
+};
+
+Token.prototype._kill = function _kill(killedToken) {
+  killedToken.killedBy(this);
+  this.game.emit(Events.TOKEN_KILLED, { killed: killedToken.attributes(), by: this.attributes() });
+};
+
+},{"./constants":8,"./utils":13}],13:[function(require,module,exports){
+var constants = require('./constants');
+var Grid = constants.Grid;
+var Teams = constants.Teams;
+
+var findCordsInArray = exports.findCordsInArray = function(needle, haystack) {
+  return haystack.map(function(cords) {
+    return cords.toString();
+  }).indexOf(needle.toString());
+};
+
+exports.cordBelongsTo = function(cordArray) {
+  for (var i = 0; i <= 3; i++) {
+    if (findCordsInArray(cordArray, Grid.allCordsForTeam[Teams[i]]) !== -1) {
+      return Teams[i];
+    }
+  }
+
+  return false;
+};
+
+},{"./constants":8}]},{},[1])(1)
+});

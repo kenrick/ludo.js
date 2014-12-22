@@ -10,6 +10,7 @@ function Game(options) {
   this.started = false;
   this.currentPlayersTurn = '';
   this.won = false;
+  this.numberOfDie = (this.options.numberOfDie || 1);
 
   EventEmitter.call(this);
   this._attachEvents(this.options.events);
@@ -101,7 +102,7 @@ Game.prototype._loop = function _loop() {
   var playerWon = this.playerTokensAscended();
 
   if (playerWon) {
-    this.emit(Events.GAME_WON, { player: playerWon });
+    this.emit(Events.GAME_WON, { player: playerWon.attributes() });
   } else {
     //Calls the next players turn in line.
     var player = this.nextPlayersTurn();

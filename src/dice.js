@@ -1,6 +1,7 @@
 function Dice(options) {
   this.options = (options || {});
   this.rolled = this.options.rolled || false;
+  this.used = false;
 }
 
 exports.Dice = Dice;

@@ -65,25 +65,19 @@
             .appendTo('#dialog');
           }
 
-          if(actions) {
-
-            for (var i = 0; i < actions.length; i++) {
-              var action = actions[i];
+          if(actions.length) {
+            actions.forEach(function (action) {
               $('<a/>', {
                 text: action.type + " - token: " + (action.token.id + 1),
                 class: "action",
                 id: "action-" + action.token.id,
-                data: {
-                  action: i,
-                }
               })
               .appendTo('#dialog')
-              .click(function(e) {
-                action = actions[$(this).data('action')];
+              .click(function () {
                 slideDialog();
-                cb(action);
-              })
-            }
+                action.take();
+              });
+            });
           }
 
           slideDialog(true);
@@ -130,9 +124,8 @@
             var player = data.player;
             log("its " + player.metadata.name + "is the winner!");
           },
-          'player.turn.rollDice': function(data) {
-            var player = data.player;
-            var diceRolledCallback = data.callback;
+          'player.turn.begin': function(payload) {
+            var player = payload.player;
             log("its " + player.metadata.name + "'s turn");
 
             dialog({
@@ -142,27 +135,22 @@
               callback: function() {
                 var dice = new Ludo.Dice();
                 dice.roll();
+                payload.registerDice(dice);
                 log(player.metadata.name + " rolled a " + dice.rolled);
-                diceRolledCallback(dice);
-              }
-            });
+                var actions = payload.getActionsForDice(1);
 
-          },
-          'player.actions': function(data) {
-            var player = data.player;
-            var actions = data.actions;
-            var decisionCallback = data.callback;
-
-            dialog({
-              title: player.metadata.name + " rolled a " + actions[0].rolled + ". What now?",
-              color: teamColors[player.team],
-              actions: actions,
-              callback: function(action) {
-                decisionCallback(action);
+                if(actions.length) {
+                  dialog({
+                    title: player.metadata.name + " rolled a " + dice.rolled + ". What now?",
+                    color: teamColors[player.team],
+                    actions: actions
+                  });
+                } else {
+                  payload.release();
+                }
               }
             });
           },
-
           'token.born': function(data) {
             var token = data.token;
 

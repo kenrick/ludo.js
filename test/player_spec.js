@@ -1,5 +1,6 @@
 var helper = require('./spec_helper');
 var Player = require('../src/player').Player;
+var Dice = require('../src/dice').Dice;
 
 describe('Player', function() {
   var game;
@@ -34,33 +35,25 @@ describe('Player', function() {
     it('fires player:turn:begins on the game', function() {
       player.game = game;
       player.beginTurn();
-      game.emit.should.be.calledWith('player.turn.begin', { player: player });
+      var args = game.emit.getCall(0).args[1];
+      expect(game.emit.calledWith('player.turn.begin', args)).to.be.true();
+      expect(args.player).to.eql(player.attributes(true));
+    });
+  });
+
+  describe('endTurn', function() {
+    it('fires player:turn:ends on the game', function() {
+      player.game = game;
+      player.endTurn();
+      var args = game.emit.getCall(0).args[1];
+      expect(game.emit.calledWith('player.turn.end', args)).to.be.true();
+      expect(args.player).to.eql(player.attributes(true));
     });
 
-    it('fires player.turn.rollDice and waits for the dice to roll', function() {
+    it('calls continueGame on the game instance', function() {
       player.game = game;
-      player.beginTurn();
-      callback = game.emit.args[1][1].callback;
-      game.emit.should.be.calledWith('player.turn.rollDice', { player: player, callback: callback });
-    });
-
-    it('fires player.actions if there are possible actions', function() {
-      var dice = { rolled: 6 };
-      player.game = game;
-      player.beginTurn();
-      game.emit.args[1][1].callback(dice);
-
-      game.emit.should.be.calledWith('player.actions');
-    });
-
-    it('fires player.turn.end there are no possible actions', function() {
-      var dice = { rolled: 3 };
-      player.game = game;
-      player.beginTurn();
-      callback = game.emit.args[1][1].callback(dice);
-
-      game.emit.should.not.be.calledWith('player.actions');
-      game.emit.should.be.calledWith('player.turn.end', { player: player });
+      player.endTurn();
+      game.continueGame.called.should.equal(true);
     });
   });
 
@@ -90,9 +83,10 @@ describe('Player', function() {
     });
   });
 
-  describe('generatePossibleActions', function() {
+  describe('getActionsForDice', function() {
     it('returns born actions for inactive tokens when 6 is rolled', function() {
-      actions = player.generatePossibleActions(6);
+      player.registerDice((new Dice({rolled: 6})));
+      actions = player.getActionsForDice(1);
       actions.length.should.equal(4);
 
       for (var i = 0; i <= 3; i++) {
@@ -139,20 +133,6 @@ describe('Player', function() {
     it('calls game.findTokenAt ', function() {
       player.enemyTokenAt([5, 9]);
       game.findTokenAt.should.be.calledWith([5, 9], player);
-    });
-  });
-
-  describe('endTurn', function() {
-    it('fires player:turn:ends on the game', function() {
-      player.game = game;
-      player.endTurn();
-      game.emit.should.be.calledWith('player.turn.end', { player: player });
-    });
-
-    it('calls continueGame on the game instance', function() {
-      player.game = game;
-      player.endTurn();
-      game.continueGame.called.should.equal(true);
     });
   });
 });

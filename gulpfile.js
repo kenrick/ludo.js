@@ -34,7 +34,7 @@ gulp.task('browserify', function() {
 
   return gulp.src(paths.index)
     .pipe(browserified)
-    .pipe(uglify())
+    // .pipe(uglify())
     .pipe(rename('Ludo.js'))
     .pipe(gulp.dest('./dist'));
 });

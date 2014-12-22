@@ -47,6 +47,7 @@ Token.prototype.atCords = function atCords(cords) {
 };
 
 Token.prototype.getPossibleAction = function getPossibleAction(rolled) {
+  var _this = this;
   var action = {};
   var forecast;
   var enemyToken;
@@ -61,7 +62,7 @@ Token.prototype.getPossibleAction = function getPossibleAction(rolled) {
 
   if (!blockadeAhead && !overShootAscendingPoint && !this.ascended) {
     action.forecast = forecast;
-    action.token = this;
+    action.token = this.attributes();
     action.rolled = rolled;
 
     if (this.active) {
@@ -73,10 +74,12 @@ Token.prototype.getPossibleAction = function getPossibleAction(rolled) {
         action.type = ActionTypes.ASCEND;
       } else if (enemyToken) {
         action.type = ActionTypes.KILL_MOVE;
-        action.enemyToken = enemyToken;
+        action.enemyToken = enemyToken.attributes();
       } else if (allyTokens) {
         action.type = ActionTypes.CREATE_BLOCKADE;
-        action.allyTokens = allyTokens;
+        action.allyTokens = allyTokens.map(function(token) {
+          return token.attributes();
+        });
       } else {
         action.type = ActionTypes.MOVE_BY;
       }
@@ -84,7 +87,17 @@ Token.prototype.getPossibleAction = function getPossibleAction(rolled) {
       action.type = ActionTypes.BORN;
     }
 
-    if (action.type) return action;
+    if (action.type) {
+      action.take = function() {
+        if (!this.dice.used) {
+          _this.executeAction(this);
+          _this.player.useDice(this.dice);
+        }
+        return true;
+      };
+
+      return action;
+    }
   }
 
   return false;
@@ -109,7 +122,7 @@ Token.prototype.executeAction = function executeAction(action) {
 Token.prototype.born = function born() {
   var startPoint = Grid.startPoint[this.team];
   this.active = true;
-  this.game.emit(Events.TOKEN_BORN, { token: this });
+  this.game.emit(Events.TOKEN_BORN, { token: this.attributes() });
 
   this.moveTo({x: startPoint[0], y: startPoint[1]});
 };
@@ -175,7 +188,15 @@ Token.prototype._blockadeAhead = function _blockadeAhead(rolled) {
   var blockade = this.player.blockadeAhead(this._findAllCordsAhead(rolled));
 
   if (blockade) {
-    this.game.emit(Events.TOKEN_BLOCKED, { token: this, blockade: blockade });
+
+    this.game.emit(Events.TOKEN_BLOCKED, {
+      token: this.attributes(),
+      blockade: {
+        tokens: blockade.tokens.map(function(token) {
+          return token.attributes();
+        })
+      }
+    });
   }
 
   return blockade;
@@ -195,7 +216,7 @@ Token.prototype._willOverShootAscendingPoint = function _willOverShootAscendingP
 
   if (this.isOnHeavenPath && rolled > exactRolled) {
     diff = rolled - exactRolled;
-    this.game.emit(Events.OVER_SHOOT, { token: this, by: diff });
+    this.game.emit(Events.OVER_SHOOT, { token: this.attributes(), by: diff });
     return true;
   }
 
@@ -242,7 +263,7 @@ Token.prototype.moveTo = function moveTo(cords) {
 
   this.cords.x = cords.x;
   this.cords.y = cords.y;
-  this.game.emit(Events.TOKEN_MOVE_TO, { token: this, cords: this.cords});
+  this.game.emit(Events.TOKEN_MOVE_TO, { token: this.attributes(), cords: this.cords});
 };
 
 Token.prototype._leaveBlockade = function _leaveBlockade() {
@@ -255,7 +276,7 @@ Token.prototype._leaveBlockade = function _leaveBlockade() {
 
 Token.prototype._ascend = function _ascend() {
   this.ascended = true;
-  this.game.emit(Events.TOKEN_ASCEND, { token: this });
+  this.game.emit(Events.TOKEN_ASCEND, { token: this.attributes() });
 };
 
 Token.prototype._onHeavenPath = function _onHeavenPath(cords) {
@@ -272,5 +293,5 @@ Token.prototype.killedBy = function killedBy(otherToken) {
 
 Token.prototype._kill = function _kill(killedToken) {
   killedToken.killedBy(this);
-  this.game.emit(Events.TOKEN_KILLED, { killed: killedToken, by: this });
+  this.game.emit(Events.TOKEN_KILLED, { killed: killedToken.attributes(), by: this.attributes() });
 };
