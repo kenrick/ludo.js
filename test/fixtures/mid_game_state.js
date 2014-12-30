@@ -6,7 +6,7 @@ module.exports = {
     "metadata": {
       "name": "P1"
     },
-    "ready": false,
+    "ready": true,
     "team": "bl",
     "tokens": [{
       "id": 0,
@@ -57,7 +57,7 @@ module.exports = {
     "metadata": {
       "name": "P2"
     },
-    "ready": false,
+    "ready": true,
     "team": "br",
     "tokens": [{
       "id": 0,

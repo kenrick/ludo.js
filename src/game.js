@@ -1,6 +1,9 @@
-var EventEmitter = require('events').EventEmitter;
+var EventEmitter = require('eventemitter2').EventEmitter2;
 var Player = require('./player').Player;
+var Dice = require('./dice').Dice;
 var constants = require('./constants');
+var Mode = constants.Mode;
+var Sync = constants.isServer ? require('./sync/server') : require('./sync/client');
 var Events = constants.Events;
 var inherits = require('util').inherits;
 
@@ -9,15 +12,18 @@ function Game(options) {
   this.players = [];
   this.started = false;
   this.currentPlayersTurn = '';
+  this.mode = (this.options.mode || Mode.OFFLINE);
   this.won = false;
   this.numberOfDie = (this.options.numberOfDie || 1);
+  this.localPlayer = (this.options.localPlayer || false);
+  this.sync = null;
 
   EventEmitter.call(this);
   this._attachEvents(this.options.events);
 
-  if (this.options.state) {
-    this._setState(this.options.state);
-  }
+  if (this.mode === Mode.ONLINE) this.sync = Sync(this, this.options.link);
+
+  if (this.options.state) this._setState(this.options.state);
 }
 
 inherits(Game, EventEmitter);
@@ -28,7 +34,7 @@ Game.prototype.state = function state() {
   return this._attributes();
 };
 
-Game.prototype._setState = function setState(state) {
+Game.prototype._setState = function _setState(state) {
   var _this = this;
 
   this.started = state.started;
@@ -38,11 +44,15 @@ Game.prototype._setState = function setState(state) {
     return Player.build(playerJSON, _this);
   });
 
-  this.resumeGame();
+  if (this.sync) {
+    this.sync.setEvents(state.syncEvents);
+  }
+
+  if (this.started) this.resumeGame();
 };
 
 Game.prototype._attributes = function _attributes() {
-  return {
+  var attributes =  {
     won: this.won,
     started: this.started,
     currentPlayersTurn: this.currentPlayersTurn,
@@ -50,6 +60,12 @@ Game.prototype._attributes = function _attributes() {
       return player.attributes();
     })
   };
+
+  if (this.sync) {
+    attributes.syncEvents = this.sync.getEvents();
+  }
+
+  return attributes;
 };
 
 Game.prototype._attachEvents = function _attachEvents(events) {
@@ -62,18 +78,35 @@ Game.prototype._attachEvents = function _attachEvents(events) {
   }
 };
 
+Game.prototype.pushEvent = function pushEvent(eventType, payload) {
+  var event = {type: eventType, payload: payload};
+
+  if (this.sync && !this.sync.alreadyHasEvent(event)) {
+    this.sync.send(event);
+  }
+
+  this.emit(eventType, payload);
+};
+
+Game.prototype.isOfflineGame = function isOfflineGame() {
+  return this.mode === Mode.OFFLINE;
+};
+
 Game.prototype.addPlayer = function addPlayer(player) {
   if (this.players.length <= 3) {
     player.joinGame(this);
     player.setTeam(constants.Teams[this.players.length]);
 
     this.players.push(player);
-    this.emit(Events.PLAYER_JOIN, { player: player });
+    this.pushEvent(Events.PLAYER_JOIN, { player: player.attributes(true) });
   }
 };
 
-//TODO: Implement a joinGame function to add a player to the game
-Game.prototype.joinGame = function joinGame(player) {
+Game.prototype.joinGame = function joinGame(playerData) {
+  var player = new Player(playerData);
+  player.readyUp();
+  this.addPlayer(player);
+  return player.attributes(true);
 };
 
 Game.prototype.start = function start() {
@@ -90,7 +123,7 @@ Game.prototype.start = function start() {
       this.emit(Events.ERROR, { message: 'Not all players are ready' });
     } else {
       this.started = true;
-      this.emit(Events.GAME_START);
+      this.pushEvent(Events.GAME_START);
       this._loop();
     }
   }
@@ -115,7 +148,7 @@ Game.prototype.continueGame = function continueGame() {
   this._loop();
 };
 
-Game.prototype.resumeGame = function continueGame() {
+Game.prototype.resumeGame = function resumeGame() {
   var _this = this;
 
   this.players.some(function(player) {
@@ -197,4 +230,54 @@ Game.prototype.anyBlockadeIn = function anyBlockadeIn(cords, excludedPlayer) {
   }
 
   return false;
+};
+
+Game.prototype.processEvent = function processEvent(event) {
+  var payload = event.payload;
+  var team;
+  var index;
+  var player;
+  var token;
+
+  switch (event.type) {
+    case Events.PLAYER_JOIN:
+      this.joinGame(payload.player.metadata);
+      break;
+
+    case Events.GAME_START:
+      this.start();
+      break;
+
+    case Events.TURN_END:
+    case Events.REPEAT_TURN:
+      team = payload.player.team;
+      index = constants.Teams.indexOf(team);
+      player = this.players[index];
+      player.endTurn();
+      break;
+
+    case Events.REG_DICE:
+      team = payload.player.team;
+      index = constants.Teams.indexOf(team);
+      player = this.players[index];
+      player.registerDice(new Dice({rolled: payload.dices[0].rolled }));
+      // this.pushEvent(Events.REG_DICE, payload);
+      break;
+
+    case Events.TOKEN_BORN:
+      team = payload.token.team;
+      index = constants.Teams.indexOf(team);
+      player = this.players[index];
+      token = player._tokens[payload.token.id];
+      token.born();
+      break;
+
+    case Events.TOKEN_MOVE_TO:
+      team = payload.token.team;
+      index = constants.Teams.indexOf(team);
+      player = this.players[index];
+      token = player._tokens[payload.token.id];
+      token.moveTo(payload.cords);
+      break;
+  }
 };

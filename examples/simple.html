@@ -190,21 +190,21 @@
           }
         };
 
-        var game = new Ludo.Game({ events: events });
-        var player1 = new Ludo.Player({name: "Shane"});
-        var player2 = new Ludo.Player({name: "Dake"});
-        var player3 = new Ludo.Player({name: "David"});
-        var player4 = new Ludo.Player({name: "Gary"});
-
-        game.addPlayer(player1);
-        game.addPlayer(player2);
-        game.addPlayer(player3);
-        game.addPlayer(player4);
-
-        player1.readyUp();
-        player2.readyUp();
-        player3.readyUp();
-        player4.readyUp();
+        var game = new Ludo.Game({ events: events, sync: io() });
+        // var player1 = new Ludo.Player({name: "Shane"});
+        // var player2 = new Ludo.Player({name: "Dake"});
+        // var player3 = new Ludo.Player({name: "David"});
+        // var player4 = new Ludo.Player({name: "Gary"});
+        //
+        // game.addPlayer(player1);
+        // game.addPlayer(player2);
+        // game.addPlayer(player3);
+        // game.addPlayer(player4);
+        //
+        // player1.readyUp();
+        // player2.readyUp();
+        // player3.readyUp();
+        // player4.readyUp();
 
         dialog({
           button: "Start Game",

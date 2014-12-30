@@ -8,9 +8,16 @@ Conversions;
  GREEN  = TL
 **/
 
+exports.isServer = typeof window === 'undefined';
+
 exports.Teams = ['bl', 'br', 'tr', 'tl'];
 
 exports.Messages = {
+};
+
+exports.Mode = {
+  OFFLINE: 'offline',
+  ONLINE:  'online'
 };
 
 exports.Events = {
@@ -19,6 +26,7 @@ exports.Events = {
 
   PLAYER_JOIN:     'player.join',
   TURN_BEGIN:      'player.turn.begin',
+  REG_DICE:        'player.registerDice',
   TURN_END:        'player.turn.end',
   REPEAT_TURN:     'player.turn.repeat',
 

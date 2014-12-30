@@ -10,6 +10,7 @@ function Player(metadata) {
   this.dices = [];
   this._tokens = [];
   this.blockades = {};
+  this.sync = false;
 }
 
 exports.Player = Player;
@@ -59,11 +60,11 @@ Player.prototype.createTokensForTeam = function createTokensForTeam() {
 };
 
 Player.prototype.readyUp = function readyUp() {
-  this.ready = true;
+  this._ready = true;
 };
 
 Player.prototype.getReady = function getReady() {
-  return this.ready;
+  return this._ready;
 };
 
 Player.prototype.useDice = function useDice(dice) {
@@ -79,6 +80,7 @@ Player.prototype.registerDice = function registerDice(firstDice, secondDice) {
   this.dices = [];
   this.dices.push(firstDice);
   if (this.game.numberOfDie === 2) this.dices.push(secondDice);
+  this.game.pushEvent(Events.REG_DICE, { player: this.attributes(true), dices: this.dices });
 };
 
 Player.prototype.getActionsForDice = function getActionsForDice(position) {
@@ -97,16 +99,33 @@ Player.prototype.getActionsForDice = function getActionsForDice(position) {
   return totalActions;
 };
 
+//TODO: finish this function
+Player.prototype.isLocalPlayer = function isLocalPlayer() {
+  return (!this.game.isOfflineGame() && this.game.localPlayer.team === this.team);
+};
+
 Player.prototype.beginTurn = function beginTurn() {
   var _this = this;
-  this.game.emit(Events.TURN_BEGIN, {
-    player: this.attributes(true),
-    registerDice: this.registerDice.bind(this),
-    getActionsForDice: this.getActionsForDice.bind(this),
-    release: function() {
-      _this.endTurn();
-    }
-  });
+  if (this.game.isOfflineGame() || this.isLocalPlayer()) {
+    this.game.pushEvent(Events.TURN_BEGIN, {
+      player: this.attributes(true),
+      registerDice: this.registerDice.bind(this),
+      getActionsForDice: this.getActionsForDice.bind(this),
+      release: function() {
+        _this.endTurn();
+      },
+      canTakeAction: function() {
+        return true;
+      }
+    });
+  } else {
+    this.game.pushEvent(Events.TURN_BEGIN, {
+      player: this.attributes(true),
+      canTakeAction: function() {
+        return false;
+      }
+    });
+  }
 };
 
 Player.prototype.endTurn = function endTurn() {
@@ -115,10 +134,10 @@ Player.prototype.endTurn = function endTurn() {
   });
 
   if (rolledSix) {
-    this.game.emit(Events.REPEAT_TURN, { player: this.attributes(true) });
+    this.game.pushEvent(Events.REPEAT_TURN, { player: this.attributes(true) });
     this.beginTurn();
   } else {
-    this.game.emit(Events.TURN_END, { player: this.attributes(true) });
+    this.game.pushEvent(Events.TURN_END, { player: this.attributes(true) });
     this.game.continueGame();
   }
 };

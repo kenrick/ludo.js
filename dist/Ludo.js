@@ -5,310 +5,7 @@ exports.Token = require('./src/token').Token;
 exports.Dice = require('./src/dice').Dice;
 exports.utils = require('./src/utils');
 
-},{"./src/dice":9,"./src/game":10,"./src/player":11,"./src/token":12,"./src/utils":13}],2:[function(require,module,exports){
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-function EventEmitter() {
-  this._events = this._events || {};
-  this._maxListeners = this._maxListeners || undefined;
-}
-module.exports = EventEmitter;
-
-// Backwards-compat with node 0.10.x
-EventEmitter.EventEmitter = EventEmitter;
-
-EventEmitter.prototype._events = undefined;
-EventEmitter.prototype._maxListeners = undefined;
-
-// By default EventEmitters will print a warning if more than 10 listeners are
-// added to it. This is a useful default which helps finding memory leaks.
-EventEmitter.defaultMaxListeners = 10;
-
-// Obviously not all Emitters should be limited to 10. This function allows
-// that to be increased. Set to zero for unlimited.
-EventEmitter.prototype.setMaxListeners = function(n) {
-  if (!isNumber(n) || n < 0 || isNaN(n))
-    throw TypeError('n must be a positive number');
-  this._maxListeners = n;
-  return this;
-};
-
-EventEmitter.prototype.emit = function(type) {
-  var er, handler, len, args, i, listeners;
-
-  if (!this._events)
-    this._events = {};
-
-  // If there is no 'error' event listener then throw.
-  if (type === 'error') {
-    if (!this._events.error ||
-        (isObject(this._events.error) && !this._events.error.length)) {
-      er = arguments[1];
-      if (er instanceof Error) {
-        throw er; // Unhandled 'error' event
-      }
-      throw TypeError('Uncaught, unspecified "error" event.');
-    }
-  }
-
-  handler = this._events[type];
-
-  if (isUndefined(handler))
-    return false;
-
-  if (isFunction(handler)) {
-    switch (arguments.length) {
-      // fast cases
-      case 1:
-        handler.call(this);
-        break;
-      case 2:
-        handler.call(this, arguments[1]);
-        break;
-      case 3:
-        handler.call(this, arguments[1], arguments[2]);
-        break;
-      // slower
-      default:
-        len = arguments.length;
-        args = new Array(len - 1);
-        for (i = 1; i < len; i++)
-          args[i - 1] = arguments[i];
-        handler.apply(this, args);
-    }
-  } else if (isObject(handler)) {
-    len = arguments.length;
-    args = new Array(len - 1);
-    for (i = 1; i < len; i++)
-      args[i - 1] = arguments[i];
-
-    listeners = handler.slice();
-    len = listeners.length;
-    for (i = 0; i < len; i++)
-      listeners[i].apply(this, args);
-  }
-
-  return true;
-};
-
-EventEmitter.prototype.addListener = function(type, listener) {
-  var m;
-
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
-
-  if (!this._events)
-    this._events = {};
-
-  // To avoid recursion in the case that type === "newListener"! Before
-  // adding it to the listeners, first emit "newListener".
-  if (this._events.newListener)
-    this.emit('newListener', type,
-              isFunction(listener.listener) ?
-              listener.listener : listener);
-
-  if (!this._events[type])
-    // Optimize the case of one listener. Don't need the extra array object.
-    this._events[type] = listener;
-  else if (isObject(this._events[type]))
-    // If we've already got an array, just append.
-    this._events[type].push(listener);
-  else
-    // Adding the second element, need to change to array.
-    this._events[type] = [this._events[type], listener];
-
-  // Check for listener leak
-  if (isObject(this._events[type]) && !this._events[type].warned) {
-    var m;
-    if (!isUndefined(this._maxListeners)) {
-      m = this._maxListeners;
-    } else {
-      m = EventEmitter.defaultMaxListeners;
-    }
-
-    if (m && m > 0 && this._events[type].length > m) {
-      this._events[type].warned = true;
-      console.error('(node) warning: possible EventEmitter memory ' +
-                    'leak detected. %d listeners added. ' +
-                    'Use emitter.setMaxListeners() to increase limit.',
-                    this._events[type].length);
-      if (typeof console.trace === 'function') {
-        // not supported in IE 10
-        console.trace();
-      }
-    }
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.on = EventEmitter.prototype.addListener;
-
-EventEmitter.prototype.once = function(type, listener) {
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
-
-  var fired = false;
-
-  function g() {
-    this.removeListener(type, g);
-
-    if (!fired) {
-      fired = true;
-      listener.apply(this, arguments);
-    }
-  }
-
-  g.listener = listener;
-  this.on(type, g);
-
-  return this;
-};
-
-// emits a 'removeListener' event iff the listener was removed
-EventEmitter.prototype.removeListener = function(type, listener) {
-  var list, position, length, i;
-
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
-
-  if (!this._events || !this._events[type])
-    return this;
-
-  list = this._events[type];
-  length = list.length;
-  position = -1;
-
-  if (list === listener ||
-      (isFunction(list.listener) && list.listener === listener)) {
-    delete this._events[type];
-    if (this._events.removeListener)
-      this.emit('removeListener', type, listener);
-
-  } else if (isObject(list)) {
-    for (i = length; i-- > 0;) {
-      if (list[i] === listener ||
-          (list[i].listener && list[i].listener === listener)) {
-        position = i;
-        break;
-      }
-    }
-
-    if (position < 0)
-      return this;
-
-    if (list.length === 1) {
-      list.length = 0;
-      delete this._events[type];
-    } else {
-      list.splice(position, 1);
-    }
-
-    if (this._events.removeListener)
-      this.emit('removeListener', type, listener);
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.removeAllListeners = function(type) {
-  var key, listeners;
-
-  if (!this._events)
-    return this;
-
-  // not listening for removeListener, no need to emit
-  if (!this._events.removeListener) {
-    if (arguments.length === 0)
-      this._events = {};
-    else if (this._events[type])
-      delete this._events[type];
-    return this;
-  }
-
-  // emit removeListener for all listeners on all events
-  if (arguments.length === 0) {
-    for (key in this._events) {
-      if (key === 'removeListener') continue;
-      this.removeAllListeners(key);
-    }
-    this.removeAllListeners('removeListener');
-    this._events = {};
-    return this;
-  }
-
-  listeners = this._events[type];
-
-  if (isFunction(listeners)) {
-    this.removeListener(type, listeners);
-  } else {
-    // LIFO order
-    while (listeners.length)
-      this.removeListener(type, listeners[listeners.length - 1]);
-  }
-  delete this._events[type];
-
-  return this;
-};
-
-EventEmitter.prototype.listeners = function(type) {
-  var ret;
-  if (!this._events || !this._events[type])
-    ret = [];
-  else if (isFunction(this._events[type]))
-    ret = [this._events[type]];
-  else
-    ret = this._events[type].slice();
-  return ret;
-};
-
-EventEmitter.listenerCount = function(emitter, type) {
-  var ret;
-  if (!emitter._events || !emitter._events[type])
-    ret = 0;
-  else if (isFunction(emitter._events[type]))
-    ret = 1;
-  else
-    ret = emitter._events[type].length;
-  return ret;
-};
-
-function isFunction(arg) {
-  return typeof arg === 'function';
-}
-
-function isNumber(arg) {
-  return typeof arg === 'number';
-}
-
-function isObject(arg) {
-  return typeof arg === 'object' && arg !== null;
-}
-
-function isUndefined(arg) {
-  return arg === void 0;
-}
-
-},{}],3:[function(require,module,exports){
+},{"./src/dice":9,"./src/game":10,"./src/player":11,"./src/token":14,"./src/utils":15}],2:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -333,7 +30,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],4:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -421,14 +118,14 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],5:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -1018,7 +715,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":5,"_process":4,"inherits":3}],7:[function(require,module,exports){
+},{"./support/isBuffer":4,"_process":3,"inherits":2}],6:[function(require,module,exports){
 /*!
  * https://github.com/es-shims/es5-shim
  * @license es5-shim Copyright 2009-2014 by contributors, MIT License
@@ -2443,6 +2140,581 @@ if (parseInt(ws + '08') !== 8 || parseInt(ws + '0x16') !== 22) {
 
 }));
 
+},{}],7:[function(require,module,exports){
+/*!
+ * EventEmitter2
+ * https://github.com/hij1nx/EventEmitter2
+ *
+ * Copyright (c) 2013 hij1nx
+ * Licensed under the MIT license.
+ */
+;!function(undefined) {
+
+  var isArray = Array.isArray ? Array.isArray : function _isArray(obj) {
+    return Object.prototype.toString.call(obj) === "[object Array]";
+  };
+  var defaultMaxListeners = 10;
+
+  function init() {
+    this._events = {};
+    if (this._conf) {
+      configure.call(this, this._conf);
+    }
+  }
+
+  function configure(conf) {
+    if (conf) {
+
+      this._conf = conf;
+
+      conf.delimiter && (this.delimiter = conf.delimiter);
+      conf.maxListeners && (this._events.maxListeners = conf.maxListeners);
+      conf.wildcard && (this.wildcard = conf.wildcard);
+      conf.newListener && (this.newListener = conf.newListener);
+
+      if (this.wildcard) {
+        this.listenerTree = {};
+      }
+    }
+  }
+
+  function EventEmitter(conf) {
+    this._events = {};
+    this.newListener = false;
+    configure.call(this, conf);
+  }
+
+  //
+  // Attention, function return type now is array, always !
+  // It has zero elements if no any matches found and one or more
+  // elements (leafs) if there are matches
+  //
+  function searchListenerTree(handlers, type, tree, i) {
+    if (!tree) {
+      return [];
+    }
+    var listeners=[], leaf, len, branch, xTree, xxTree, isolatedBranch, endReached,
+        typeLength = type.length, currentType = type[i], nextType = type[i+1];
+    if (i === typeLength && tree._listeners) {
+      //
+      // If at the end of the event(s) list and the tree has listeners
+      // invoke those listeners.
+      //
+      if (typeof tree._listeners === 'function') {
+        handlers && handlers.push(tree._listeners);
+        return [tree];
+      } else {
+        for (leaf = 0, len = tree._listeners.length; leaf < len; leaf++) {
+          handlers && handlers.push(tree._listeners[leaf]);
+        }
+        return [tree];
+      }
+    }
+
+    if ((currentType === '*' || currentType === '**') || tree[currentType]) {
+      //
+      // If the event emitted is '*' at this part
+      // or there is a concrete match at this patch
+      //
+      if (currentType === '*') {
+        for (branch in tree) {
+          if (branch !== '_listeners' && tree.hasOwnProperty(branch)) {
+            listeners = listeners.concat(searchListenerTree(handlers, type, tree[branch], i+1));
+          }
+        }
+        return listeners;
+      } else if(currentType === '**') {
+        endReached = (i+1 === typeLength || (i+2 === typeLength && nextType === '*'));
+        if(endReached && tree._listeners) {
+          // The next element has a _listeners, add it to the handlers.
+          listeners = listeners.concat(searchListenerTree(handlers, type, tree, typeLength));
+        }
+
+        for (branch in tree) {
+          if (branch !== '_listeners' && tree.hasOwnProperty(branch)) {
+            if(branch === '*' || branch === '**') {
+              if(tree[branch]._listeners && !endReached) {
+                listeners = listeners.concat(searchListenerTree(handlers, type, tree[branch], typeLength));
+              }
+              listeners = listeners.concat(searchListenerTree(handlers, type, tree[branch], i));
+            } else if(branch === nextType) {
+              listeners = listeners.concat(searchListenerTree(handlers, type, tree[branch], i+2));
+            } else {
+              // No match on this one, shift into the tree but not in the type array.
+              listeners = listeners.concat(searchListenerTree(handlers, type, tree[branch], i));
+            }
+          }
+        }
+        return listeners;
+      }
+
+      listeners = listeners.concat(searchListenerTree(handlers, type, tree[currentType], i+1));
+    }
+
+    xTree = tree['*'];
+    if (xTree) {
+      //
+      // If the listener tree will allow any match for this part,
+      // then recursively explore all branches of the tree
+      //
+      searchListenerTree(handlers, type, xTree, i+1);
+    }
+
+    xxTree = tree['**'];
+    if(xxTree) {
+      if(i < typeLength) {
+        if(xxTree._listeners) {
+          // If we have a listener on a '**', it will catch all, so add its handler.
+          searchListenerTree(handlers, type, xxTree, typeLength);
+        }
+
+        // Build arrays of matching next branches and others.
+        for(branch in xxTree) {
+          if(branch !== '_listeners' && xxTree.hasOwnProperty(branch)) {
+            if(branch === nextType) {
+              // We know the next element will match, so jump twice.
+              searchListenerTree(handlers, type, xxTree[branch], i+2);
+            } else if(branch === currentType) {
+              // Current node matches, move into the tree.
+              searchListenerTree(handlers, type, xxTree[branch], i+1);
+            } else {
+              isolatedBranch = {};
+              isolatedBranch[branch] = xxTree[branch];
+              searchListenerTree(handlers, type, { '**': isolatedBranch }, i+1);
+            }
+          }
+        }
+      } else if(xxTree._listeners) {
+        // We have reached the end and still on a '**'
+        searchListenerTree(handlers, type, xxTree, typeLength);
+      } else if(xxTree['*'] && xxTree['*']._listeners) {
+        searchListenerTree(handlers, type, xxTree['*'], typeLength);
+      }
+    }
+
+    return listeners;
+  }
+
+  function growListenerTree(type, listener) {
+
+    type = typeof type === 'string' ? type.split(this.delimiter) : type.slice();
+
+    //
+    // Looks for two consecutive '**', if so, don't add the event at all.
+    //
+    for(var i = 0, len = type.length; i+1 < len; i++) {
+      if(type[i] === '**' && type[i+1] === '**') {
+        return;
+      }
+    }
+
+    var tree = this.listenerTree;
+    var name = type.shift();
+
+    while (name) {
+
+      if (!tree[name]) {
+        tree[name] = {};
+      }
+
+      tree = tree[name];
+
+      if (type.length === 0) {
+
+        if (!tree._listeners) {
+          tree._listeners = listener;
+        }
+        else if(typeof tree._listeners === 'function') {
+          tree._listeners = [tree._listeners, listener];
+        }
+        else if (isArray(tree._listeners)) {
+
+          tree._listeners.push(listener);
+
+          if (!tree._listeners.warned) {
+
+            var m = defaultMaxListeners;
+
+            if (typeof this._events.maxListeners !== 'undefined') {
+              m = this._events.maxListeners;
+            }
+
+            if (m > 0 && tree._listeners.length > m) {
+
+              tree._listeners.warned = true;
+              console.error('(node) warning: possible EventEmitter memory ' +
+                            'leak detected. %d listeners added. ' +
+                            'Use emitter.setMaxListeners() to increase limit.',
+                            tree._listeners.length);
+              console.trace();
+            }
+          }
+        }
+        return true;
+      }
+      name = type.shift();
+    }
+    return true;
+  }
+
+  // By default EventEmitters will print a warning if more than
+  // 10 listeners are added to it. This is a useful default which
+  // helps finding memory leaks.
+  //
+  // Obviously not all Emitters should be limited to 10. This function allows
+  // that to be increased. Set to zero for unlimited.
+
+  EventEmitter.prototype.delimiter = '.';
+
+  EventEmitter.prototype.setMaxListeners = function(n) {
+    this._events || init.call(this);
+    this._events.maxListeners = n;
+    if (!this._conf) this._conf = {};
+    this._conf.maxListeners = n;
+  };
+
+  EventEmitter.prototype.event = '';
+
+  EventEmitter.prototype.once = function(event, fn) {
+    this.many(event, 1, fn);
+    return this;
+  };
+
+  EventEmitter.prototype.many = function(event, ttl, fn) {
+    var self = this;
+
+    if (typeof fn !== 'function') {
+      throw new Error('many only accepts instances of Function');
+    }
+
+    function listener() {
+      if (--ttl === 0) {
+        self.off(event, listener);
+      }
+      fn.apply(this, arguments);
+    }
+
+    listener._origin = fn;
+
+    this.on(event, listener);
+
+    return self;
+  };
+
+  EventEmitter.prototype.emit = function() {
+
+    this._events || init.call(this);
+
+    var type = arguments[0];
+
+    if (type === 'newListener' && !this.newListener) {
+      if (!this._events.newListener) { return false; }
+    }
+
+    // Loop through the *_all* functions and invoke them.
+    if (this._all) {
+      var l = arguments.length;
+      var args = new Array(l - 1);
+      for (var i = 1; i < l; i++) args[i - 1] = arguments[i];
+      for (i = 0, l = this._all.length; i < l; i++) {
+        this.event = type;
+        this._all[i].apply(this, args);
+      }
+    }
+
+    // If there is no 'error' event listener then throw.
+    if (type === 'error') {
+
+      if (!this._all &&
+        !this._events.error &&
+        !(this.wildcard && this.listenerTree.error)) {
+
+        if (arguments[1] instanceof Error) {
+          throw arguments[1]; // Unhandled 'error' event
+        } else {
+          throw new Error("Uncaught, unspecified 'error' event.");
+        }
+        return false;
+      }
+    }
+
+    var handler;
+
+    if(this.wildcard) {
+      handler = [];
+      var ns = typeof type === 'string' ? type.split(this.delimiter) : type.slice();
+      searchListenerTree.call(this, handler, ns, this.listenerTree, 0);
+    }
+    else {
+      handler = this._events[type];
+    }
+
+    if (typeof handler === 'function') {
+      this.event = type;
+      if (arguments.length === 1) {
+        handler.call(this);
+      }
+      else if (arguments.length > 1)
+        switch (arguments.length) {
+          case 2:
+            handler.call(this, arguments[1]);
+            break;
+          case 3:
+            handler.call(this, arguments[1], arguments[2]);
+            break;
+          // slower
+          default:
+            var l = arguments.length;
+            var args = new Array(l - 1);
+            for (var i = 1; i < l; i++) args[i - 1] = arguments[i];
+            handler.apply(this, args);
+        }
+      return true;
+    }
+    else if (handler) {
+      var l = arguments.length;
+      var args = new Array(l - 1);
+      for (var i = 1; i < l; i++) args[i - 1] = arguments[i];
+
+      var listeners = handler.slice();
+      for (var i = 0, l = listeners.length; i < l; i++) {
+        this.event = type;
+        listeners[i].apply(this, args);
+      }
+      return (listeners.length > 0) || !!this._all;
+    }
+    else {
+      return !!this._all;
+    }
+
+  };
+
+  EventEmitter.prototype.on = function(type, listener) {
+
+    if (typeof type === 'function') {
+      this.onAny(type);
+      return this;
+    }
+
+    if (typeof listener !== 'function') {
+      throw new Error('on only accepts instances of Function');
+    }
+    this._events || init.call(this);
+
+    // To avoid recursion in the case that type == "newListeners"! Before
+    // adding it to the listeners, first emit "newListeners".
+    this.emit('newListener', type, listener);
+
+    if(this.wildcard) {
+      growListenerTree.call(this, type, listener);
+      return this;
+    }
+
+    if (!this._events[type]) {
+      // Optimize the case of one listener. Don't need the extra array object.
+      this._events[type] = listener;
+    }
+    else if(typeof this._events[type] === 'function') {
+      // Adding the second element, need to change to array.
+      this._events[type] = [this._events[type], listener];
+    }
+    else if (isArray(this._events[type])) {
+      // If we've already got an array, just append.
+      this._events[type].push(listener);
+
+      // Check for listener leak
+      if (!this._events[type].warned) {
+
+        var m = defaultMaxListeners;
+
+        if (typeof this._events.maxListeners !== 'undefined') {
+          m = this._events.maxListeners;
+        }
+
+        if (m > 0 && this._events[type].length > m) {
+
+          this._events[type].warned = true;
+          console.error('(node) warning: possible EventEmitter memory ' +
+                        'leak detected. %d listeners added. ' +
+                        'Use emitter.setMaxListeners() to increase limit.',
+                        this._events[type].length);
+          console.trace();
+        }
+      }
+    }
+    return this;
+  };
+
+  EventEmitter.prototype.onAny = function(fn) {
+
+    if (typeof fn !== 'function') {
+      throw new Error('onAny only accepts instances of Function');
+    }
+
+    if(!this._all) {
+      this._all = [];
+    }
+
+    // Add the function to the event listener collection.
+    this._all.push(fn);
+    return this;
+  };
+
+  EventEmitter.prototype.addListener = EventEmitter.prototype.on;
+
+  EventEmitter.prototype.off = function(type, listener) {
+    if (typeof listener !== 'function') {
+      throw new Error('removeListener only takes instances of Function');
+    }
+
+    var handlers,leafs=[];
+
+    if(this.wildcard) {
+      var ns = typeof type === 'string' ? type.split(this.delimiter) : type.slice();
+      leafs = searchListenerTree.call(this, null, ns, this.listenerTree, 0);
+    }
+    else {
+      // does not use listeners(), so no side effect of creating _events[type]
+      if (!this._events[type]) return this;
+      handlers = this._events[type];
+      leafs.push({_listeners:handlers});
+    }
+
+    for (var iLeaf=0; iLeaf<leafs.length; iLeaf++) {
+      var leaf = leafs[iLeaf];
+      handlers = leaf._listeners;
+      if (isArray(handlers)) {
+
+        var position = -1;
+
+        for (var i = 0, length = handlers.length; i < length; i++) {
+          if (handlers[i] === listener ||
+            (handlers[i].listener && handlers[i].listener === listener) ||
+            (handlers[i]._origin && handlers[i]._origin === listener)) {
+            position = i;
+            break;
+          }
+        }
+
+        if (position < 0) {
+          continue;
+        }
+
+        if(this.wildcard) {
+          leaf._listeners.splice(position, 1);
+        }
+        else {
+          this._events[type].splice(position, 1);
+        }
+
+        if (handlers.length === 0) {
+          if(this.wildcard) {
+            delete leaf._listeners;
+          }
+          else {
+            delete this._events[type];
+          }
+        }
+        return this;
+      }
+      else if (handlers === listener ||
+        (handlers.listener && handlers.listener === listener) ||
+        (handlers._origin && handlers._origin === listener)) {
+        if(this.wildcard) {
+          delete leaf._listeners;
+        }
+        else {
+          delete this._events[type];
+        }
+      }
+    }
+
+    return this;
+  };
+
+  EventEmitter.prototype.offAny = function(fn) {
+    var i = 0, l = 0, fns;
+    if (fn && this._all && this._all.length > 0) {
+      fns = this._all;
+      for(i = 0, l = fns.length; i < l; i++) {
+        if(fn === fns[i]) {
+          fns.splice(i, 1);
+          return this;
+        }
+      }
+    } else {
+      this._all = [];
+    }
+    return this;
+  };
+
+  EventEmitter.prototype.removeListener = EventEmitter.prototype.off;
+
+  EventEmitter.prototype.removeAllListeners = function(type) {
+    if (arguments.length === 0) {
+      !this._events || init.call(this);
+      return this;
+    }
+
+    if(this.wildcard) {
+      var ns = typeof type === 'string' ? type.split(this.delimiter) : type.slice();
+      var leafs = searchListenerTree.call(this, null, ns, this.listenerTree, 0);
+
+      for (var iLeaf=0; iLeaf<leafs.length; iLeaf++) {
+        var leaf = leafs[iLeaf];
+        leaf._listeners = null;
+      }
+    }
+    else {
+      if (!this._events[type]) return this;
+      this._events[type] = null;
+    }
+    return this;
+  };
+
+  EventEmitter.prototype.listeners = function(type) {
+    if(this.wildcard) {
+      var handlers = [];
+      var ns = typeof type === 'string' ? type.split(this.delimiter) : type.slice();
+      searchListenerTree.call(this, handlers, ns, this.listenerTree, 0);
+      return handlers;
+    }
+
+    this._events || init.call(this);
+
+    if (!this._events[type]) this._events[type] = [];
+    if (!isArray(this._events[type])) {
+      this._events[type] = [this._events[type]];
+    }
+    return this._events[type];
+  };
+
+  EventEmitter.prototype.listenersAny = function() {
+
+    if(this._all) {
+      return this._all;
+    }
+    else {
+      return [];
+    }
+
+  };
+
+  if (typeof define === 'function' && define.amd) {
+     // AMD. Register as an anonymous module.
+    define(function() {
+      return EventEmitter;
+    });
+  } else if (typeof exports === 'object') {
+    // CommonJS
+    exports.EventEmitter2 = EventEmitter;
+  }
+  else {
+    // Browser global.
+    window.EventEmitter2 = EventEmitter;
+  }
+}();
+
 },{}],8:[function(require,module,exports){
 require('es5-shim');
 
@@ -2454,9 +2726,16 @@ Conversions;
  GREEN  = TL
 **/
 
+exports.isServer = typeof window === 'undefined';
+
 exports.Teams = ['bl', 'br', 'tr', 'tl'];
 
 exports.Messages = {
+};
+
+exports.Mode = {
+  OFFLINE: 'offline',
+  ONLINE:  'online'
 };
 
 exports.Events = {
@@ -2465,6 +2744,7 @@ exports.Events = {
 
   PLAYER_JOIN:     'player.join',
   TURN_BEGIN:      'player.turn.begin',
+  REG_DICE:        'player.registerDice',
   TURN_END:        'player.turn.end',
   REPEAT_TURN:     'player.turn.repeat',
 
@@ -2633,7 +2913,7 @@ function _listTeamAreaFrom(c) {
   return area;
 }
 
-},{"es5-shim":7}],9:[function(require,module,exports){
+},{"es5-shim":6}],9:[function(require,module,exports){
 function Dice(options) {
   this.options = (options || {});
   this.rolled = this.options.rolled || false;
@@ -2651,9 +2931,12 @@ Dice.prototype.roll = function() {
 };
 
 },{}],10:[function(require,module,exports){
-var EventEmitter = require('events').EventEmitter;
+var EventEmitter = require('eventemitter2').EventEmitter2;
 var Player = require('./player').Player;
+var Dice = require('./dice').Dice;
 var constants = require('./constants');
+var Mode = constants.Mode;
+var Sync = constants.isServer ? require('./sync/server') : require('./sync/client');
 var Events = constants.Events;
 var inherits = require('util').inherits;
 
@@ -2662,15 +2945,18 @@ function Game(options) {
   this.players = [];
   this.started = false;
   this.currentPlayersTurn = '';
+  this.mode = (this.options.mode || Mode.OFFLINE);
   this.won = false;
   this.numberOfDie = (this.options.numberOfDie || 1);
+  this.localPlayer = (this.options.localPlayer || false);
+  this.sync = null;
 
   EventEmitter.call(this);
   this._attachEvents(this.options.events);
 
-  if (this.options.state) {
-    this._setState(this.options.state);
-  }
+  if (this.mode === Mode.ONLINE) this.sync = Sync(this, this.options.link);
+
+  if (this.options.state) this._setState(this.options.state);
 }
 
 inherits(Game, EventEmitter);
@@ -2681,7 +2967,7 @@ Game.prototype.state = function state() {
   return this._attributes();
 };
 
-Game.prototype._setState = function setState(state) {
+Game.prototype._setState = function _setState(state) {
   var _this = this;
 
   this.started = state.started;
@@ -2691,11 +2977,15 @@ Game.prototype._setState = function setState(state) {
     return Player.build(playerJSON, _this);
   });
 
-  this.resumeGame();
+  if (this.sync) {
+    this.sync.setEvents(state.syncEvents);
+  }
+
+  if (this.started) this.resumeGame();
 };
 
 Game.prototype._attributes = function _attributes() {
-  return {
+  var attributes =  {
     won: this.won,
     started: this.started,
     currentPlayersTurn: this.currentPlayersTurn,
@@ -2703,6 +2993,12 @@ Game.prototype._attributes = function _attributes() {
       return player.attributes();
     })
   };
+
+  if (this.sync) {
+    attributes.syncEvents = this.sync.getEvents();
+  }
+
+  return attributes;
 };
 
 Game.prototype._attachEvents = function _attachEvents(events) {
@@ -2715,18 +3011,35 @@ Game.prototype._attachEvents = function _attachEvents(events) {
   }
 };
 
+Game.prototype.pushEvent = function pushEvent(eventType, payload) {
+  var event = {type: eventType, payload: payload};
+
+  if (this.sync && !this.sync.alreadyHasEvent(event)) {
+    this.sync.send(event);
+  }
+
+  this.emit(eventType, payload);
+};
+
+Game.prototype.isOfflineGame = function isOfflineGame() {
+  return this.mode === Mode.OFFLINE;
+};
+
 Game.prototype.addPlayer = function addPlayer(player) {
   if (this.players.length <= 3) {
     player.joinGame(this);
     player.setTeam(constants.Teams[this.players.length]);
 
     this.players.push(player);
-    this.emit(Events.PLAYER_JOIN, { player: player });
+    this.pushEvent(Events.PLAYER_JOIN, { player: player.attributes(true) });
   }
 };
 
-//TODO: Implement a joinGame function to add a player to the game
-Game.prototype.joinGame = function joinGame(player) {
+Game.prototype.joinGame = function joinGame(playerData) {
+  var player = new Player(playerData);
+  player.readyUp();
+  this.addPlayer(player);
+  return player.attributes(true);
 };
 
 Game.prototype.start = function start() {
@@ -2743,7 +3056,7 @@ Game.prototype.start = function start() {
       this.emit(Events.ERROR, { message: 'Not all players are ready' });
     } else {
       this.started = true;
-      this.emit(Events.GAME_START);
+      this.pushEvent(Events.GAME_START);
       this._loop();
     }
   }
@@ -2768,7 +3081,7 @@ Game.prototype.continueGame = function continueGame() {
   this._loop();
 };
 
-Game.prototype.resumeGame = function continueGame() {
+Game.prototype.resumeGame = function resumeGame() {
   var _this = this;
 
   this.players.some(function(player) {
@@ -2852,7 +3165,57 @@ Game.prototype.anyBlockadeIn = function anyBlockadeIn(cords, excludedPlayer) {
   return false;
 };
 
-},{"./constants":8,"./player":11,"events":2,"util":6}],11:[function(require,module,exports){
+Game.prototype.processEvent = function processEvent(event) {
+  var payload = event.payload;
+  var team;
+  var index;
+  var player;
+  var token;
+
+  switch (event.type) {
+    case Events.PLAYER_JOIN:
+      this.joinGame(payload.player.metadata);
+      break;
+
+    case Events.GAME_START:
+      this.start();
+      break;
+
+    case Events.TURN_END:
+    case Events.REPEAT_TURN:
+      team = payload.player.team;
+      index = constants.Teams.indexOf(team);
+      player = this.players[index];
+      player.endTurn();
+      break;
+
+    case Events.REG_DICE:
+      team = payload.player.team;
+      index = constants.Teams.indexOf(team);
+      player = this.players[index];
+      player.registerDice(new Dice({rolled: payload.dices[0].rolled }));
+      // this.pushEvent(Events.REG_DICE, payload);
+      break;
+
+    case Events.TOKEN_BORN:
+      team = payload.token.team;
+      index = constants.Teams.indexOf(team);
+      player = this.players[index];
+      token = player._tokens[payload.token.id];
+      token.born();
+      break;
+
+    case Events.TOKEN_MOVE_TO:
+      team = payload.token.team;
+      index = constants.Teams.indexOf(team);
+      player = this.players[index];
+      token = player._tokens[payload.token.id];
+      token.moveTo(payload.cords);
+      break;
+  }
+};
+
+},{"./constants":8,"./dice":9,"./player":11,"./sync/client":12,"./sync/server":13,"eventemitter2":7,"util":5}],11:[function(require,module,exports){
 var constants = require('./constants');
 var Token = require('./token').Token;
 var Events = constants.Events;
@@ -2865,6 +3228,7 @@ function Player(metadata) {
   this.dices = [];
   this._tokens = [];
   this.blockades = {};
+  this.sync = false;
 }
 
 exports.Player = Player;
@@ -2914,11 +3278,11 @@ Player.prototype.createTokensForTeam = function createTokensForTeam() {
 };
 
 Player.prototype.readyUp = function readyUp() {
-  this.ready = true;
+  this._ready = true;
 };
 
 Player.prototype.getReady = function getReady() {
-  return this.ready;
+  return this._ready;
 };
 
 Player.prototype.useDice = function useDice(dice) {
@@ -2934,6 +3298,7 @@ Player.prototype.registerDice = function registerDice(firstDice, secondDice) {
   this.dices = [];
   this.dices.push(firstDice);
   if (this.game.numberOfDie === 2) this.dices.push(secondDice);
+  this.game.pushEvent(Events.REG_DICE, { player: this.attributes(true), dices: this.dices });
 };
 
 Player.prototype.getActionsForDice = function getActionsForDice(position) {
@@ -2952,16 +3317,33 @@ Player.prototype.getActionsForDice = function getActionsForDice(position) {
   return totalActions;
 };
 
+//TODO: finish this function
+Player.prototype.isLocalPlayer = function isLocalPlayer() {
+  return (!this.game.isOfflineGame() && this.game.localPlayer.team === this.team);
+};
+
 Player.prototype.beginTurn = function beginTurn() {
   var _this = this;
-  this.game.emit(Events.TURN_BEGIN, {
-    player: this.attributes(true),
-    registerDice: this.registerDice.bind(this),
-    getActionsForDice: this.getActionsForDice.bind(this),
-    release: function() {
-      _this.endTurn();
-    }
-  });
+  if (this.game.isOfflineGame() || this.isLocalPlayer()) {
+    this.game.pushEvent(Events.TURN_BEGIN, {
+      player: this.attributes(true),
+      registerDice: this.registerDice.bind(this),
+      getActionsForDice: this.getActionsForDice.bind(this),
+      release: function() {
+        _this.endTurn();
+      },
+      canTakeAction: function() {
+        return true;
+      }
+    });
+  } else {
+    this.game.pushEvent(Events.TURN_BEGIN, {
+      player: this.attributes(true),
+      canTakeAction: function() {
+        return false;
+      }
+    });
+  }
 };
 
 Player.prototype.endTurn = function endTurn() {
@@ -2970,10 +3352,10 @@ Player.prototype.endTurn = function endTurn() {
   });
 
   if (rolledSix) {
-    this.game.emit(Events.REPEAT_TURN, { player: this.attributes(true) });
+    this.game.pushEvent(Events.REPEAT_TURN, { player: this.attributes(true) });
     this.beginTurn();
   } else {
-    this.game.emit(Events.TURN_END, { player: this.attributes(true) });
+    this.game.pushEvent(Events.TURN_END, { player: this.attributes(true) });
     this.game.continueGame();
   }
 };
@@ -3055,7 +3437,108 @@ Player.prototype.enemyTokenAt = function enemyTokenAt(cords) {
   return this.game.findTokenAt(cords, this);
 };
 
-},{"./constants":8,"./token":12}],12:[function(require,module,exports){
+},{"./constants":8,"./token":14}],12:[function(require,module,exports){
+var Events = require('../constants').Events;
+
+module.exports = function(game, socket) {
+  var events = [];
+  var lastIndex = -1;
+
+  function hasEvent(event, index) {
+    return JSON.stringify(events[index]) === JSON.stringify(event);
+  }
+
+  function hasDiffEvent(event, index) {
+    return JSON.stringify(events[index]) !== JSON.stringify(event);
+  }
+
+  socket.on('event', function(event, index) {
+    if (events[index] === undefined) {
+      var eventsLength = events.push(event);
+      if (eventsLength === (index + 1)) {
+        lastIndex = index;
+        console.log('receiving', event.type, index);
+        game.processEvent(event);
+      }
+    }
+    // } else if (hasEvent(event, index)) {
+    //   console.log('Already has data', event.type);
+    // } else if (hasDiffEvent(event, index)) {
+    //   console.log('Has different data', events, event, index);
+    // }
+  });
+
+  return {
+    send: function(event) {
+      var eventsLength = events.push(event);
+      var index = eventsLength - 1;
+      lastIndex = index;
+
+      console.log('sending', event.type, index);
+
+      socket.emit('event', event, index);
+    },
+    setEvents: function(syncEvents) {
+      // console.log(syncEvents);
+      events = syncEvents || [];
+    },
+    alreadyHasEvent: function(event) {
+      return hasEvent(event, lastIndex);
+    }
+  };
+
+};
+
+},{"../constants":8}],13:[function(require,module,exports){
+var Events = require('../constants').Events;
+
+module.exports = function(game) {
+  var sockets = [];
+  var events = [];
+  var lastIndex = -1;
+
+  function hasEvent(event, index) {
+    return JSON.stringify(events[index]) === JSON.stringify(event);
+  }
+
+  function hasDiffEvent(event, index) {
+    return JSON.stringify(events[index]) !== JSON.stringify(event);
+  }
+
+  return {
+    addSocket: function(socket) {
+      socket.on('event', function(event, index) {
+        if (events[index] === undefined) {
+          console.log('receiving', event.type, index);
+          game.processEvent(event);
+        }
+      });
+
+      sockets.push(socket);
+    },
+    getSockets: function() {
+      return sockets;
+    },
+    getEvents: function() {
+      return events;
+    },
+    send: function(event) {
+      var eventsLength = events.push(event);
+      var index = eventsLength - 1;
+
+      console.log('sending', event.type, index);
+
+      sockets.forEach(function(socket) {
+        socket.emit('event', event, index);
+      });
+    },
+    alreadyHasEvent: function(event) {
+      return false;
+    }
+  };
+};
+
+},{"../constants":8}],14:[function(require,module,exports){
 var constants = require('./constants');
 var Grid = constants.Grid;
 var ActionTypes = constants.ActionTypes;
@@ -3180,7 +3663,7 @@ Token.prototype.executeAction = function executeAction(action) {
 Token.prototype.born = function born() {
   var startPoint = Grid.startPoint[this.team];
   this.active = true;
-  this.game.emit(Events.TOKEN_BORN, { token: this.attributes() });
+  this.game.pushEvent(Events.TOKEN_BORN, { token: this.attributes() });
 
   this.moveTo({x: startPoint[0], y: startPoint[1]});
 };
@@ -3246,8 +3729,9 @@ Token.prototype._blockadeAhead = function _blockadeAhead(rolled) {
   var blockade = this.player.blockadeAhead(this._findAllCordsAhead(rolled));
 
   if (blockade) {
-
+    a = 10;
     this.game.emit(Events.TOKEN_BLOCKED, {
+      player: this.player.attributes(true),
       token: this.attributes(),
       blockade: {
         tokens: blockade.tokens.map(function(token) {
@@ -3321,7 +3805,7 @@ Token.prototype.moveTo = function moveTo(cords) {
 
   this.cords.x = cords.x;
   this.cords.y = cords.y;
-  this.game.emit(Events.TOKEN_MOVE_TO, { token: this.attributes(), cords: this.cords});
+  this.game.pushEvent(Events.TOKEN_MOVE_TO, { token: this.attributes(), cords: this.cords});
 };
 
 Token.prototype._leaveBlockade = function _leaveBlockade() {
@@ -3354,7 +3838,7 @@ Token.prototype._kill = function _kill(killedToken) {
   this.game.emit(Events.TOKEN_KILLED, { killed: killedToken.attributes(), by: this.attributes() });
 };
 
-},{"./constants":8,"./utils":13}],13:[function(require,module,exports){
+},{"./constants":8,"./utils":15}],15:[function(require,module,exports){
 var constants = require('./constants');
 var Grid = constants.Grid;
 var Teams = constants.Teams;
