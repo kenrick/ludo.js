@@ -6,7 +6,7 @@ var md5 = require('MD5');
 
 module.exports = function(game) {
   var clients = [];
-  var events = [];
+  var eventList = [];
   var lastIndex = -1;
 
   function encrypt(object) {
@@ -14,7 +14,6 @@ module.exports = function(game) {
   }
 
   function emitToAll(event, payload, ignore) {
-
     clients.forEach(function(client) {
       if (ignore && ignore.id === client.id) return;
 
@@ -27,12 +26,14 @@ module.exports = function(game) {
   function addClient(link, player) {
     var client = {
       id: encrypt(player.metadata),
+      player: player,
       link: link
     };
 
     client.link.on(SyncEvents.CONNECT, function(callback) {
       debug('new client connected');
-      callback(player, game.state());
+
+      callback({clientId: client.id, player: player}, game.state());
     });
 
     clients.push(client);
@@ -41,7 +42,6 @@ module.exports = function(game) {
 
   function onGameStart() {
     debug('game started');
-
     emitToAll(SyncEvents.START_GAME);
   }
 
@@ -53,12 +53,11 @@ module.exports = function(game) {
       return clients;
     },
     getEvents: function() {
-      return events;
+      return eventList.slice(0);
     },
     addEvent: function(event) {
-      var eventsLength = events.push(event);
+      var eventsLength = eventList.push(event);
       var index = eventsLength - 1;
-      lastIndex = index;
 
       debug('add event(%s) index(%s)', event.type, index);
     }

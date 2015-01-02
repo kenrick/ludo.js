@@ -5,8 +5,10 @@ var Player = require('./player').Player;
 var Dice = require('./dice').Dice;
 var constants = require('./constants');
 var Mode = constants.Mode;
-var Sync = constants.isServer ? require('./sync/server') : require('./sync/client');
+var clientSync = require('./sync/client');
+var serverSync = require('./sync/server');
 var Events = constants.Events;
+var utils = require('./utils');
 var inherits = require('util').inherits;
 
 function Game(options) {
@@ -23,7 +25,7 @@ function Game(options) {
   EventEmitter.call(this);
   this._attachEvents(this.options.events);
 
-  if (this.mode === Mode.ONLINE) this.sync = Sync(this, this.options.link);
+  if (this.mode === Mode.ONLINE) this.sync = this.options.sync(this, this.options.link);
 
   if (this.options.state) this.setState(this.options.state);
 }
@@ -32,8 +34,22 @@ inherits(Game, EventEmitter);
 
 exports.Game = Game;
 
+Game.Client = function Client(options) {
+  var opts = (options || {});
+  opts.mode = Mode.ONLINE;
+  opts.sync = clientSync;
+  return new Game(options);
+};
+
+Game.Server = function Server(options) {
+  var opts = (options || {});
+  opts.mode = Mode.ONLINE;
+  opts.sync = serverSync;
+  return new Game(opts);
+};
+
 Game.prototype.state = function state() {
-  return this._attributes();
+  return utils.clone(this._attributes());
 };
 
 Game.prototype.setState = function setState(state) {
@@ -81,7 +97,7 @@ Game.prototype._attachEvents = function _attachEvents(events) {
 };
 
 Game.prototype.pushEvent = function pushEvent(eventType, payload) {
-  var event = {type: eventType, payload: payload};
+  var event = JSON.stringify({type: eventType, payload: payload});
 
   if (this.sync) {
     this.sync.addEvent(event);

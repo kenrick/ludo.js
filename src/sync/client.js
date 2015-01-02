@@ -4,7 +4,6 @@ var SyncEvents = require('../constants').SyncEvents;
 
 module.exports = function(game, link) {
   var events = [];
-  var lastIndex = -1;
   var client = null;
 
   function onClientJoin(payload) {
@@ -23,21 +22,28 @@ module.exports = function(game, link) {
 
   return {
     connect: function(callback) {
-      link.emit(SyncEvents.CONNECT, function(playerData, gameState) {
-        client = playerData;
+      link.emit(SyncEvents.CONNECT, function(clientData, gameState) {
+        client = clientData;
         game.setState(gameState);
 
-        if (client) game.localPlayer = client;
+        if (client) game.localPlayer = client.player;
 
         if (callback) callback(true);
 
         debug('connected to game server');
       });
     },
+    requestDice: function(cb) {
+      link.emit(SyncEvents.DICE_ROLL, {
+        clientId: client.id,
+        callback: function() {
+          //TODO: send back the dice to the game
+        }
+      });
+    },
     addEvent: function(event) {
       var eventsLength = events.push(event);
       var index = eventsLength - 1;
-      lastIndex = index;
 
       debug('add event(%s) index(%s)', event.type, index);
     },
