@@ -1,6 +1,6 @@
 # Ludo.js
 
-[![Build Status](https://travis-ci.org/planimus/Ludo.js.svg?branch=master)](https://travis-ci.org/planimus/Ludo.js)
+[![Build Status](https://travis-ci.org/kenrick/Ludo.js.svg?branch=master)](https://travis-ci.org/kenrick/Ludo.js)
 
 The ludo board game engine written in javascript
 
@@ -12,3 +12,7 @@ The ludo board game engine written in javascript
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+## Building
+
+Run `gulp` to build the game
