@@ -1,5 +1,6 @@
 var constants = require('./constants');
 var Token = require('./token').Token;
+var Dice = require('./dice').Dice;
 var Events = constants.Events;
 
 function Player(metadata) {
@@ -76,6 +77,29 @@ Player.prototype.useDice = function useDice(dice) {
   if (allUsed) this.endTurn();
 };
 
+Player.prototype.rollDice = function rollDice(callback) {
+  var firstDice;
+  var secondDice;
+
+  if (this.game.isOfflineGame() || constants.isServer)
+  {
+    firstDice  = (new Dice()).roll();
+    secondDice = (new Dice()).roll();
+
+    this.registerDice(firstDice, secondDice);
+  } else if (this.sync && !constants.isServer) {
+    this.sync.requestDice(function(dice1, dice2) {
+
+      firstDice = Dice.build(dice1);
+      secondDice = Dice.build(dice2);
+
+      this.registerDice(firstDice, secondDice);
+
+      callback();
+    });
+  }
+};
+
 Player.prototype.registerDice = function registerDice(firstDice, secondDice) {
   this.dices = [];
   this.dices.push(firstDice);
@@ -99,7 +123,6 @@ Player.prototype.getActionsForDice = function getActionsForDice(position) {
   return totalActions;
 };
 
-//TODO: finish this function
 Player.prototype.isLocalPlayer = function isLocalPlayer() {
   return (!this.game.isOfflineGame() && this.game.localPlayer.team === this.team);
 };

@@ -1,49 +1,51 @@
-var Events = require('../constants').Events;
+var debug = require('debug')('ludo:game:client');
 
-module.exports = function(game, socket) {
+var SyncEvents = require('../constants').SyncEvents;
+
+module.exports = function(game, link) {
   var events = [];
   var lastIndex = -1;
+  var client = null;
 
-  function hasEvent(event, index) {
-    return JSON.stringify(events[index]) === JSON.stringify(event);
+  function onClientJoin(payload) {
+    var player = payload.player;
+    game.joinGame(player.metadata);
   }
 
-  function hasDiffEvent(event, index) {
-    return JSON.stringify(events[index]) !== JSON.stringify(event);
+  function onGameStart() {
+    game.start();
+
+    debug('game started');
   }
 
-  socket.on('event', function(event, index) {
-    if (events[index] === undefined) {
-      var eventsLength = events.push(event);
-      if (eventsLength === (index + 1)) {
-        lastIndex = index;
-        console.log('receiving', event.type, index);
-        game.processEvent(event);
-      }
-    }
-    // } else if (hasEvent(event, index)) {
-    //   console.log('Already has data', event.type);
-    // } else if (hasDiffEvent(event, index)) {
-    //   console.log('Has different data', events, event, index);
-    // }
-  });
+  link.on(SyncEvents.CLIENT_JOIN, onClientJoin);
+  link.on(SyncEvents.START_GAME, onGameStart);
 
   return {
-    send: function(event) {
+    connect: function(callback) {
+      link.emit(SyncEvents.CONNECT, function(playerData, gameState) {
+        client = playerData;
+        game.setState(gameState);
+
+        if (client) game.localPlayer = client;
+
+        if (callback) callback(true);
+
+        debug('connected to game server');
+      });
+    },
+    addEvent: function(event) {
       var eventsLength = events.push(event);
       var index = eventsLength - 1;
       lastIndex = index;
 
-      console.log('sending', event.type, index);
-
-      socket.emit('event', event, index);
+      debug('add event(%s) index(%s)', event.type, index);
     },
     setEvents: function(syncEvents) {
-      // console.log(syncEvents);
       events = syncEvents || [];
     },
-    alreadyHasEvent: function(event) {
-      return hasEvent(event, lastIndex);
+    getEvents: function() {
+      return events;
     }
   };
 

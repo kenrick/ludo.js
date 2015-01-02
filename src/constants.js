@@ -41,6 +41,15 @@ exports.Events = {
   ERROR:           'error'
 };
 
+exports.SyncEvents = {
+  CONNECT:     'client.connect',
+  CLIENT_JOIN: 'client.join',
+  START_GAME:  'client.startGame',
+  DICE_ROLL:   'server.diceRoll',
+  TAKE_ACTION: 'server.takeAction',
+  END_TURN:    'client.endTurn'
+};
+
 exports.ActionTypes = {
   BORN:            'born',
   MOVE_BY:         'moveBy',

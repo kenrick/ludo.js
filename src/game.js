@@ -1,3 +1,5 @@
+var debug = require('debug')('ludo:game');
+
 var EventEmitter = require('eventemitter2').EventEmitter2;
 var Player = require('./player').Player;
 var Dice = require('./dice').Dice;
@@ -23,7 +25,7 @@ function Game(options) {
 
   if (this.mode === Mode.ONLINE) this.sync = Sync(this, this.options.link);
 
-  if (this.options.state) this._setState(this.options.state);
+  if (this.options.state) this.setState(this.options.state);
 }
 
 inherits(Game, EventEmitter);
@@ -34,7 +36,7 @@ Game.prototype.state = function state() {
   return this._attributes();
 };
 
-Game.prototype._setState = function _setState(state) {
+Game.prototype.setState = function setState(state) {
   var _this = this;
 
   this.started = state.started;
@@ -81,8 +83,8 @@ Game.prototype._attachEvents = function _attachEvents(events) {
 Game.prototype.pushEvent = function pushEvent(eventType, payload) {
   var event = {type: eventType, payload: payload};
 
-  if (this.sync && !this.sync.alreadyHasEvent(event)) {
-    this.sync.send(event);
+  if (this.sync) {
+    this.sync.addEvent(event);
   }
 
   this.emit(eventType, payload);
@@ -106,7 +108,18 @@ Game.prototype.joinGame = function joinGame(playerData) {
   var player = new Player(playerData);
   player.readyUp();
   this.addPlayer(player);
+
+  debug('player joined');
+
   return player.attributes(true);
+};
+
+Game.prototype.joinGameWithLink = function joinGameWithLink(playerData, link) {
+  var player = this.joinGame(playerData);
+
+  if (constants.isServer) {
+    this.sync.addClient(link, player);
+  }
 };
 
 Game.prototype.start = function start() {
@@ -122,6 +135,8 @@ Game.prototype.start = function start() {
     } else if (this.players.length != readies) {
       this.emit(Events.ERROR, { message: 'Not all players are ready' });
     } else {
+      debug('starting game');
+
       this.started = true;
       this.pushEvent(Events.GAME_START);
       this._loop();

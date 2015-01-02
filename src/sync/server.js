@@ -1,47 +1,66 @@
+var debug = require('debug')('ludo:game:server');
+
+var SyncEvents = require('../constants').SyncEvents;
 var Events = require('../constants').Events;
+var md5 = require('MD5');
 
 module.exports = function(game) {
-  var sockets = [];
+  var clients = [];
   var events = [];
   var lastIndex = -1;
 
-  function hasEvent(event, index) {
-    return JSON.stringify(events[index]) === JSON.stringify(event);
+  function encrypt(object) {
+    return md5(JSON.stringify(object));
   }
 
-  function hasDiffEvent(event, index) {
-    return JSON.stringify(events[index]) !== JSON.stringify(event);
+  function emitToAll(event, payload, ignore) {
+
+    clients.forEach(function(client) {
+      if (ignore && ignore.id === client.id) return;
+
+      client.link.emit(event, payload);
+    });
+
+    debug('sent to all clients: event(%s)', event);
   }
+
+  function addClient(link, player) {
+    var client = {
+      id: encrypt(player.metadata),
+      link: link
+    };
+
+    client.link.on(SyncEvents.CONNECT, function(callback) {
+      debug('new client connected');
+      callback(player, game.state());
+    });
+
+    clients.push(client);
+    emitToAll(SyncEvents.CLIENT_JOIN, { player: player }, client);
+  }
+
+  function onGameStart() {
+    debug('game started');
+
+    emitToAll(SyncEvents.START_GAME);
+  }
+
+  game.on(Events.GAME_START, onGameStart);
 
   return {
-    addSocket: function(socket) {
-      socket.on('event', function(event, index) {
-        if (events[index] === undefined) {
-          console.log('receiving', event.type, index);
-          game.processEvent(event);
-        }
-      });
-
-      sockets.push(socket);
-    },
-    getSockets: function() {
-      return sockets;
+    addClient: addClient,
+    getClients: function() {
+      return clients;
     },
     getEvents: function() {
       return events;
     },
-    send: function(event) {
+    addEvent: function(event) {
       var eventsLength = events.push(event);
       var index = eventsLength - 1;
+      lastIndex = index;
 
-      console.log('sending', event.type, index);
-
-      sockets.forEach(function(socket) {
-        socket.emit('event', event, index);
-      });
-    },
-    alreadyHasEvent: function(event) {
-      return false;
+      debug('add event(%s) index(%s)', event.type, index);
     }
   };
 };
