@@ -1,6 +1,6 @@
 # Ludo.js
 
-[![Build Status](https://travis-ci.org/kenrick/Ludo.js.svg?branch=master)](https://travis-ci.org/kenrick/Ludo.js)
+[![Build Status](https://travis-ci.org/kenrick/ludo.js.svg?branch=master)](https://travis-ci.org/kenrick/ludo.js)
 
 The ludo board game engine written in javascript
 
