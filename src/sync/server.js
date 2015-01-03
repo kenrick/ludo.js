@@ -16,7 +16,6 @@ module.exports = function(game) {
   function emitToAll(event, payload, ignore) {
     clients.forEach(function(client) {
       if (ignore && ignore.id === client.id) return;
-
       client.link.emit(event, payload);
     });
 

@@ -129,7 +129,6 @@ describe('Sync', function() {
 
     it('rolls the dice on the server', function(done) {
       clientGame.on('player.turn.begin', function(payload) {
-        console.log(payload);
         done();
       });
 
