@@ -89,7 +89,6 @@ Player.prototype.rollDice = function rollDice(callback) {
     this.registerDice(firstDice, secondDice);
   } else if (this.sync && !constants.isServer) {
     this.sync.requestDice(function(dice1, dice2) {
-
       firstDice = Dice.build(dice1);
       secondDice = Dice.build(dice2);
 
@@ -132,7 +131,7 @@ Player.prototype.beginTurn = function beginTurn() {
   if (this.game.isOfflineGame() || this.isLocalPlayer()) {
     this.game.pushEvent(Events.TURN_BEGIN, {
       player: this.attributes(true),
-      registerDice: this.registerDice.bind(this),
+      rollDice: this.rollDice.bind(this),
       getActionsForDice: this.getActionsForDice.bind(this),
       release: function() {
         _this.endTurn();
