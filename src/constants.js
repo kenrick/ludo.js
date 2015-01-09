@@ -46,6 +46,7 @@ exports.SyncEvents = {
   CLIENT_JOIN: 'client.join',
   START_GAME:  'client.startGame',
   DICE_ROLL:   'server.diceRoll',
+  REG_DICE:    'client.registerDice',
   TAKE_ACTION: 'server.takeAction',
   END_TURN:    'client.endTurn'
 };

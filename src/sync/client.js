@@ -1,6 +1,9 @@
 var debug = require('debug')('ludo:game:client');
 
-var SyncEvents = require('../constants').SyncEvents;
+var constants = require('../constants');
+
+var SyncEvents = constants.SyncEvents;
+var Events = constants.Events;
 
 module.exports = function(game, link) {
   var events = [];
@@ -11,6 +14,11 @@ module.exports = function(game, link) {
     game.joinGame(player.metadata);
   }
 
+  function onRegisterDice(payload) {
+    var event = { type: Events.REG_DICE, payload: payload };
+    game.processEvent(event);
+  }
+
   function onGameStart() {
     game.start();
 
@@ -19,6 +27,7 @@ module.exports = function(game, link) {
 
   link.on(SyncEvents.CLIENT_JOIN, onClientJoin);
   link.on(SyncEvents.START_GAME, onGameStart);
+  link.on(SyncEvents.REG_DICE, onRegisterDice);
 
   return {
     connect: function(callback) {
@@ -33,13 +42,8 @@ module.exports = function(game, link) {
         debug('connected to game server');
       });
     },
-    requestDice: function(cb) {
-      link.emit(SyncEvents.DICE_ROLL, {
-        clientId: client.id,
-        callback: function() {
-          //TODO: send back the dice to the game
-        }
-      });
+    requestDice: function(callback) {
+      link.emit(SyncEvents.DICE_ROLL, { clientId: client.id, callback: callback });
     },
     addEvent: function(event) {
       var eventsLength = events.push(event);

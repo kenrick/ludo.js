@@ -20,6 +20,7 @@ function Game(options) {
   this.won = false;
   this.numberOfDie = (this.options.numberOfDie || 1);
   this.localPlayer = (this.options.localPlayer || false);
+  this.isServer = (this.options.isServer || false);
   this.sync = null;
 
   EventEmitter.call(this);
@@ -38,13 +39,14 @@ Game.Client = function Client(options) {
   var opts = (options || {});
   opts.mode = Mode.ONLINE;
   opts.sync = clientSync;
-  return new Game(options);
+  return new Game(opts);
 };
 
 Game.Server = function Server(options) {
   var opts = (options || {});
   opts.mode = Mode.ONLINE;
   opts.sync = serverSync;
+  opts.isServer = true;
   return new Game(opts);
 };
 
@@ -271,44 +273,11 @@ Game.prototype.processEvent = function processEvent(event) {
   var token;
 
   switch (event.type) {
-    case Events.PLAYER_JOIN:
-      this.joinGame(payload.player.metadata);
-      break;
-
-    case Events.GAME_START:
-      this.start();
-      break;
-
-    case Events.TURN_END:
-    case Events.REPEAT_TURN:
-      team = payload.player.team;
-      index = constants.Teams.indexOf(team);
-      player = this.players[index];
-      player.endTurn();
-      break;
-
     case Events.REG_DICE:
       team = payload.player.team;
       index = constants.Teams.indexOf(team);
       player = this.players[index];
-      player.registerDice(new Dice({rolled: payload.dices[0].rolled }));
-      // this.pushEvent(Events.REG_DICE, payload);
-      break;
-
-    case Events.TOKEN_BORN:
-      team = payload.token.team;
-      index = constants.Teams.indexOf(team);
-      player = this.players[index];
-      token = player._tokens[payload.token.id];
-      token.born();
-      break;
-
-    case Events.TOKEN_MOVE_TO:
-      team = payload.token.team;
-      index = constants.Teams.indexOf(team);
-      player = this.players[index];
-      token = player._tokens[payload.token.id];
-      token.moveTo(payload.cords);
+      player.registerDice(payload.dices[0], payload.dices[1]);
       break;
   }
 };

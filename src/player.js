@@ -80,21 +80,22 @@ Player.prototype.useDice = function useDice(dice) {
 Player.prototype.rollDice = function rollDice(callback) {
   var firstDice;
   var secondDice;
+  var _this = this;
 
-  if (this.game.isOfflineGame() || constants.isServer)
+  if (this.game.isOfflineGame() || this.game.isServer)
   {
     firstDice  = (new Dice()).roll();
     secondDice = (new Dice()).roll();
 
     this.registerDice(firstDice, secondDice);
-  } else if (this.sync && !constants.isServer) {
-    this.sync.requestDice(function(dice1, dice2) {
+  } else if (this.game.sync && !this.game.isServer) {
+    this.game.sync.requestDice(function(dice1, dice2) {
       firstDice = Dice.build(dice1);
       secondDice = Dice.build(dice2);
 
-      this.registerDice(firstDice, secondDice);
+      _this.registerDice(firstDice, secondDice);
 
-      callback();
+      if (callback) callback();
     });
   }
 };
@@ -126,6 +127,7 @@ Player.prototype.isLocalPlayer = function isLocalPlayer() {
   return (!this.game.isOfflineGame() && this.game.localPlayer.team === this.team);
 };
 
+//TODO: Refactor getActionsForDice into another event
 Player.prototype.beginTurn = function beginTurn() {
   var _this = this;
   if (this.game.isOfflineGame() || this.isLocalPlayer()) {

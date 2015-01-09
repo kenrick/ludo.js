@@ -122,16 +122,28 @@ describe('Sync', function() {
 
   describe('Roll Dice', function() {
     beforeEach(function() {
-
       serverGame.joinGameWithLink(player, client);
       serverGame.joinGameWithLink(player2, client2);
     });
 
     it('rolls the dice on the server', function(done) {
+      var diceNum;
+      var plan = helper.plan(3, done);
+
       clientGame.on('player.turn.begin', function(payload) {
-        done();
+        payload.rollDice();
+        plan.ok();
       });
 
+      clientGame.on('player.registerDice', function(payload) {
+        diceNum = payload.dices[0];
+        plan.ok();
+      });
+
+      client2Game.on('player.registerDice', function(payload) {
+        expect(payload.dices[0].rolled).to.eql(diceNum.rolled);
+        plan.ok();
+      });
 
       clientGame.sync.connect(function() {
         client2Game.sync.connect(function() {
