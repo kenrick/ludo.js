@@ -5,10 +5,10 @@
   "version": "0.0.1",
   "repository": "https://github.com/planimus/Ludo.js",
   "dependencies": {
-    "MD5": "^1.2.1",
+    "blueimp-md5": "^1.1.0",
     "debug": "^2.1.1",
-    "es5-shim": "^4.0.5",
-    "eventemitter2": "^0.4.14"
+    "eventemitter2": "^0.4.14",
+    "inherits": "^2.0.1"
   },
   "devDependencies": {
     "browserify": "^7.0.0",

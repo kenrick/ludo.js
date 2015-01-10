@@ -9,7 +9,7 @@ var clientSync = require('./sync/client');
 var serverSync = require('./sync/server');
 var Events = constants.Events;
 var utils = require('./utils');
-var inherits = require('util').inherits;
+var inherits = require('inherits');
 
 function Game(options) {
   this.options = (options || {});

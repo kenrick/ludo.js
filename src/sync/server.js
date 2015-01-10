@@ -2,7 +2,7 @@ var debug = require('debug')('ludo:game:server');
 
 var constants = require('../constants');
 var Dice = require('../dice').Dice;
-var md5 = require('MD5');
+var md5 = require('blueimp-md5').md5;
 
 var SyncEvents = constants.SyncEvents;
 var Events = constants.Events;
