@@ -27,6 +27,7 @@ exports.Events = {
   REG_DICE:        'player.registerDice',
   TURN_END:        'player.turn.end',
   REPEAT_TURN:     'player.turn.repeat',
+  TAKE_ACTION:     'player.takeAction',
 
   TOKEN_BORN:      'token.born',
   TOKEN_MOVE_TO:   'token.moveTo',

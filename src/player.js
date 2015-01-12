@@ -105,6 +105,27 @@ Player.prototype.registerDice = function registerDice(firstDice, secondDice) {
   this.dices.push(firstDice);
   if (this.game.numberOfDie === 2) this.dices.push(secondDice);
   this.game.pushEvent(Events.REG_DICE, { player: this.attributes(true), dices: this.dices });
+  this.takeAction();
+};
+
+Player.prototype.takeAction = function takeAction() {
+  if (this.game.isOfflineGame() || this.isLocalPlayer()) {
+    this.game.pushEvent(Events.TAKE_ACTION, {
+      player: this.attributes(true),
+      getActionsForDice: this.getActionsForDice.bind(this),
+      endTurn: this.endTurn.bind(this),
+      canTakeAction: function() {
+        return true; // use a function so it is ignored by sync events
+      }
+    });
+  } else {
+    this.game.pushEvent(Events.TAKE_ACTION, {
+      player: this.attributes(true),
+      canTakeAction: function() {
+        return false; // use a function so it is ignored by sync events
+      }
+    });
+  }
 };
 
 Player.prototype.getActionsForDice = function getActionsForDice(position) {
@@ -127,26 +148,21 @@ Player.prototype.isLocalPlayer = function isLocalPlayer() {
   return (!this.game.isOfflineGame() && this.game.localPlayer.team === this.team);
 };
 
-//TODO: Refactor getActionsForDice into another event
 Player.prototype.beginTurn = function beginTurn() {
   var _this = this;
   if (this.game.isOfflineGame() || this.isLocalPlayer()) {
     this.game.pushEvent(Events.TURN_BEGIN, {
       player: this.attributes(true),
       rollDice: this.rollDice.bind(this),
-      getActionsForDice: this.getActionsForDice.bind(this),
-      release: function() {
-        _this.endTurn();
-      },
-      canTakeAction: function() {
-        return true;
+      canRollDice: function() {
+        return true; // use a function so it is ignored by sync events
       }
     });
   } else {
     this.game.pushEvent(Events.TURN_BEGIN, {
       player: this.attributes(true),
-      canTakeAction: function() {
-        return false;
+      canRollDice: function() {
+        return false; // use a function so it is ignored by sync events
       }
     });
   }
