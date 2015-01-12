@@ -45,6 +45,14 @@ module.exports = function(game, link) {
     requestDice: function(callback) {
       link.emit(SyncEvents.DICE_ROLL, { clientId: client.id, callback: callback });
     },
+    takeAction: function(action, dice) {
+      var payload = {
+        tokenId: action.token.id,
+        dicePosition: action.dicePosition,
+        team: action.token.team
+      };
+      link.emit(SyncEvents.TAKE_ACTION, payload);
+    },
     addEvent: function(event) {
       var eventsLength = events.push(event);
       var index = eventsLength - 1;

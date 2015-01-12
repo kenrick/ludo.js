@@ -25,6 +25,7 @@ exports.Events = {
   PLAYER_JOIN:     'player.join',
   TURN_BEGIN:      'player.turn.begin',
   REG_DICE:        'player.registerDice',
+  REG_ACTION:      'player.registerAction',
   TURN_END:        'player.turn.end',
   REPEAT_TURN:     'player.turn.repeat',
   TAKE_ACTION:     'player.takeAction',

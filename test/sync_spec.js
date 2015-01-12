@@ -154,4 +154,103 @@ describe('Sync', function() {
     });
 
   });
+
+  describe('Take Action', function() {
+    beforeEach(function() {
+      serverGame.joinGameWithLink(player, client);
+      serverGame.joinGameWithLink(player2, client2);
+
+      serverGame.players[0]._tokens[0].born();
+    });
+
+    it('take action on client 1 send the action to the server', function(done) {
+      var plan = helper.plan(3, done);
+      var action;
+      var tokenId;
+
+      clientGame.once('player.turn.begin', function(payload) {
+        expect(payload.canRollDice()).to.be.true();
+
+        payload.rollDice();
+        plan.ok();
+      });
+
+      clientGame.once('player.takeAction', function(payload) {
+        var actions;
+
+        expect(payload.canTakeAction()).to.be.true();
+
+        actions = payload.getActionsForDice(1);
+        action = actions[0];
+
+        tokenId = action.token.id;
+
+        action.take();
+        plan.ok();
+      });
+
+      serverGame.sync.getClients()[0].link.on('server.takeAction', function(payload) {
+        expect(tokenId).to.equal(payload.tokenId);
+        plan.ok();
+      });
+
+      clientGame.sync.connect(function() {
+        client2Game.sync.connect(function() {
+          serverGame.start();
+        });
+      });
+
+    });
+
+    it('take action on client 1 send the action to client2', function(done) {
+      var plan = helper.plan(3, done);
+      var action;
+      var tokenId;
+
+      clientGame.once('player.turn.begin', function(payload) {
+        expect(payload.canRollDice()).to.be.true();
+
+        setTimeout(function() {
+          payload.rollDice();
+        }, 0);
+
+        plan.ok();
+      });
+
+      clientGame.once('player.takeAction', function(payload) {
+        var actions;
+
+        expect(payload.canTakeAction()).to.be.true();
+
+        actions = payload.getActionsForDice(1);
+        action = actions[0];
+
+        tokenId = action.token.id;
+
+        setTimeout(function() {
+          action.take();
+        }, 0);
+
+        plan.ok();
+      });
+
+      client2Game.once('player.takeAction', function(payload) {
+        expect(payload.canTakeAction()).to.be.false();
+
+        expect(serverGame.state()).to.eql(clientGame.state());
+        expect(serverGame.state()).to.eql(client2Game.state());
+        expect(clientGame.state()).to.eql(client2Game.state());
+
+        plan.ok();
+      });
+
+      clientGame.sync.connect(function() {
+        client2Game.sync.connect(function() {
+          serverGame.start();
+        });
+      });
+
+    });
+
+  });
 });

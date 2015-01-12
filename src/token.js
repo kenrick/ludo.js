@@ -90,8 +90,10 @@ Token.prototype.getPossibleAction = function getPossibleAction(rolled) {
     if (action.type) {
       action.take = function() {
         if (!this.dice.used) {
-          _this.executeAction(this);
-          _this.player.useDice(this.dice);
+          _this.registerAction(this, this.dice);
+          if (_this.game.sync && !_this.game.isServer) {
+            _this.game.sync.takeAction(this, this.dice);
+          }
         }
         return true;
       };
@@ -101,6 +103,11 @@ Token.prototype.getPossibleAction = function getPossibleAction(rolled) {
   }
 
   return false;
+};
+
+Token.prototype.registerAction = function registerAction(action, dice) {
+  this.executeAction(action);
+  this.player.useDice(dice);
 };
 
 Token.prototype.executeAction = function executeAction(action) {

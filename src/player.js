@@ -77,6 +77,10 @@ Player.prototype.useDice = function useDice(dice) {
   if (allUsed) this.endTurn();
 };
 
+Player.prototype.getDice = function getDice(position) {
+  return this.dices[position - 1];
+};
+
 Player.prototype.rollDice = function rollDice(callback) {
   var firstDice;
   var secondDice;
@@ -104,7 +108,12 @@ Player.prototype.registerDice = function registerDice(firstDice, secondDice) {
   this.dices = [];
   this.dices.push(firstDice);
   if (this.game.numberOfDie === 2) this.dices.push(secondDice);
-  this.game.pushEvent(Events.REG_DICE, { player: this.attributes(true), dices: this.dices });
+  this.game.pushEvent(Events.REG_DICE, {
+    player: this.attributes(true),
+    dices: this.dices.map(function(dice) {
+      return { rolled: dice.rolled, used: dice.used };
+    })
+  });
   this.takeAction();
 };
 
@@ -137,6 +146,7 @@ Player.prototype.getActionsForDice = function getActionsForDice(position) {
     var action = token.getPossibleAction(dice.rolled);
     if (action) {
       action.dice = dice;
+      action.dicePosition = position;
       totalActions.push(action);
     }
   });

@@ -39,36 +39,51 @@ module.exports = function(game) {
 
     client.link.on(SyncEvents.DICE_ROLL, function(payload) {
       var dices = [new Dice(), new Dice()];
+      var payloadToSend;
 
       dices.forEach(function(dice) {
         dice.roll();
       });
 
+      payloadToSend = { dices: dices, player: client.player };
+
       debug('rolled dice for client');
-      payload.callback(dices[0], dices[1]);
       //register dice in the game
-      registerDice({ dices: dices, player: client.player }, client);
+      registerDice(payloadToSend, client);
+
+      payload.callback(dices[0], dices[1]);
+
+      //send event to other clients
+      emitToAll(SyncEvents.REG_DICE, payloadToSend, client);
+    });
+
+    client.link.on(SyncEvents.TAKE_ACTION, function(payload) {
+      takeAction(payload, client);
     });
 
     clients.push(client);
     emitToAll(SyncEvents.CLIENT_JOIN, { player: player }, client);
   }
 
+  function takeAction(payload, client) {
+    var event = { type: Events.REG_ACTION, payload: payload };
+    game.processEvent(event);
+    emitToAll(SyncEvents.REG_ACTION, payload, client);
+  }
+
   function registerDice(payload, client) {
     var event = { type: Events.REG_DICE, payload: payload };
     game.processEvent(event);
-    emitToAll(SyncEvents.REG_DICE, payload, client);
   }
 
-  function onGameStart() {
+  function startGame() {
     debug('game started');
     emitToAll(SyncEvents.START_GAME);
   }
 
-  game.on(Events.GAME_START, onGameStart);
-
   return {
     addClient: addClient,
+    startGame: startGame,
     getClients: function() {
       return clients;
     },

@@ -158,6 +158,11 @@ Game.prototype.start = function start() {
       this.started = true;
       this.pushEvent(Events.GAME_START);
       this._loop();
+
+      if (this.sync && this.isServer) {
+        this.sync.startGame();
+      }
+
     }
   }
 
@@ -271,6 +276,8 @@ Game.prototype.processEvent = function processEvent(event) {
   var index;
   var player;
   var token;
+  var action;
+  var dice;
 
   switch (event.type) {
     case Events.REG_DICE:
@@ -278,6 +285,16 @@ Game.prototype.processEvent = function processEvent(event) {
       index = constants.Teams.indexOf(team);
       player = this.players[index];
       player.registerDice(payload.dices[0], payload.dices[1]);
+      break;
+
+    case Events.REG_ACTION:
+      team = payload.team;
+      index = constants.Teams.indexOf(team);
+      player = this.players[index];
+      token = player._tokens[payload.tokenId];
+      dice = player.getDice(payload.dicePosition);
+      action = token.getPossibleAction(dice.rolled);
+      token.registerAction(action, dice);
       break;
   }
 };
