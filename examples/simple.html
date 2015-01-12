@@ -133,23 +133,30 @@
               button: "ROLL DICE!",
               color: teamColors[player.team],
               callback: function() {
-                var dice = new Ludo.Dice();
-                dice.roll();
-                payload.registerDice(dice);
-                log(player.metadata.name + " rolled a " + dice.rolled);
-                var actions = payload.getActionsForDice(1);
-
-                if(actions.length) {
-                  dialog({
-                    title: player.metadata.name + " rolled a " + dice.rolled + ". What now?",
-                    color: teamColors[player.team],
-                    actions: actions
-                  });
-                } else {
-                  payload.release();
-                }
+                payload.rollDice();
               }
             });
+          },
+          'player.registerDice': function(payload) {
+            var player = payload.player;
+            var dice = payload.dices[0];
+            log(player.metadata.name + " rolled a " + dice.rolled);
+          },
+          'player.takeAction': function(payload) {
+            var player = payload.player;
+            var actions = payload.getActionsForDice(1);
+            var dice;
+
+            if(actions.length) {
+              dice = actions[0].dice;
+              dialog({
+                title: player.metadata.name + " rolled a " + dice.rolled + ". What now?",
+                color: teamColors[player.team],
+                actions: actions
+              });
+            } else {
+              payload.endTurn();
+            }
           },
           'token.born': function(data) {
             var token = data.token;
@@ -191,20 +198,20 @@
         };
 
         var game = new Ludo.Game({ events: events });
-        // var player1 = new Ludo.Player({name: "Shane"});
-        // var player2 = new Ludo.Player({name: "Dake"});
-        // var player3 = new Ludo.Player({name: "David"});
-        // var player4 = new Ludo.Player({name: "Gary"});
-        //
-        // game.addPlayer(player1);
-        // game.addPlayer(player2);
-        // game.addPlayer(player3);
-        // game.addPlayer(player4);
-        //
-        // player1.readyUp();
-        // player2.readyUp();
-        // player3.readyUp();
-        // player4.readyUp();
+        var player1 = new Ludo.Player({name: "Shane"});
+        var player2 = new Ludo.Player({name: "Dake"});
+        var player3 = new Ludo.Player({name: "David"});
+        var player4 = new Ludo.Player({name: "Gary"});
+
+        game.addPlayer(player1);
+        game.addPlayer(player2);
+        game.addPlayer(player3);
+        game.addPlayer(player4);
+
+        player1.readyUp();
+        player2.readyUp();
+        player3.readyUp();
+        player4.readyUp();
 
         dialog({
           button: "Start Game",

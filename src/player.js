@@ -88,8 +88,11 @@ Player.prototype.rollDice = function rollDice(callback) {
 
   if (this.game.isOfflineGame() || this.game.isServer)
   {
-    firstDice  = (new Dice()).roll();
-    secondDice = (new Dice()).roll();
+    firstDice  = new Dice();
+    secondDice = new Dice();
+
+    firstDice.roll();
+    secondDice.roll();
 
     this.registerDice(firstDice, secondDice);
   } else if (this.game.sync && !this.game.isServer) {
