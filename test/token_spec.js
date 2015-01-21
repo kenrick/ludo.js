@@ -77,13 +77,13 @@ describe('Token', function() {
     });
     it('fires the token.born event', function() {
       token.born();
-      game.emit.should.be.calledWith('token.born', { token: token.attributes() });
+      game.pushEvent.should.be.calledWith('token.born', { token: token.attributes() });
     });
 
     it('fires the token.moveTo event to startPoint', function() {
       token.born();
       cords = { x: Grid.startPoint.bl[0], y: Grid.startPoint.bl[1] };
-      game.emit.should.be.calledWith('token.moveTo', { token: token.attributes(), cords: cords });
+      game.pushEvent.should.be.calledWith('token.moveTo', { token: token.attributes(), cords: cords });
     });
   });
   describe('moveBy', function() {
@@ -114,7 +114,7 @@ describe('Token', function() {
   describe('moveTo', function() {
     it('fires the token.moveTo event, passing the token and coordinates', function() {
       token.moveTo({x: 5, y: 15});
-      game.emit.should.be.calledWith('token.moveTo', { token: token.attributes(), cords: {x: 5, y: 15} });
+      game.pushEvent.should.be.calledWith('token.moveTo', { token: token.attributes(), cords: {x: 5, y: 15} });
     });
 
     it('updates the cords with the new coordinates', function() {

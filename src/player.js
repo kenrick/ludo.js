@@ -1,5 +1,6 @@
 var constants = require('./constants');
 var Token = require('./token').Token;
+var Dice = require('./dice').Dice;
 var Events = constants.Events;
 
 function Player(metadata) {
@@ -10,6 +11,7 @@ function Player(metadata) {
   this.dices = [];
   this._tokens = [];
   this.blockades = {};
+  this.sync = false;
 }
 
 exports.Player = Player;
@@ -59,11 +61,11 @@ Player.prototype.createTokensForTeam = function createTokensForTeam() {
 };
 
 Player.prototype.readyUp = function readyUp() {
-  this.ready = true;
+  this._ready = true;
 };
 
 Player.prototype.getReady = function getReady() {
-  return this.ready;
+  return this._ready;
 };
 
 Player.prototype.useDice = function useDice(dice) {
@@ -75,10 +77,81 @@ Player.prototype.useDice = function useDice(dice) {
   if (allUsed) this.endTurn();
 };
 
+Player.prototype.getDice = function getDice(position) {
+  return this.dices[position - 1];
+};
+
+Player.prototype.rollDice = function rollDice(callback) {
+  var firstDice;
+  var secondDice;
+  var _this = this;
+
+  if (this.game.isOfflineGame() || this.game.isServer)
+  {
+    firstDice  = new Dice();
+    secondDice = new Dice();
+
+    firstDice.roll();
+    secondDice.roll();
+
+    this.registerDice(firstDice, secondDice);
+  } else if (this.game.sync && !this.game.isServer) {
+    this.game.sync.requestDice(function(dice1, dice2) {
+      firstDice = Dice.build(dice1);
+      secondDice = Dice.build(dice2);
+
+      _this.registerDice(firstDice, secondDice);
+
+      if (callback) callback();
+    });
+  }
+};
+
+Player.prototype.anyPossibleActions = function anyPossibleActions() {
+  var _this = this;
+  return this.dices.some(function(dice, index) {
+    var actions = _this.getActionsForDice(index + 1);
+    return actions.length;
+  });
+};
+
 Player.prototype.registerDice = function registerDice(firstDice, secondDice) {
   this.dices = [];
   this.dices.push(firstDice);
   if (this.game.numberOfDie === 2) this.dices.push(secondDice);
+  this.game.pushEvent(Events.REG_DICE, {
+    player: this.attributes(true),
+    dices: this.dices.map(function(dice) {
+      return { rolled: dice.rolled, used: dice.used };
+    })
+  });
+
+  if (this.anyPossibleActions()) {
+    this.takeAction();
+  } else {
+    this.game.pushEvent(Events.NO_ACTION, { player: this.attributes(true) });
+    this.endTurn();
+  }
+};
+
+Player.prototype.takeAction = function takeAction() {
+  if (this.game.isOfflineGame() || this.isLocalPlayer()) {
+    this.game.pushEvent(Events.TAKE_ACTION, {
+      player: this.attributes(true),
+      getActionsForDice: this.getActionsForDice.bind(this),
+      // endTurn: this.endTurn.bind(this), // turns will auto end for now
+      canTakeAction: function() {
+        return true; // use a function so it is ignored by sync events
+      }
+    });
+  } else {
+    this.game.pushEvent(Events.TAKE_ACTION, {
+      player: this.attributes(true),
+      canTakeAction: function() {
+        return false; // use a function so it is ignored by sync events
+      }
+    });
+  }
 };
 
 Player.prototype.getActionsForDice = function getActionsForDice(position) {
@@ -90,6 +163,7 @@ Player.prototype.getActionsForDice = function getActionsForDice(position) {
     var action = token.getPossibleAction(dice.rolled);
     if (action) {
       action.dice = dice;
+      action.dicePosition = position;
       totalActions.push(action);
     }
   });
@@ -97,16 +171,28 @@ Player.prototype.getActionsForDice = function getActionsForDice(position) {
   return totalActions;
 };
 
+Player.prototype.isLocalPlayer = function isLocalPlayer() {
+  return (!this.game.isOfflineGame() && this.game.localPlayer.team === this.team);
+};
+
 Player.prototype.beginTurn = function beginTurn() {
   var _this = this;
-  this.game.emit(Events.TURN_BEGIN, {
-    player: this.attributes(true),
-    registerDice: this.registerDice.bind(this),
-    getActionsForDice: this.getActionsForDice.bind(this),
-    release: function() {
-      _this.endTurn();
-    }
-  });
+  if (this.game.isOfflineGame() || this.isLocalPlayer()) {
+    this.game.pushEvent(Events.TURN_BEGIN, {
+      player: this.attributes(true),
+      rollDice: this.rollDice.bind(this),
+      canRollDice: function() {
+        return true; // use a function so it is ignored by sync events
+      }
+    });
+  } else {
+    this.game.pushEvent(Events.TURN_BEGIN, {
+      player: this.attributes(true),
+      canRollDice: function() {
+        return false; // use a function so it is ignored by sync events
+      }
+    });
+  }
 };
 
 Player.prototype.endTurn = function endTurn() {
@@ -115,10 +201,10 @@ Player.prototype.endTurn = function endTurn() {
   });
 
   if (rolledSix) {
-    this.game.emit(Events.REPEAT_TURN, { player: this.attributes(true) });
+    this.game.pushEvent(Events.REPEAT_TURN, { player: this.attributes(true) });
     this.beginTurn();
   } else {
-    this.game.emit(Events.TURN_END, { player: this.attributes(true) });
+    this.game.pushEvent(Events.TURN_END, { player: this.attributes(true) });
     this.game.continueGame();
   }
 };

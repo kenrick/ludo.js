@@ -35,8 +35,8 @@ describe('Player', function() {
     it('fires player:turn:begins on the game', function() {
       player.game = game;
       player.beginTurn();
-      var args = game.emit.getCall(0).args[1];
-      expect(game.emit.calledWith('player.turn.begin', args)).to.be.true();
+      var args = game.pushEvent.getCall(0).args[1];
+      expect(game.pushEvent.calledWith('player.turn.begin', args)).to.be.true();
       expect(args.player).to.eql(player.attributes(true));
     });
   });
@@ -45,8 +45,8 @@ describe('Player', function() {
     it('fires player:turn:ends on the game', function() {
       player.game = game;
       player.endTurn();
-      var args = game.emit.getCall(0).args[1];
-      expect(game.emit.calledWith('player.turn.end', args)).to.be.true();
+      var args = game.pushEvent.getCall(0).args[1];
+      expect(game.pushEvent.calledWith('player.turn.end', args)).to.be.true();
       expect(args.player).to.eql(player.attributes(true));
     });
 

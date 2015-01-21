@@ -14,7 +14,9 @@ exports.mockGame = function() {
     continueGame: sinon.spy(),
     findTokenAt: sinon.spy(),
     registerBlockade: sinon.spy(),
-    anyBlockadeIn: sinon.spy()
+    anyBlockadeIn: sinon.spy(),
+    isOfflineGame: sinon.stub().returns(true),
+    pushEvent: sinon.spy()
   };
 };
 
@@ -32,6 +34,7 @@ exports.mockPlayer = function(name, team) {
     beginTurn: sinon.spy(),
     setTeam: sinon.spy(),
     joinGame: sinon.spy(),
+    attributes: sinon.stub(),
     game: exports.mockGame()
   };
 };

@@ -13,6 +13,7 @@ pids
 pid
 logs
 results
+dist
 
 node_modules
 npm-debug.log

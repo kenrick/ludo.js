@@ -18,6 +18,7 @@ describe('Game', function() {
 
   describe('addPlayer', function() {
     it('fires player.join on the game', function(done) {
+      player.attributes.returns(player);
       game.on('player.join', function(data) {
         data.player.should.eq(player);
         done();
@@ -66,11 +67,15 @@ describe('Game', function() {
     it('can accept options for events', function() {
       var options = {
         events: {
-          'game.start': helper.sinon.spy()
+          'game.start': helper.sinon.spy(),
+          'error': function(m) {
+            console.log(m);
+          }
         }
       };
       var game = new Game(options);
       game.addPlayer(player);
+      game.addPlayer(player2);
       game.start();
       options.events['game.start'].called.should.equal(true);
     });

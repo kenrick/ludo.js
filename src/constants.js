@@ -1,5 +1,3 @@
-require('es5-shim');
-
 /**
 Conversions;
  RED    = BL
@@ -8,9 +6,16 @@ Conversions;
  GREEN  = TL
 **/
 
+exports.isServer = typeof window === 'undefined';
+
 exports.Teams = ['bl', 'br', 'tr', 'tl'];
 
 exports.Messages = {
+};
+
+exports.Mode = {
+  OFFLINE: 'offline',
+  ONLINE:  'online'
 };
 
 exports.Events = {
@@ -19,8 +24,12 @@ exports.Events = {
 
   PLAYER_JOIN:     'player.join',
   TURN_BEGIN:      'player.turn.begin',
+  REG_DICE:        'player.registerDice',
+  REG_ACTION:      'player.registerAction',
   TURN_END:        'player.turn.end',
   REPEAT_TURN:     'player.turn.repeat',
+  TAKE_ACTION:     'player.takeAction',
+  NO_ACTION:       'player.noAction',
 
   TOKEN_BORN:      'token.born',
   TOKEN_MOVE_TO:   'token.moveTo',
@@ -31,6 +40,17 @@ exports.Events = {
   OVER_SHOOT:      'token.overShotAscension',
 
   ERROR:           'error'
+};
+
+exports.SyncEvents = {
+  CONNECT:     'client.connect',
+  CLIENT_JOIN: 'client.join',
+  START_GAME:  'client.startGame',
+  DICE_ROLL:   'server.diceRoll',
+  REG_DICE:    'client.registerDice',
+  REG_ACTION:  'client.registerAction',
+  TAKE_ACTION: 'server.takeAction',
+  END_TURN:    'client.endTurn'
 };
 
 exports.ActionTypes = {

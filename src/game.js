@@ -1,34 +1,60 @@
-var EventEmitter = require('events').EventEmitter;
+var debug = require('debug')('ludo:game');
+
+var EventEmitter = require('eventemitter2').EventEmitter2;
 var Player = require('./player').Player;
+var Dice = require('./dice').Dice;
 var constants = require('./constants');
+var Mode = constants.Mode;
+var clientSync = require('./sync/client');
+var serverSync = require('./sync/server');
 var Events = constants.Events;
-var inherits = require('util').inherits;
+var utils = require('./utils');
+var inherits = require('inherits');
 
 function Game(options) {
   this.options = (options || {});
   this.players = [];
   this.started = false;
   this.currentPlayersTurn = '';
+  this.mode = (this.options.mode || Mode.OFFLINE);
   this.won = false;
   this.numberOfDie = (this.options.numberOfDie || 1);
+  this.localPlayer = (this.options.localPlayer || false);
+  this.isServer = (this.options.isServer || false);
+  this.sync = null;
 
   EventEmitter.call(this);
   this._attachEvents(this.options.events);
 
-  if (this.options.state) {
-    this._setState(this.options.state);
-  }
+  if (this.mode === Mode.ONLINE) this.sync = this.options.sync(this, this.options.link);
+
+  if (this.options.state) this.setState(this.options.state);
 }
 
 inherits(Game, EventEmitter);
 
 exports.Game = Game;
 
-Game.prototype.state = function state() {
-  return this._attributes();
+Game.Client = function Client(options) {
+  var opts = (options || {});
+  opts.mode = Mode.ONLINE;
+  opts.sync = clientSync;
+  return new Game(opts);
 };
 
-Game.prototype._setState = function setState(state) {
+Game.Server = function Server(options) {
+  var opts = (options || {});
+  opts.mode = Mode.ONLINE;
+  opts.sync = serverSync;
+  opts.isServer = true;
+  return new Game(opts);
+};
+
+Game.prototype.state = function state() {
+  return utils.clone(this._attributes());
+};
+
+Game.prototype.setState = function setState(state) {
   var _this = this;
 
   this.started = state.started;
@@ -38,11 +64,15 @@ Game.prototype._setState = function setState(state) {
     return Player.build(playerJSON, _this);
   });
 
-  this.resumeGame();
+  if (this.sync) {
+    this.sync.setEvents(state.syncEvents);
+  }
+
+  if (this.started) this.resumeGame();
 };
 
 Game.prototype._attributes = function _attributes() {
-  return {
+  var attributes =  {
     won: this.won,
     started: this.started,
     currentPlayersTurn: this.currentPlayersTurn,
@@ -50,6 +80,12 @@ Game.prototype._attributes = function _attributes() {
       return player.attributes();
     })
   };
+
+  if (this.sync) {
+    attributes.syncEvents = this.sync.getEvents();
+  }
+
+  return attributes;
 };
 
 Game.prototype._attachEvents = function _attachEvents(events) {
@@ -62,18 +98,46 @@ Game.prototype._attachEvents = function _attachEvents(events) {
   }
 };
 
+Game.prototype.pushEvent = function pushEvent(eventType, payload) {
+  var event = JSON.stringify({type: eventType, payload: payload});
+
+  if (this.sync) {
+    this.sync.addEvent(event);
+  }
+
+  this.emit(eventType, payload);
+};
+
+Game.prototype.isOfflineGame = function isOfflineGame() {
+  return this.mode === Mode.OFFLINE;
+};
+
 Game.prototype.addPlayer = function addPlayer(player) {
   if (this.players.length <= 3) {
     player.joinGame(this);
     player.setTeam(constants.Teams[this.players.length]);
 
     this.players.push(player);
-    this.emit(Events.PLAYER_JOIN, { player: player });
+    this.pushEvent(Events.PLAYER_JOIN, { player: player.attributes(true) });
   }
 };
 
-//TODO: Implement a joinGame function to add a player to the game
-Game.prototype.joinGame = function joinGame(player) {
+Game.prototype.joinGame = function joinGame(playerData) {
+  var player = new Player(playerData);
+  player.readyUp();
+  this.addPlayer(player);
+
+  debug('player joined');
+
+  return player.attributes(true);
+};
+
+Game.prototype.joinGameWithLink = function joinGameWithLink(playerData, link) {
+  var player = this.joinGame(playerData);
+
+  if (constants.isServer) {
+    this.sync.addClient(link, player);
+  }
 };
 
 Game.prototype.start = function start() {
@@ -89,9 +153,16 @@ Game.prototype.start = function start() {
     } else if (this.players.length != readies) {
       this.emit(Events.ERROR, { message: 'Not all players are ready' });
     } else {
+      debug('starting game');
+
       this.started = true;
-      this.emit(Events.GAME_START);
+      this.pushEvent(Events.GAME_START);
       this._loop();
+
+      if (this.sync && this.isServer) {
+        this.sync.startGame();
+      }
+
     }
   }
 
@@ -115,7 +186,7 @@ Game.prototype.continueGame = function continueGame() {
   this._loop();
 };
 
-Game.prototype.resumeGame = function continueGame() {
+Game.prototype.resumeGame = function resumeGame() {
   var _this = this;
 
   this.players.some(function(player) {
@@ -197,4 +268,33 @@ Game.prototype.anyBlockadeIn = function anyBlockadeIn(cords, excludedPlayer) {
   }
 
   return false;
+};
+
+Game.prototype.processEvent = function processEvent(event) {
+  var payload = event.payload;
+  var team;
+  var index;
+  var player;
+  var token;
+  var action;
+  var dice;
+
+  switch (event.type) {
+    case Events.REG_DICE:
+      team = payload.player.team;
+      index = constants.Teams.indexOf(team);
+      player = this.players[index];
+      player.registerDice(payload.dices[0], payload.dices[1]);
+      break;
+
+    case Events.REG_ACTION:
+      team = payload.team;
+      index = constants.Teams.indexOf(team);
+      player = this.players[index];
+      token = player._tokens[payload.tokenId];
+      dice = player.getDice(payload.dicePosition);
+      action = token.getPossibleAction(dice.rolled);
+      token.registerAction(action, dice);
+      break;
+  }
 };

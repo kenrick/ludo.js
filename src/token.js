@@ -90,8 +90,10 @@ Token.prototype.getPossibleAction = function getPossibleAction(rolled) {
     if (action.type) {
       action.take = function() {
         if (!this.dice.used) {
-          _this.executeAction(this);
-          _this.player.useDice(this.dice);
+          _this.registerAction(this, this.dice);
+          if (_this.game.sync && !_this.game.isServer) {
+            _this.game.sync.takeAction(this, this.dice);
+          }
         }
         return true;
       };
@@ -101,6 +103,11 @@ Token.prototype.getPossibleAction = function getPossibleAction(rolled) {
   }
 
   return false;
+};
+
+Token.prototype.registerAction = function registerAction(action, dice) {
+  this.executeAction(action);
+  this.player.useDice(dice);
 };
 
 Token.prototype.executeAction = function executeAction(action) {
@@ -122,7 +129,7 @@ Token.prototype.executeAction = function executeAction(action) {
 Token.prototype.born = function born() {
   var startPoint = Grid.startPoint[this.team];
   this.active = true;
-  this.game.emit(Events.TOKEN_BORN, { token: this.attributes() });
+  this.game.pushEvent(Events.TOKEN_BORN, { token: this.attributes() });
 
   this.moveTo({x: startPoint[0], y: startPoint[1]});
 };
@@ -188,8 +195,9 @@ Token.prototype._blockadeAhead = function _blockadeAhead(rolled) {
   var blockade = this.player.blockadeAhead(this._findAllCordsAhead(rolled));
 
   if (blockade) {
-
+    a = 10;
     this.game.emit(Events.TOKEN_BLOCKED, {
+      player: this.player.attributes(true),
       token: this.attributes(),
       blockade: {
         tokens: blockade.tokens.map(function(token) {
@@ -263,7 +271,7 @@ Token.prototype.moveTo = function moveTo(cords) {
 
   this.cords.x = cords.x;
   this.cords.y = cords.y;
-  this.game.emit(Events.TOKEN_MOVE_TO, { token: this.attributes(), cords: this.cords});
+  this.game.pushEvent(Events.TOKEN_MOVE_TO, { token: this.attributes(), cords: this.cords});
 };
 
 Token.prototype._leaveBlockade = function _leaveBlockade() {

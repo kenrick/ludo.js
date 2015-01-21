@@ -133,23 +133,30 @@
               button: "ROLL DICE!",
               color: teamColors[player.team],
               callback: function() {
-                var dice = new Ludo.Dice();
-                dice.roll();
-                payload.registerDice(dice);
-                log(player.metadata.name + " rolled a " + dice.rolled);
-                var actions = payload.getActionsForDice(1);
-
-                if(actions.length) {
-                  dialog({
-                    title: player.metadata.name + " rolled a " + dice.rolled + ". What now?",
-                    color: teamColors[player.team],
-                    actions: actions
-                  });
-                } else {
-                  payload.release();
-                }
+                payload.rollDice();
               }
             });
+          },
+          'player.registerDice': function(payload) {
+            var player = payload.player;
+            var dice = payload.dices[0];
+            log(player.metadata.name + " rolled a " + dice.rolled);
+          },
+          'player.takeAction': function(payload) {
+            var player = payload.player;
+            var actions = payload.getActionsForDice(1);
+            var dice;
+
+            if(actions.length) {
+              dice = actions[0].dice;
+              dialog({
+                title: player.metadata.name + " rolled a " + dice.rolled + ". What now?",
+                color: teamColors[player.team],
+                actions: actions
+              });
+            } else {
+              payload.endTurn();
+            }
           },
           'token.born': function(data) {
             var token = data.token;

@@ -68,15 +68,12 @@ describe('Integration', function() {
 
     it('kills player1 token 0', function(done) {
       var plan = helper.plan(2, done);
+      var dice = new Ludo.Dice({ rolled: 1 });
 
-      game.once('player.turn.begin', function(payload) {
-        var dice = new Ludo.Dice({ rolled: 1 });
+      game.once('player.takeAction', function(payload) {
         var actions;
 
-        dice.roll();
-        payload.registerDice(dice);
         actions = payload.getActionsForDice(1);
-
         expect(actions[0].type).to.equal('killMove');
         actions[0].take();
         plan.ok();
@@ -87,6 +84,8 @@ describe('Integration', function() {
         data.by.should.eql(player2._tokens[0].attributes());
         plan.ok();
       });
+
+      player2.registerDice(dice);
 
       game.start();
     });
@@ -105,10 +104,15 @@ describe('Integration', function() {
 
       game.once('player.turn.begin', function(payload) {
         var dice = new Ludo.Dice({ rolled: 1 });
-        var actions;
 
         dice.roll();
-        payload.registerDice(dice);
+        player1.registerDice(dice);
+        plan.ok();
+      });
+
+      game.once('player.takeAction', function(payload) {
+        var actions;
+
         actions = payload.getActionsForDice(1);
 
         expect(actions[0].type).to.equal('moveBy');
@@ -140,10 +144,15 @@ describe('Integration', function() {
 
       game.once('player.turn.begin', function(payload) {
         var dice = new Ludo.Dice({ rolled: 3 });
-        var actions;
 
         dice.roll();
-        payload.registerDice(dice);
+        player1.registerDice(dice);
+        plan.ok();
+      });
+
+      game.once('player.takeAction', function(payload) {
+        var actions;
+
         actions = payload.getActionsForDice(1);
 
         expect(actions[0].type).to.equal('moveBy');
@@ -168,10 +177,15 @@ describe('Integration', function() {
 
       game.once('player.turn.begin', function(payload) {
         var dice = new Ludo.Dice({ rolled: 4 });
-        var actions;
 
         dice.roll();
-        payload.registerDice(dice);
+        player1.registerDice(dice);
+        plan.ok();
+      });
+
+      game.once('player.takeAction', function(payload) {
+        var actions;
+
         actions = payload.getActionsForDice(1);
 
         expect(actions[0].type).to.equal('moveBy');
@@ -198,10 +212,15 @@ describe('Integration', function() {
 
       game.once('player.turn.begin', function(payload) {
         var dice = new Ludo.Dice({ rolled: 4 });
-        var actions;
 
         dice.roll();
-        payload.registerDice(dice);
+        player1.registerDice(dice);
+        plan.ok();
+      });
+
+      game.once('player.takeAction', function(payload) {
+        var actions;
+
         actions = payload.getActionsForDice(1);
 
         expect(actions[0].type).to.equal('moveBy');
@@ -229,7 +248,12 @@ describe('Integration', function() {
         var actions;
 
         dice.roll();
-        payload.registerDice(dice);
+        player1.registerDice(dice);
+      });
+
+      game.once('player.takeAction', function(payload) {
+        var actions;
+
         actions = payload.getActionsForDice(1);
       });
 
@@ -258,10 +282,15 @@ describe('Integration', function() {
 
       game.once('player.turn.begin', function(payload) {
         var dice = new Ludo.Dice({ rolled: 1 });
-        var actions;
 
         dice.roll();
-        payload.registerDice(dice);
+        player1.registerDice(dice);
+        plan.ok();
+      });
+
+      game.once('player.takeAction', function(payload) {
+        var actions;
+
         actions = payload.getActionsForDice(1);
 
         expect(actions[0].type).to.equal('ascend');
@@ -304,17 +333,21 @@ describe('Integration', function() {
 
       game.once('player.turn.begin', function(payload) {
         var dice = new Ludo.Dice({ rolled: 1 });
-        var actions;
 
         dice.roll();
-        payload.registerDice(dice);
+        player1.registerDice(dice);
+        plan.ok();
+      });
+
+      game.once('player.takeAction', function(payload) {
+        var actions;
+
         actions = payload.getActionsForDice(1);
 
         expect(actions[0].type).to.equal('ascend');
         actions[0].take();
         plan.ok();
       });
-
 
       game.once('token.moveTo', function(data) {
         expect(player1._tokens[3].cords).to.eql({x: 8, y: 9});
@@ -351,10 +384,15 @@ describe('Integration', function() {
 
       game.once('player.turn.begin', function(payload) {
         var dice = new Ludo.Dice({ rolled: 1 });
-        var actions;
 
         dice.roll();
-        payload.registerDice(dice);
+        player1.registerDice(dice);
+        plan.ok();
+      });
+
+      game.once('player.takeAction', function(payload) {
+        var actions;
+
         actions = payload.getActionsForDice(1);
 
         expect(actions[1].type).to.equal('createBlockade');
@@ -388,10 +426,15 @@ describe('Integration', function() {
 
       game.once('player.turn.begin', function(payload) {
         var dice = new Ludo.Dice({ rolled: 1 });
-        var actions;
 
         dice.roll();
-        payload.registerDice(dice);
+        player1.registerDice(dice);
+        plan.ok();
+      });
+
+      game.once('player.takeAction', function(payload) {
+        var actions;
+
         actions = payload.getActionsForDice(1);
 
         expect(actions[0].type).to.equal('moveBy');
@@ -429,7 +472,11 @@ describe('Integration', function() {
         var actions;
 
         dice.roll();
-        payload.registerDice(dice);
+        player2.registerDice(dice);
+      });
+
+      game.once('player.takeAction', function(payload) {
+        var actions;
         actions = payload.getActionsForDice(1);
       });
 
@@ -462,7 +509,11 @@ describe('Integration', function() {
         var actions;
 
         dice.roll();
-        payload.registerDice(dice);
+        player1.registerDice(dice);
+      });
+
+      game.once('player.takeAction', function(payload) {
+        var actions;
         actions = payload.getActionsForDice(1);
       });
 

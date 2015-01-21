@@ -11,11 +11,12 @@ var paths = {
   tests: 'test/*spec.js',
   fixtures: 'test/fixtures/*.js',
   index: './index.js',
-  src:   'src/*.js'
+  src:   'src/*.js',
+  srcDirs: 'src/*/*js'
 };
 
 gulp.task('lint', function() {
-  return gulp.src([paths.index, paths.src, paths.tests, './gulpfile.js'])
+  return gulp.src([paths.index, paths.src, paths.srcDirs, paths.tests, './gulpfile.js'])
     .pipe(jshint())
     .pipe(jshint.reporter('default'))
     .pipe(jshint.reporter('fail'));
@@ -47,8 +48,8 @@ gulp.task('test-all', function(done) {
 });
 
 gulp.task('watch', function() {
-  gulp.watch([paths.tests, paths.src, paths.fixtures], ['test']);
-  gulp.watch([paths.src], ['browserify']);
+  gulp.watch([paths.tests, paths.src, paths.fixtures, paths.srcDirs], ['test']);
+  gulp.watch([paths.src, paths.srcDirs], ['browserify']);
 });
 
 gulp.task('default', ['test', 'browserify']);
