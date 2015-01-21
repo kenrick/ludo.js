@@ -107,6 +107,14 @@ Player.prototype.rollDice = function rollDice(callback) {
   }
 };
 
+Player.prototype.anyPossibleActions = function anyPossibleActions() {
+  var _this = this;
+  return this.dices.some(function(dice, index) {
+    var actions = _this.getActionsForDice(index + 1);
+    return actions.length;
+  });
+};
+
 Player.prototype.registerDice = function registerDice(firstDice, secondDice) {
   this.dices = [];
   this.dices.push(firstDice);
@@ -117,7 +125,13 @@ Player.prototype.registerDice = function registerDice(firstDice, secondDice) {
       return { rolled: dice.rolled, used: dice.used };
     })
   });
-  this.takeAction();
+
+  if (this.anyPossibleActions()) {
+    this.takeAction();
+  } else {
+    this.game.pushEvent(Events.NO_ACTION, { player: this.attributes(true) });
+    this.endTurn();
+  }
 };
 
 Player.prototype.takeAction = function takeAction() {
@@ -125,7 +139,7 @@ Player.prototype.takeAction = function takeAction() {
     this.game.pushEvent(Events.TAKE_ACTION, {
       player: this.attributes(true),
       getActionsForDice: this.getActionsForDice.bind(this),
-      endTurn: this.endTurn.bind(this),
+      // endTurn: this.endTurn.bind(this), // turns will auto end for now
       canTakeAction: function() {
         return true; // use a function so it is ignored by sync events
       }

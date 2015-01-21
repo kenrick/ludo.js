@@ -130,17 +130,17 @@ describe('Sync', function() {
       var diceNum;
       var plan = helper.plan(3, done);
 
-      clientGame.on('player.turn.begin', function(payload) {
+      clientGame.once('player.turn.begin', function(payload) {
         payload.rollDice();
         plan.ok();
       });
 
-      clientGame.on('player.registerDice', function(payload) {
+      clientGame.once('player.registerDice', function(payload) {
         diceNum = payload.dices[0];
         plan.ok();
       });
 
-      client2Game.on('player.registerDice', function(payload) {
+      client2Game.once('player.registerDice', function(payload) {
         expect(payload.dices[0].rolled).to.eql(diceNum.rolled);
         plan.ok();
       });
@@ -171,7 +171,10 @@ describe('Sync', function() {
       clientGame.once('player.turn.begin', function(payload) {
         expect(payload.canRollDice()).to.be.true();
 
-        payload.rollDice();
+        setTimeout(function() {
+          payload.rollDice();
+        }, 0);
+
         plan.ok();
       });
 
@@ -185,7 +188,10 @@ describe('Sync', function() {
 
         tokenId = action.token.id;
 
-        action.take();
+        setTimeout(function() {
+          action.take();
+        }, 0);
+
         plan.ok();
       });
 

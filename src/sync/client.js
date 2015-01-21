@@ -19,6 +19,11 @@ module.exports = function(game, link) {
     game.processEvent(event);
   }
 
+  function onRegisterAction(payload) {
+    var event = { type: Events.REG_ACTION, payload: payload };
+    game.processEvent(event);
+  }
+
   function onGameStart() {
     game.start();
 
@@ -28,6 +33,7 @@ module.exports = function(game, link) {
   link.on(SyncEvents.CLIENT_JOIN, onClientJoin);
   link.on(SyncEvents.START_GAME, onGameStart);
   link.on(SyncEvents.REG_DICE, onRegisterDice);
+  link.on(SyncEvents.REG_ACTION, onRegisterAction);
 
   return {
     connect: function(callback) {
@@ -43,7 +49,7 @@ module.exports = function(game, link) {
       });
     },
     requestDice: function(callback) {
-      link.emit(SyncEvents.DICE_ROLL, { clientId: client.id, callback: callback });
+      link.emit(SyncEvents.DICE_ROLL, { clientId: client.id }, callback);
     },
     takeAction: function(action, dice) {
       var payload = {

@@ -37,7 +37,7 @@ module.exports = function(game) {
       callback({id: client.id, player: player}, game.state());
     });
 
-    client.link.on(SyncEvents.DICE_ROLL, function(payload) {
+    client.link.on(SyncEvents.DICE_ROLL, function(payload, callback) {
       var dices = [new Dice(), new Dice()];
       var payloadToSend;
 
@@ -51,7 +51,7 @@ module.exports = function(game) {
       //register dice in the game
       registerDice(payloadToSend, client);
 
-      payload.callback(dices[0], dices[1]);
+      callback(dices[0], dices[1]);
 
       //send event to other clients
       emitToAll(SyncEvents.REG_DICE, payloadToSend, client);
@@ -68,6 +68,7 @@ module.exports = function(game) {
   function takeAction(payload, client) {
     var event = { type: Events.REG_ACTION, payload: payload };
     game.processEvent(event);
+
     emitToAll(SyncEvents.REG_ACTION, payload, client);
   }
 

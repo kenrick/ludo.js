@@ -29,6 +29,7 @@ exports.Events = {
   TURN_END:        'player.turn.end',
   REPEAT_TURN:     'player.turn.repeat',
   TAKE_ACTION:     'player.takeAction',
+  NO_ACTION:       'player.noAction',
 
   TOKEN_BORN:      'token.born',
   TOKEN_MOVE_TO:   'token.moveTo',
@@ -47,6 +48,7 @@ exports.SyncEvents = {
   START_GAME:  'client.startGame',
   DICE_ROLL:   'server.diceRoll',
   REG_DICE:    'client.registerDice',
+  REG_ACTION:  'client.registerAction',
   TAKE_ACTION: 'server.takeAction',
   END_TURN:    'client.endTurn'
 };

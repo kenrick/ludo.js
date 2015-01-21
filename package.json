@@ -2,7 +2,7 @@
   "name": "ludo",
   "description": "The ludo board game written in javascript",
   "author": "Kenrick Beckett <kenrick.beckett@gmail.com>",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "repository": "https://github.com/planimus/Ludo.js",
   "dependencies": {
     "blueimp-md5": "^1.1.0",
