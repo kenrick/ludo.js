@@ -2,13 +2,10 @@
   "name": "ludo",
   "description": "The ludo board game written in javascript",
   "author": "Kenrick Beckett <kenrick.beckett@gmail.com>",
-  "version": "0.0.2",
+  "version": "2.0.0",
   "repository": "https://github.com/planimus/Ludo.js",
   "dependencies": {
-    "blueimp-md5": "^1.1.0",
-    "debug": "^2.1.1",
-    "eventemitter2": "^0.4.14",
-    "inherits": "^2.0.1"
+    "eventemitter2": "^0.4.14"
   },
   "devDependencies": {
     "browserify": "^7.0.0",
@@ -26,9 +23,6 @@
     "karma-mocha": "^0.1.9",
     "karma-safari-launcher": "^0.1.1",
     "mocha": "^2.0.1",
-    "should": "*",
-    "sinon": "*",
-    "sinon-chai": "*",
     "vinyl-transform": "^1.0.0"
   },
   "scripts": {
