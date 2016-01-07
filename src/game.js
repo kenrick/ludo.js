@@ -1,9 +1,9 @@
 import { PATH } from './constants';
-import { findPossibleActions, nextActionType, diceRollAction } from './actions';
+import { nextActionType, diceRollAction } from './action';
 
 export function processInput(state, input) {
-  const type = nextActionType(state.get('actions'), state.get('playerTurn'));
-  const roll = diceRollAction(state.get('playerTurn'));
+  const type = nextActionType(state.actions, state.playerTurn);
+  const roll = diceRollAction(state.playerTurn);
   const finder = findPossibleActions(state);
   return new Promise((resolve, _) => {
     input({ type, roll, finder }, resolve);
@@ -23,10 +23,20 @@ export function update(state, action) {
   //perform action
   //update state
   //return updated state
+  return state.updateIn(['actions'], (list) => list.push(action));
 }
 
-export function render(state, callback) {
+export function render(state, output) {
   return new Promise((resolve, _) => {
-    callback(game, resolve);
+    output(state, resolve);
   });
+}
+
+function findPossibleActions(state) {
+  // diceAction = state.get('actions')
+  //   .findLast((action) => (
+  //       action.get('playerId') === state.get('playerId')
+  //         && action.get('type') === DICE_ROLL
+  //   ));
+  return () => {}
 }
