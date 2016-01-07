@@ -1,5 +1,6 @@
 import { PATH } from './constants';
 import { nextActionType, diceRollAction } from './action';
+import { flow } from 'lodash';
 
 export function processInput(state, input) {
   const type = nextActionType(state.actions, state.playerTurn);
@@ -11,11 +12,13 @@ export function processInput(state, input) {
 }
 
 export function update(state, action) {
+  let s = state
   //switch on action type
   //when dice roll
   //check for possible actions
   //if none exists
   //change turn
+  s = changeTurn(s);
   //if 1 or more exists
   //add action to state and return new state
   //when token move
@@ -23,7 +26,7 @@ export function update(state, action) {
   //perform action
   //update state
   //return updated state
-  return state.updateIn(['actions'], (list) => list.push(action));
+  return appendAction(action, s);
 }
 
 export function render(state, output) {
@@ -39,4 +42,22 @@ function findPossibleActions(state) {
   //         && action.get('type') === DICE_ROLL
   //   ));
   return () => {}
+}
+
+function changeTurn(state) {
+  return state.set('playerTurn', nextPlayer(state.players.count(), state.playerTurn))
+}
+
+function nextPlayer(count, playerId) {
+  const nextPlayerId = playerId + 1;
+
+  if(count === nextPlayerId) {
+    return 0;
+  }
+
+  return nextPlayerId;
+}
+
+function appendAction(action, state) {
+  return state.updateIn(['actions'], (list) => list.push(action));
 }
