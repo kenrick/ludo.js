@@ -1,4 +1,5 @@
 import { List, is } from 'immutable';
+import { isUndefined } from 'lodash';
 
 export function nextCoordsFrom({
   path,
@@ -22,21 +23,20 @@ export function nextCoordsFrom({
 
   // if there are more next(s) than alternate coords set nextCoord to undefined
   // because we have reached the end of the path
-  if(alternate.includes(fromCoord) && is(fromCoord, alternate.last())) {
-    nextCoord = undefined;
-  // if fromCoord is at the end of the path or not on the path
-  // reset to to the beginning
-  } else if(is(fromCoord, p.last()) || !p.includes(fromCoord)) {
-    nextCoord = p.get(0);
-  // else progress on to the next coord on the path.
-  } else {
-    nextCoord = p.get(p.indexOf(fromCoord) + 1);
-  }
-
+  // or
   // fromCoord will be undefined if at the end of the alternate path
   // so just continue to be undefined
-  if(fromCoord === undefined) {
-    nextCoord = undefined;
+  if(alternate.includes(fromCoord) && is(fromCoord, alternate.last()) || isUndefined(fromCoord)) {
+    // Do not set nextCoord
+  }
+  // if fromCoord is at the end of the path or not on the path
+  // reset to to the beginning
+  else if (is(fromCoord, p.last()) || !p.includes(fromCoord)) {
+    nextCoord = p.get(0);
+  }
+  // else progress on to the next coord on the path.
+  else {
+    nextCoord = p.get(p.indexOf(fromCoord) + 1);
   }
 
   return nextCoordsFrom({
@@ -44,6 +44,6 @@ export function nextCoordsFrom({
     alternate,
     switchCoord,
     fromCoord: nextCoord,
-    next: next-1
+    next: next - 1
   }, list.push(nextCoord));
 }

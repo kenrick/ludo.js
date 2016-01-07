@@ -1,23 +1,18 @@
 import { Map, List, Record } from 'immutable';
-import { TEAMS } from './constants'
+import { TEAMS } from './constants';
 import { range, flatten } from 'lodash';
 
 const Player = Record({
-  id: undefined,
-  team: undefined
+  id: Number,
+  team: String
 });
 
 const Token = Record({
-  id: undefined,
-  team: undefined,
+  id: Number,
+  team: String,
   coord: List.of(0, 0),
   active: false,
   ascended: false
-});
-
-const Action = Record({
-  type: undefined,
-  playerId: undefined,
 });
 
 const State = Record({
@@ -27,6 +22,10 @@ const State = Record({
   playerTurn: 0,
   winner: undefined
 });
+
+function createRecord(record, spec = {}) {
+  return new record(spec);
+}
 
 function createPlayers(playerCount) {
   return range(playerCount).map((id) => (
@@ -40,12 +39,8 @@ function createTokens(playerCount) {
   ))).map((token, id) => token.set('id', id));
 }
 
-function createRecord(record, spec = {}) {
-  return new record(spec);
-}
-
 export function createAction(spec) {
-  return createRecord(Action, spec);
+  return Map(spec);
 }
 
 export function createState(playerCount) {

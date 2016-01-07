@@ -1,32 +1,28 @@
-import { List, Map } from 'immutable'
+import { List } from 'immutable';
+import { isUndefined } from 'lodash';
+import { createAction } from './state.js';
 
 const DICE_ROLL = 'dice roll';
 const TOKEN_ACTION = 'token action';
 
-export function nextActionType(actions, playerTurn) {
-  if(actions.isEmpty()) {
+export function nextActionType(action, playerTurn) {
+  if(isUndefined(action)) {
     return DICE_ROLL;
   }
 
-  const lastAction = actions.last();
-  const actionTypeEq = type => lastAction.get('type') === type
-  const turnChanged = () => lastAction.get('playerId') !== playerTurn
+  const turnChanged = action.get('playerId') !== playerTurn;
+  const isLastDie = () => action.getIn(['dice', 1]) === true;
 
-  if(turnChanged() || actionTypeEq(TOKEN_ACTION)) {
-    return DICE_ROLL;
-  }
-  else {
+  if(!isLastDie() && !turnChanged) {
     return TOKEN_ACTION;
   }
+
+  return DICE_ROLL;
 }
 
 export function diceRollAction(playerTurn) {
   return (die) => (
-    Map({ type: DICE_ROLL, rolled: List(die), playerId: playerTurn })
-  )
+    createAction({ type: DICE_ROLL, rolled: List(die), playerId: playerTurn })
+  );
 }
 
-export function findPossibleActions(state) {
-  return (dice) => {
-  }
-}
