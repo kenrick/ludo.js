@@ -20,7 +20,7 @@ const State = Record({
   tokens: List(),
   actions: List(),
   playerTurn: 0,
-  winner: undefined
+  winner: undefined, // eslint-disable-line no-undefined
 });
 
 function createRecord(record, spec = {}) {

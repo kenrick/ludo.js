@@ -25,4 +25,3 @@ export function diceRollAction(playerTurn) {
     createAction({ type: DICE_ROLL, rolled: List(die), playerId: playerTurn })
   );
 }
-
