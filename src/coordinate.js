@@ -21,22 +21,19 @@ export function nextCoordsFrom({
     p = alternate;
   }
 
-  // if there are more next(s) than alternate coords set nextCoord to undefined
-  // because we have reached the end of the path
-  // or
-  // fromCoord will be undefined if at the end of the alternate path
-  // so just continue to be undefined
-  if(alternate.includes(fromCoord) && is(fromCoord, alternate.last()) || isUndefined(fromCoord)) {
-    // Do not set nextCoord
-  }
-  // if fromCoord is at the end of the path or not on the path
-  // reset to to the beginning
-  else if (is(fromCoord, p.last()) || !p.includes(fromCoord)) {
-    nextCoord = p.get(0);
-  }
-  // else progress on to the next coord on the path.
-  else {
-    nextCoord = p.get(p.indexOf(fromCoord) + 1);
+  // Only allow the nextCoord to be set if we are not at the end of the
+  // alternate path and fromCoord is not undefined
+  // otherwise nextCoord will be undefined
+  if(!is(fromCoord, alternate.last()) && !isUndefined(fromCoord)) {
+    // if fromCoord is at the end of the path or not on the path
+    // reset to the beginning
+    if (is(fromCoord, p.last()) || !p.includes(fromCoord)) {
+      nextCoord = p.get(0);
+    }
+    // else progress on to the next coord on the path.
+    else {
+      nextCoord = p.get(p.indexOf(fromCoord) + 1);
+    }
   }
 
   return nextCoordsFrom({
