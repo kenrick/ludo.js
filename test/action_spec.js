@@ -1,5 +1,6 @@
+/* global define, it, describe */
 import expect from 'expect';
-import { fromJS, is, List } from 'immutable';
+import { is, List } from 'immutable';
 import { nextActionType, diceRollAction } from '../src/action';
 import { createAction } from '../src/state';
 
@@ -7,7 +8,7 @@ describe('action module', () => {
   describe('nextActionType', () => {
 
     it('returns dice roll when the action is undefined', () => {
-      expect(nextActionType(undefined, 0)).toBe('dice roll');
+      expect(nextActionType(undefined, 0)).toBe('dice roll'); // eslint-disable-line no-undefined
     });
 
     it('returns token action when the action is a dice roll', () => {
@@ -16,12 +17,24 @@ describe('action module', () => {
     });
 
     it('returns token action when the action is a token action and the turn did not change', () => {
-      const action = createAction({ type: 'token action', verb: 'born', tokenId: 0, playerId: 0, dice: List([0, false]) });
+      const action = createAction({
+        type: 'token action',
+        verb: 'born',
+        tokenId: 0,
+        playerId: 0,
+        dice: List([0, false])
+      });
       expect(nextActionType(action, 0)).toBe('token action');
     });
 
     it('returns dice roll when the player turn does not change', () => {
-      const action = createAction({ type: 'token action', verb: 'born', tokenId: 0, playerId: 0, dice: List([0, true]) });
+      const action = createAction({
+        type: 'token action',
+        verb: 'born',
+        tokenId: 0,
+        playerId: 0,
+        dice: List([0, true])
+      });
       expect(nextActionType(action, 0)).toBe('dice roll');
     });
 

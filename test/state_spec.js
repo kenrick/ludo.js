@@ -1,10 +1,11 @@
+/* global define, it, describe */
 import expect from 'expect';
 import { createState } from '../src/state.js';
 
-describe("state module", () => {
+describe('state module', () => {
   const state = createState(2);
 
-  describe("createState", () => {
+  describe('createState', () => {
     it('has same amount of players passed in', () => {
       expect(state.players.count()).toEqual(2);
     });
@@ -18,7 +19,7 @@ describe("state module", () => {
     });
 
     it('has winner set to undefined', () => {
-      expect(state.winner).toBe(undefined);
+      expect(state.winner).toBe(undefined); // eslint-disable-line no-undefined
     });
   });
 });

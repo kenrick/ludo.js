@@ -1,3 +1,4 @@
+/* global define, it, describe */
 import expect from 'expect';
 import { processInput, update, render } from '../src/game';
 import { createState, createAction } from '../src/state';
@@ -36,5 +37,6 @@ describe('game module', () => {
       const state2 = update(state, action2);
       expect(state2.playerTurn).toEqual(0);
     });
+
   });
 });
