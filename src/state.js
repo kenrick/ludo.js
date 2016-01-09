@@ -1,41 +1,28 @@
-import { Map, List, Record } from 'immutable';
+import { Map, List } from 'immutable';
 import { TEAMS } from './constants';
-import { range, flatten } from 'lodash';
+import { range, flatten, assign } from 'lodash';
 
-const Player = Record({
-  id: Number,
-  team: String
-});
+function createPlayer(spec) {
+  return Map(spec);
+}
 
-const Token = Record({
-  id: Number,
-  team: String,
-  coord: List.of(0, 0),
-  active: false,
-  ascended: false
-});
-
-const State = Record({
-  players: List(),
-  tokens: List(),
-  actions: List(),
-  playerTurn: 0,
-  winner: undefined, // eslint-disable-line no-undefined
-});
-
-function createRecord(record, spec = {}) {
-  return new record(spec);
+function createToken(spec) {
+  return Map(assign({
+    coord: List.of(0, 0),
+    active: false,
+    ascended: false
+  }, spec));
 }
 
 function createPlayers(playerCount) {
   return range(playerCount).map((id) => (
-    createRecord(Player, { id: id, team: TEAMS[id] })
+    createPlayer({ id: id, team: TEAMS[id] })
   ));
 }
 
 function createTokens(playerCount) {
   return flatten(range(playerCount).map((id) => (
-    range(4).map(() => createRecord(Token, { team: TEAMS[id] }))
+    range(4).map(() => createToken({ team: TEAMS[id] }))
   ))).map((token, id) => token.set('id', id));
 }
 
@@ -44,9 +31,12 @@ export function createAction(spec) {
 }
 
 export function createState(playerCount) {
-  return createRecord(State, {
+  return Map({
     players: List(createPlayers(playerCount)),
     tokens: List(createTokens(playerCount)),
+    actions: List(),
+    playerTurn: 0,
+    winner: undefined, // eslint-disable-line no-undefined
   });
 }
 

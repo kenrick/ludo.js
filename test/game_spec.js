@@ -55,11 +55,11 @@ describe('game module', () => {
         action has no possible token actions`, () => {
       const action = createAction({ type: 'dice roll', rolled: List.of(1, 2), playerId: 0});
       const state = update(createState(2), action);
-      expect(state.playerTurn).toEqual(1);
+      expect(state.get('playerTurn')).toEqual(1);
 
       const action2 = createAction({ type: 'dice roll', rolled: List.of(1, 2), playerId: 1});
       const state2 = update(state, action2);
-      expect(state2.playerTurn).toEqual(0);
+      expect(state2.get('playerTurn')).toEqual(0);
     });
 
   });

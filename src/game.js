@@ -14,7 +14,7 @@ function nextPlayer(count, playerId) {
 }
 
 function changeTurn(state) {
-  return state.set('playerTurn', nextPlayer(state.players.count(), state.playerTurn));
+  return state.set('playerTurn', nextPlayer(state.get('players').size, state.get('playerTurn')));
 }
 
 function lastDiceAction(actions, playerId) {
@@ -25,23 +25,23 @@ function lastDiceAction(actions, playerId) {
 }
 
 function possibleActionFor(token, rolled) {
-  if(token.active === false && rolled === 6) {
+  if(token.get('active') === false && rolled === 6) {
     return createAction({
       type: TOKEN_ACTION,
       verb: 'born',
-      moveToCoord: startPoint.get(token.team),
-      tokenId: token.id
+      moveToCoord: startPoint.get(token.get('team')),
+      tokenId: token.get('id')
     });
   }
 }
 
 function findPossibleActions(state, dice) {
-  const player = state.players.get(state.playerTurn);
-  const diceAction = lastDiceAction(state.actions, state.playerTurn);
-  const rolled = diceAction.get('rolled').get(dice);
+  const player = state.getIn(['players', state.get('playerTurn')]);
+  const diceAction = lastDiceAction(state.get('actions'), state.get('playerTurn'));
+  const rolled = diceAction.getIn(['rolled', dice]);
 
-  return state.tokens
-    .filter((token) => token.team === player.team)
+  return state.get('tokens')
+    .filter((token) => token.get('team') === player.get('team'))
     .map((token) => possibleActionFor(token, rolled, state))
     .filterNot((action) => isUndefined(action));
 }
@@ -54,9 +54,9 @@ export function processInput(state, input) {
   // TODO: when there no possible actions for a dice and the turn
   // was no changed for a dice roll force the
   // next action type to be dice roll by setting it to undefined
-  const action = state.actions.last();
-  const type = nextActionType(action, state.playerTurn);
-  const roll = diceRollAction(state.playerTurn);
+  const action = state.get('actions').last();
+  const type = nextActionType(action, state.get('playerTurn'));
+  const roll = diceRollAction(state.get('playerTurn'));
   const finder = partial(findPossibleActions, state);
   return new Promise((resolve) => {
     input({ type, roll, finder }, resolve);
