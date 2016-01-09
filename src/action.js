@@ -2,8 +2,8 @@ import { List } from 'immutable';
 import { isUndefined } from 'lodash';
 import { createAction } from './state.js';
 
-const DICE_ROLL = 'dice roll';
-const TOKEN_ACTION = 'token action';
+export const DICE_ROLL = 'dice roll';
+export const TOKEN_ACTION = 'token action';
 
 export function nextActionType(action, playerTurn) {
   if(isUndefined(action)) {

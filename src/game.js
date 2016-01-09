@@ -1,4 +1,7 @@
-import { nextActionType, diceRollAction } from './action';
+import { DICE_ROLL, TOKEN_ACTION, nextActionType, diceRollAction } from './action';
+import { createAction } from './state';
+import { startPoint } from './grid';
+import { partial, isUndefined } from 'lodash';
 
 function nextPlayer(count, playerId) {
   const nextPlayerId = playerId + 1;
@@ -14,13 +17,33 @@ function changeTurn(state) {
   return state.set('playerTurn', nextPlayer(state.players.count(), state.playerTurn));
 }
 
-function findPossibleActions() {
-  // diceAction = state.get('actions')
-  //   .findLast((action) => (
-  //       action.get('playerId') === state.get('playerId')
-  //         && action.get('type') === DICE_ROLL
-  //   ));
-  return () => {};
+function lastDiceAction(actions, playerId) {
+  return actions.findLast((action) => (
+    action.get('playerId') === playerId
+      && action.get('type') === DICE_ROLL
+  ));
+}
+
+function possibleActionFor(token, rolled) {
+  if(token.active === false && rolled === 6) {
+    return createAction({
+      type: TOKEN_ACTION,
+      verb: 'born',
+      moveToCoord: startPoint.get(token.team),
+      tokenId: token.id
+    });
+  }
+}
+
+function findPossibleActions(state, dice) {
+  const player = state.players.get(state.playerTurn);
+  const diceAction = lastDiceAction(state.actions, state.playerTurn);
+  const rolled = diceAction.get('rolled').get(dice);
+
+  return state.tokens
+    .filter((token) => token.team === player.team)
+    .map((token) => possibleActionFor(token, rolled, state))
+    .filterNot((action) => isUndefined(action));
 }
 
 function appendAction(action, state) {
@@ -34,7 +57,7 @@ export function processInput(state, input) {
   const action = state.actions.last();
   const type = nextActionType(action, state.playerTurn);
   const roll = diceRollAction(state.playerTurn);
-  const finder = findPossibleActions(state);
+  const finder = partial(findPossibleActions, state);
   return new Promise((resolve) => {
     input({ type, roll, finder }, resolve);
   });
