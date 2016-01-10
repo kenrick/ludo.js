@@ -10,7 +10,7 @@ function createToken(spec) {
   return Map(assign({
     coord: List.of(0, 0),
     active: false,
-    ascended: false
+    ascend: false
   }, spec));
 }
 

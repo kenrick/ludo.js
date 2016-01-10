@@ -44,9 +44,24 @@ function findEnemyTokenAtCoord(tokens, team, coord) {
     .find((token) => token.get('coord').equals(coord));
 }
 
+function isMultipleTokensAt(tokens, coords) {
+  return tokens
+    .groupBy((t) => t.get('coord'))
+    .filter((ts) => ts.count() >= 2)
+    .some((ts) => coords.includes(ts.first().get('coord')));
+}
+
+function isPathBlockedFor(token, tokens, coords) {
+  return tokens
+    .filter((t) => t.get('team') !== token.get('team'))
+    .groupBy((t) => t.get('team'))
+    .some((ts) => isMultipleTokensAt(ts, coords));
+}
+
 function possibleActionFor({token, dice, diceAction, tokens}) {
   const rolled = diceAction.getIn(['rolled', dice]);
   const canBorn = token.get('active') === false && rolled === 6;
+  const heavenPath = heaven.get(token.get('team'));
 
   if(!canBorn && token.get('active') !== true) {
     return;
@@ -60,33 +75,42 @@ function possibleActionFor({token, dice, diceAction, tokens}) {
   };
   let moveToCoord;
   let verbs = List();
+  let coords;
 
   if(canBorn) {
     verbs = verbs.push('born');
-    moveToCoord = startPoint.get(token.get('team'));
+    coords = List([startPoint.get(token.get('team'))]);
   }
 
   if(token.get('active') === true) {
-    const coords = nextCoordsFrom({
+    coords = nextCoordsFrom({
       path,
-      alternate: heaven,
+      alternate: heavenPath,
       switchCoord: switchCoords.get(token.get('team')),
       next: rolled,
       fromCoord: token.get('coord')
     });
+  }
 
-    moveToCoord = coords.last();
-    const enemyToken = findEnemyTokenAtCoord(tokens, token.get('team'), moveToCoord);
+  if(isPathBlockedFor(token, tokens, coords)) {
+    return;
+  }
 
-    if(!isUndefined(enemyToken)) {
-      verbs = verbs.push('kill');
-      action.killedTokenId = enemyToken.get('id');
-    }
+  moveToCoord = coords.last();
+  const enemyToken = findEnemyTokenAtCoord(tokens, token.get('team'), moveToCoord);
+
+  if(heavenPath.last().equals(moveToCoord)) {
+    verbs = verbs.push('ascend');
+  }
+
+  if(!isUndefined(enemyToken)) {
+    verbs = verbs.push('kill');
+    action.killedTokenId = enemyToken.get('id');
   }
 
   action.verbs = verbs.push('move');
   action.moveToCoord = moveToCoord;
-  return createAction(action);
+  return createAction(action); // eslint-disable-line
 }
 
 function findPossibleActions(state, dice) {
@@ -108,6 +132,10 @@ function actionPerformers(verb) {
     'kill'(action, state) {
       return state.setIn(['tokens', action.get('killedTokenId'), 'active'], false)
         .setIn(['tokens', action.get('killedTokenId'), 'coord'], List.of(0, 0));
+    },
+    'ascend'(action, state) {
+      return state.setIn(['tokens', action.get('tokenId'), 'active'], false)
+        .setIn(['tokens', action.get('tokenId'), 'ascend'], true);
     },
     'move'(action, state) {
       return state.setIn(['tokens', action.get('tokenId'), 'coord'], action.get('moveToCoord'));
