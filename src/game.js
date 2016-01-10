@@ -1,7 +1,7 @@
 import { DICE_ROLL, TOKEN_ACTION, nextActionType, diceRollAction } from './action';
 import { createAction } from './state';
 import { startPoint, path, switchCoords, heaven } from './grid';
-import { nextCoordsFrom } from './coordinate'
+import { nextCoordsFrom } from './coordinate';
 import { flow, partial, isUndefined } from 'lodash';
 import { List } from 'immutable';
 
@@ -38,17 +38,32 @@ function isLastDice() {
   return true;
 }
 
-function possibleActionFor({token, dice, diceAction}) {
-  const rolled = diceAction.getIn(['rolled', dice]);
+function findEnemyTokenAtCoord(tokens, team, coord) {
+  return tokens
+    .filter((token) => token.get('team') !== team)
+    .find((token) => token.get('coord').equals(coord));
+}
 
-  if(token.get('active') === false && rolled === 6) {
-    return createAction({
-      type: TOKEN_ACTION,
-      verb: 'born',
-      moveToCoord: startPoint.get(token.get('team')),
-      tokenId: token.get('id'),
-      dice: List.of(dice, isLastDice())
-    });
+function possibleActionFor({token, dice, diceAction, tokens}) {
+  const rolled = diceAction.getIn(['rolled', dice]);
+  const canBorn = token.get('active') === false && rolled === 6;
+
+  if(!canBorn && token.get('active') !== true) {
+    return;
+  }
+
+  const action = {
+    type: TOKEN_ACTION,
+    tokenId: token.get('id'),
+    dice: List.of(dice, isLastDice()),
+    verbs: List()
+  };
+  let moveToCoord;
+  let verbs = List();
+
+  if(canBorn) {
+    verbs = verbs.push('born');
+    moveToCoord = startPoint.get(token.get('team'));
   }
 
   if(token.get('active') === true) {
@@ -60,24 +75,46 @@ function possibleActionFor({token, dice, diceAction}) {
       fromCoord: token.get('coord')
     });
 
-    return createAction({
-      type: TOKEN_ACTION,
-      verb: 'move',
-      moveToCoord: coords.last(),
-      tokenId: token.get('id'),
-      dice: List.of(dice, isLastDice())
-    });
+    moveToCoord = coords.last();
+    const enemyToken = findEnemyTokenAtCoord(tokens, token.get('team'), moveToCoord);
+
+    if(!isUndefined(enemyToken)) {
+      verbs = verbs.push('kill');
+      action.killedTokenId = enemyToken.get('id');
+    }
   }
+
+  action.verbs = verbs.push('move');
+  action.moveToCoord = moveToCoord;
+  return createAction(action);
 }
 
 function findPossibleActions(state, dice) {
   const player = state.getIn(['players', state.get('playerTurn')]);
   const diceAction = lastDiceAction(state.get('actions'), state.get('playerTurn'));
+  const tokens = state.get('tokens');
 
-  return state.get('tokens')
+  return tokens
     .filter((token) => token.get('team') === player.get('team'))
-    .map((token) => possibleActionFor({token, dice, diceAction}))
+    .map((token) => possibleActionFor({token, dice, diceAction, tokens}))
     .filterNot((action) => isUndefined(action));
+}
+
+function actionPerformers(verb) {
+  const performers = {
+    'born'(action, state) {
+      return state.setIn(['tokens', action.get('tokenId'), 'active'], true);
+    },
+    'kill'(action, state) {
+      return state.setIn(['tokens', action.get('killedTokenId'), 'active'], false)
+        .setIn(['tokens', action.get('killedTokenId'), 'coord'], List.of(0, 0));
+    },
+    'move'(action, state) {
+      return state.setIn(['tokens', action.get('tokenId'), 'coord'], action.get('moveToCoord'));
+    }
+  };
+
+  return performers[verb];
 }
 
 function performAction(action, state) {
@@ -85,16 +122,9 @@ function performAction(action, state) {
     return state;
   }
 
-  return state
-    .updateIn(['tokens', action.get('tokenId')], (token) => {
-      let t = token;
-
-      if(action.get('verb') === 'born') {
-        t = t.set('active', true);
-      }
-
-      return t.set('coord', action.get('moveToCoord'));
-    });
+  return action
+    .get('verbs')
+    .reduce((prevState, verb) => actionPerformers(verb)(action, prevState), state);
 }
 
 function appendAction(action, state) {

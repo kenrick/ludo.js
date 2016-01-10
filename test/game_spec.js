@@ -30,7 +30,7 @@ describe('game module', () => {
 
       const {type, finder} = spyArgs(spy)[0];
       expect(type).toBe('token action');
-      expect(finder(0).first().get('verb')).toBe('born');
+      expect(finder(0).first().get('verbs').toJS()).toEqual(['born', 'move']);
       expect(finder(0).first().get('moveToCoord').equals(List.of(7, 14))).toBe(true);
       expect(finder(0).first().get('tokenId')).toBe(0);
       expect(finder(0).first().get('dice').first()).toBe(0);
@@ -49,7 +49,43 @@ describe('game module', () => {
       const {type, finder} = spyArgs(spy)[0];
       expect(type).toBe('token action');
       expect(finder(0).count()).toBe(1);
-      expect(finder(0).first().get('verb')).toBe('move');
+      expect(finder(0).first().get('verbs').toJS()).toEqual(['move']);
+      expect(finder(0).first().get('moveToCoord').equals(List.of(6, 9))).toBe(true);
+      expect(finder(0).first().get('tokenId')).toBe(0);
+    });
+
+    it('predicts the token kill move action when there is an enemy token at the moveToCoord', () => {
+      const spy = createSpy();
+      const state = createState(2).mergeDeep(fromJS({
+        tokens: [
+          { active: true, coord: [7, 14] }, {}, {}, {},
+          { active: true, coord: [6, 9] }
+        ],
+        actions: [{ type: 'dice roll', rolled: [5], playerId: 0}]
+      }));
+      processInput(state, spy);
+
+      const {type, finder} = spyArgs(spy)[0];
+      expect(type).toBe('token action');
+      expect(finder(0).count()).toBe(1);
+      expect(finder(0).first().get('verbs').toJS()).toEqual(['kill', 'move']);
+      expect(finder(0).first().get('moveToCoord').equals(List.of(6, 9))).toBe(true);
+      expect(finder(0).first().get('tokenId')).toBe(0);
+      expect(finder(0).first().get('killedTokenId')).toBe(4);
+    });
+
+    it('predicts the token move action when there active tokens', () => {
+      const spy = createSpy();
+      const state = createState(2).mergeDeep(fromJS({
+        tokens: [{ active: true, coord: [7, 14] }],
+        actions: [{ type: 'dice roll', rolled: [5], playerId: 0}]
+      }));
+      processInput(state, spy);
+
+      const {type, finder} = spyArgs(spy)[0];
+      expect(type).toBe('token action');
+      expect(finder(0).count()).toBe(1);
+      expect(finder(0).first().get('verbs').toJS()).toEqual(['move']);
       expect(finder(0).first().get('moveToCoord').equals(List.of(6, 9))).toBe(true);
       expect(finder(0).first().get('tokenId')).toBe(0);
     });
@@ -83,7 +119,7 @@ describe('game module', () => {
 
       const action = createAction({
         type: 'token action',
-        verb: 'born',
+        verbs: List.of('born', 'move'),
         moveToCoord: List.of(7, 14),
         tokenId: 0,
         dice: List.of(0, true)
@@ -103,7 +139,7 @@ describe('game module', () => {
 
       const action = createAction({
         type: 'token action',
-        verb: 'move',
+        verbs: List.of('move'),
         moveToCoord: List.of(6, 9),
         tokenId: 0,
         dice: List.of(0, true)
@@ -111,6 +147,31 @@ describe('game module', () => {
 
       const updated = update(state, action);
       expect(updated.getIn(['tokens', 0, 'coord']).equals(List.of(6, 9))).toBe(true);
+      expect(updated.get('playerTurn')).toBe(1);
+    });
+
+    it('returns the state updated with a token kill move action', () => {
+      const state = createState(2).mergeDeep(fromJS({
+        tokens: [
+          { active: true, coord: [7, 14] }, {}, {}, {},
+          { active: true, coord: [6, 9] }
+        ],
+        actions: [{ type: 'dice roll', rolled: [5], playerId: 0}]
+      }));
+
+      const action = createAction({
+        type: 'token action',
+        verbs: List.of('kill', 'move'),
+        moveToCoord: List.of(6, 9),
+        tokenId: 0,
+        killedTokenId: 4,
+        dice: List.of(0, true)
+      });
+
+      const updated = update(state, action);
+      expect(updated.getIn(['tokens', 0, 'coord']).equals(List.of(6, 9))).toBe(true);
+      expect(updated.getIn(['tokens', 4, 'coord']).equals(List.of(0, 0))).toBe(true);
+      expect(updated.getIn(['tokens', 4, 'active'])).toBe(false);
       expect(updated.get('playerTurn')).toBe(1);
     });
   });
