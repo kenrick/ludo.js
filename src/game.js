@@ -150,13 +150,30 @@ function performAction(action, state) {
     return state;
   }
 
-  return action
-    .get('verbs')
+  return action.get('verbs')
     .reduce((prevState, verb) => actionPerformers(verb)(action, prevState), state);
 }
 
 function appendAction(action, state) {
   return state.updateIn(['actions'], (list) => list.push(action));
+}
+
+function checkForWinner(state) {
+  const winningTeam = state.get('tokens')
+    .groupBy((token) => token.get('team'))
+    .filter((teamTokens) => (
+      teamTokens.every((token) => token.get('ascend'))
+    ))
+    .first();
+
+  if(isUndefined(winningTeam)) {
+    return state;
+  }
+
+  const winner = state.get('players')
+    .find((player) => player.get('team') === winningTeam.first().get('team'));
+
+  return state.set('winner', winner.get('id'));
 }
 
 export function processInput(state, input) {
@@ -176,7 +193,8 @@ export function update(state, action) {
   return flow(
     partial(performAction, action),
     partial(appendAction, action),
-    changeTurn
+    changeTurn,
+    checkForWinner
   )(state);
 }
 

@@ -233,5 +233,31 @@ describe('game module', () => {
       expect(updated.getIn(['tokens', 0, 'ascend'])).toEqual(true);
       expect(updated.get('playerTurn')).toBe(0);
     });
+
+    it('returns the state updated with the game won', () => {
+      const state = createState(2).mergeDeep(fromJS({
+        tokens: [
+          { active: false, ascend: true, coord: [8, 9] },
+          { active: false, ascend: true, coord: [8, 9] },
+          { active: false, ascend: true, coord: [8, 9] },
+          { active: true, ascend: false, coord: [8, 10] },
+        ],
+        actions: [{ type: 'dice roll', rolled: [1], playerId: 0}]
+      }));
+
+      const action = createAction({
+        type: 'token action',
+        verbs: List.of('ascend', 'move'),
+        moveToCoord: List.of(8, 9),
+        tokenId: 3,
+        dice: List.of(0, true)
+      });
+
+      const updated = update(state, action);
+      expect(updated.getIn(['tokens', 3, 'coord']).equals(List.of(8, 9))).toBe(true);
+      expect(updated.getIn(['tokens', 3, 'active'])).toEqual(false);
+      expect(updated.getIn(['tokens', 3, 'ascend'])).toEqual(true);
+      expect(updated.get('winner')).toBe(0);
+    });
   });
 });
