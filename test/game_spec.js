@@ -3,7 +3,7 @@ import expect, { createSpy } from 'expect';
 import { processInput, update, render } from '../src/game';
 import { createState, createAction } from '../src/state';
 import { isFunction } from 'lodash';
-import { List } from 'immutable';
+import { List, fromJS } from 'immutable';
 
 function spyArgs(spy) {
   return spy.calls[0].arguments;
@@ -21,15 +21,11 @@ describe('game module', () => {
       expect(isFunction(finder)).toBe(true);
     });
 
-    it('predicts the next action and provides possible actions if there are any', () => {
+    it('predicts the born action when a six is rolled', () => {
       const spy = createSpy();
-      const state = createState(2).updateIn(['actions'], (list) => {
-        return list.push(createAction({
-          type: 'dice roll',
-          rolled: List.of(6),
-          playerId: 0
-        }));
-      });
+      const state = createState(2).mergeDeep(fromJS({
+        actions: [{ type: 'dice roll', rolled: [6], playerId: 0}]
+      }));
       processInput(state, spy);
 
       const {type, finder} = spyArgs(spy)[0];
@@ -37,7 +33,25 @@ describe('game module', () => {
       expect(finder(0).first().get('verb')).toBe('born');
       expect(finder(0).first().get('moveToCoord').equals(List.of(7, 14))).toBe(true);
       expect(finder(0).first().get('tokenId')).toBe(0);
+      expect(finder(0).first().get('dice').first()).toBe(0);
+      expect(finder(0).first().get('dice').last()).toBe(true);
       expect(finder(0).count()).toBe(4);
+    });
+
+    it('predicts the token move action when there active tokens', () => {
+      const spy = createSpy();
+      const state = createState(2).mergeDeep(fromJS({
+        tokens: [{ active: true, coord: [7, 14] }],
+        actions: [{ type: 'dice roll', rolled: [5], playerId: 0}]
+      }));
+      processInput(state, spy);
+
+      const {type, finder} = spyArgs(spy)[0];
+      expect(type).toBe('token action');
+      expect(finder(0).count()).toBe(1);
+      expect(finder(0).first().get('verb')).toBe('move');
+      expect(finder(0).first().get('moveToCoord').equals(List.of(6, 9))).toBe(true);
+      expect(finder(0).first().get('tokenId')).toBe(0);
     });
   });
 
@@ -62,5 +76,42 @@ describe('game module', () => {
       expect(state2.get('playerTurn')).toEqual(0);
     });
 
+    it('returns the state updated with a token born action', () => {
+      const state = createState(2).mergeDeep(fromJS({
+        actions: [{ type: 'dice roll', rolled: [6], playerId: 0}]
+      }));
+
+      const action = createAction({
+        type: 'token action',
+        verb: 'born',
+        moveToCoord: List.of(7, 14),
+        tokenId: 0,
+        dice: List.of(0, true)
+      });
+
+      const updated = update(state, action);
+      expect(updated.getIn(['tokens', 0, 'active'])).toBe(true);
+      expect(updated.getIn(['tokens', 0, 'coord']).equals(List.of(7, 14))).toBe(true);
+      expect(updated.get('playerTurn')).toBe(0);
+    });
+
+    it('returns the state updated with a token move action', () => {
+      const state = createState(2).mergeDeep(fromJS({
+        tokens: [{ active: true, coord: [7, 14] }],
+        actions: [{ type: 'dice roll', rolled: [5], playerId: 0}]
+      }));
+
+      const action = createAction({
+        type: 'token action',
+        verb: 'move',
+        moveToCoord: List.of(6, 9),
+        tokenId: 0,
+        dice: List.of(0, true)
+      });
+
+      const updated = update(state, action);
+      expect(updated.getIn(['tokens', 0, 'coord']).equals(List.of(6, 9))).toBe(true);
+      expect(updated.get('playerTurn')).toBe(1);
+    });
   });
 });

@@ -1,7 +1,9 @@
 import { DICE_ROLL, TOKEN_ACTION, nextActionType, diceRollAction } from './action';
 import { createAction } from './state';
-import { startPoint } from './grid';
-import { partial, isUndefined } from 'lodash';
+import { startPoint, path, switchCoords, heaven } from './grid';
+import { nextCoordsFrom } from './coordinate'
+import { flow, partial, isUndefined } from 'lodash';
+import { List } from 'immutable';
 
 function nextPlayer(count, playerId) {
   const nextPlayerId = playerId + 1;
@@ -13,10 +15,6 @@ function nextPlayer(count, playerId) {
   return nextPlayerId;
 }
 
-function changeTurn(state) {
-  return state.set('playerTurn', nextPlayer(state.get('players').size, state.get('playerTurn')));
-}
-
 function lastDiceAction(actions, playerId) {
   return actions.findLast((action) => (
     action.get('playerId') === playerId
@@ -24,13 +22,50 @@ function lastDiceAction(actions, playerId) {
   ));
 }
 
-function possibleActionFor(token, rolled) {
+function changeTurn(state) {
+  const diceAction = lastDiceAction(state.get('actions'), state.get('playerTurn'));
+  const rolledAnySixes = diceAction.get('rolled').some((dice) => dice === 6);
+
+  if(rolledAnySixes) {
+    return state;
+  }
+
+  return state.set('playerTurn', nextPlayer(state.get('players').size, state.get('playerTurn')));
+}
+
+// TODO: Check is this is last usable dice in a diceAction
+function isLastDice() {
+  return true;
+}
+
+function possibleActionFor({token, dice, diceAction}) {
+  const rolled = diceAction.getIn(['rolled', dice]);
+
   if(token.get('active') === false && rolled === 6) {
     return createAction({
       type: TOKEN_ACTION,
       verb: 'born',
       moveToCoord: startPoint.get(token.get('team')),
-      tokenId: token.get('id')
+      tokenId: token.get('id'),
+      dice: List.of(dice, isLastDice())
+    });
+  }
+
+  if(token.get('active') === true) {
+    const coords = nextCoordsFrom({
+      path,
+      alternate: heaven,
+      switchCoord: switchCoords.get(token.get('team')),
+      next: rolled,
+      fromCoord: token.get('coord')
+    });
+
+    return createAction({
+      type: TOKEN_ACTION,
+      verb: 'move',
+      moveToCoord: coords.last(),
+      tokenId: token.get('id'),
+      dice: List.of(dice, isLastDice())
     });
   }
 }
@@ -38,12 +73,28 @@ function possibleActionFor(token, rolled) {
 function findPossibleActions(state, dice) {
   const player = state.getIn(['players', state.get('playerTurn')]);
   const diceAction = lastDiceAction(state.get('actions'), state.get('playerTurn'));
-  const rolled = diceAction.getIn(['rolled', dice]);
 
   return state.get('tokens')
     .filter((token) => token.get('team') === player.get('team'))
-    .map((token) => possibleActionFor(token, rolled, state))
+    .map((token) => possibleActionFor({token, dice, diceAction}))
     .filterNot((action) => isUndefined(action));
+}
+
+function performAction(action, state) {
+  if(action.get('type') !== TOKEN_ACTION) {
+    return state;
+  }
+
+  return state
+    .updateIn(['tokens', action.get('tokenId')], (token) => {
+      let t = token;
+
+      if(action.get('verb') === 'born') {
+        t = t.set('active', true);
+      }
+
+      return t.set('coord', action.get('moveToCoord'));
+    });
 }
 
 function appendAction(action, state) {
@@ -64,29 +115,11 @@ export function processInput(state, input) {
 }
 
 export function update(state, action) {
-  let s = state;
-  // switch on action type
-  switch(action.get('type')) {
-  case 'dice roll':
-    break;
-  case 'token action':
-    break;
-  default:
-    return s;
-  }
-  // when dice roll
-  // check for possible actions
-  // if none exists
-  // change turn
-  s = changeTurn(s);
-  // if 1 or more exists
-  // add action to state and return new state
-  // when token move
-  // double check token can move
-  // perform action
-  // update state
-  // return updated state
-  return appendAction(action, s);
+  return flow(
+    partial(performAction, action),
+    partial(appendAction, action),
+    changeTurn
+  )(state);
 }
 
 export function render(state, output) {

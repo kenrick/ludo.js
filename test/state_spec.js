@@ -1,14 +1,13 @@
 /* global define, it, describe */
 import expect from 'expect';
 import { createState } from '../src/state.js';
-import { fromJS, is } from 'immutable';
+import { fromJS } from 'immutable';
 
 describe('state module', () => {
   const state = createState(2);
 
   describe('createState', () => {
     it('should be reconstructable', () => {
-      console.log(state);
       expect(fromJS(state.toJS()).equals(state)).toBe(true);
     });
 
