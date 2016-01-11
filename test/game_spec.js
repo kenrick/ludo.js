@@ -24,17 +24,17 @@ describe('game module', () => {
     it('predicts the born action when a six is rolled', () => {
       const spy = createSpy();
       const state = createState(2).mergeDeep(fromJS({
-        actions: [{ type: 'dice roll', rolled: [6], playerId: 0}]
+        actions: [{ type: 'dice roll', rolled: [6], playerId: 0}],
+        nextActionType: 'token action'
       }));
       processInput(state, spy);
 
-      const {type, finder} = spyArgs(spy)[0];
-      expect(type).toBe('token action');
-      expect(finder(0).first().get('verbs').toJS()).toEqual(['born', 'move']);
-      expect(finder(0).first().get('moveToCoord').equals(List.of(7, 14))).toBe(true);
-      expect(finder(0).first().get('tokenId')).toBe(0);
-      expect(finder(0).first().get('dice').first()).toBe(0);
-      expect(finder(0).first().get('dice').last()).toBe(true);
+      const {finder} = spyArgs(spy)[0];
+      const action = finder(0).first();
+      expect(action.get('verbs').toJS()).toEqual(['born', 'move']);
+      expect(action.get('moveToCoord').equals(List.of(7, 14))).toBe(true);
+      expect(action.get('tokenId')).toBe(0);
+      expect(action.get('dice')).toBe(0);
       expect(finder(0).count()).toBe(4);
     });
 
@@ -42,12 +42,12 @@ describe('game module', () => {
       const spy = createSpy();
       const state = createState(2).mergeDeep(fromJS({
         tokens: [{ active: true, coord: [7, 14] }],
-        actions: [{ type: 'dice roll', rolled: [5], playerId: 0}]
+        actions: [{ type: 'dice roll', rolled: [5], playerId: 0}],
+        nextActionType: 'token action'
       }));
       processInput(state, spy);
 
-      const {type, finder} = spyArgs(spy)[0];
-      expect(type).toBe('token action');
+      const {finder} = spyArgs(spy)[0];
       expect(finder(0).count()).toBe(1);
       expect(finder(0).first().get('verbs').toJS()).toEqual(['move']);
       expect(finder(0).first().get('moveToCoord').equals(List.of(6, 9))).toBe(true);
@@ -61,12 +61,12 @@ describe('game module', () => {
           { active: true, coord: [7, 14] }, {}, {}, {},
           { active: true, coord: [6, 9] }
         ],
-        actions: [{ type: 'dice roll', rolled: [5], playerId: 0}]
+        actions: [{ type: 'dice roll', rolled: [5], playerId: 0}],
+        nextActionType: 'token action'
       }));
       processInput(state, spy);
 
-      const {type, finder} = spyArgs(spy)[0];
-      expect(type).toBe('token action');
+      const {finder} = spyArgs(spy)[0];
       expect(finder(0).count()).toBe(1);
       expect(finder(0).first().get('verbs').toJS()).toEqual(['kill', 'move']);
       expect(finder(0).first().get('moveToCoord').equals(List.of(6, 9))).toBe(true);
@@ -78,12 +78,12 @@ describe('game module', () => {
       const spy = createSpy();
       const state = createState(2).mergeDeep(fromJS({
         tokens: [{ active: true, coord: [7, 14] }],
-        actions: [{ type: 'dice roll', rolled: [5], playerId: 0}]
+        actions: [{ type: 'dice roll', rolled: [5], playerId: 0}],
+        nextActionType: 'token action'
       }));
       processInput(state, spy);
 
-      const {type, finder} = spyArgs(spy)[0];
-      expect(type).toBe('token action');
+      const {finder} = spyArgs(spy)[0];
       expect(finder(0).count()).toBe(1);
       expect(finder(0).first().get('verbs').toJS()).toEqual(['move']);
       expect(finder(0).first().get('moveToCoord').equals(List.of(6, 9))).toBe(true);
@@ -94,16 +94,17 @@ describe('game module', () => {
       const spy = createSpy();
       const state = createState(2).mergeDeep(fromJS({
         tokens: [{ active: true, coord: [8, 15] }],
-        actions: [{ type: 'dice roll', rolled: [6], playerId: 0}]
+        actions: [{ type: 'dice roll', rolled: [6], playerId: 0}],
+        nextActionType: 'token action'
       }));
       processInput(state, spy);
 
-      const {type, finder} = spyArgs(spy)[0];
-      expect(type).toBe('token action');
+      const {finder} = spyArgs(spy)[0];
       expect(finder(0).first().get('verbs').toJS()).toEqual(['ascend', 'move']);
       expect(finder(0).first().get('moveToCoord').equals(List.of(8, 9))).toBe(true);
       expect(finder(0).first().get('tokenId')).toBe(0);
     });
+
 
     it('does not return an action for a token that is blocked', () => {
       const spy = createSpy();
@@ -113,18 +114,50 @@ describe('game module', () => {
           { active: true, coord: [8, 15] }, { active: true, coord: [8, 15] }, {}, {},
           { active: true, coord: [9, 13]}
         ],
-        actions: [{ type: 'dice roll', rolled: [1, 4], playerId: 1 }]
+        actions: [{ type: 'dice roll', rolled: [1, 4], playerId: 1 }],
+        nextActionType: 'token action'
       }));
       processInput(state, spy);
 
-      const {type, finder} = spyArgs(spy)[0];
-      expect(type).toBe('token action');
+      const {finder} = spyArgs(spy)[0];
       expect(finder(0).first().get('verbs').toJS()).toEqual(['move']);
       expect(finder(0).first().get('moveToCoord').equals(List.of(9, 14))).toBe(true);
       expect(finder(0).first().get('tokenId')).toBe(4);
 
       expect(finder(1).isEmpty()).toBe(true);
     });
+
+    it('does not return an action for a token on heavenPath if roll is too much to ascend', () => {
+      const spy = createSpy();
+      const state = createState(2).mergeDeep(fromJS({
+        tokens: [
+          { active: true, coord: [8, 10] },
+        ],
+        actions: [{ type: 'dice roll', rolled: [1, 2], playerId: 0 }],
+        nextActionType: 'token action'
+      }));
+      processInput(state, spy);
+
+      const {finder} = spyArgs(spy)[0];
+      expect(finder(0).first().get('verbs').toJS()).toEqual(['ascend', 'move']);
+      expect(finder(1).isEmpty()).toBe(true);
+    });
+
+    it('perdicts if another action is possible for a dice', () => {
+      const spy = createSpy();
+      const state = createState(2).mergeDeep(fromJS({
+        actions: [{ type: 'dice roll', rolled: [6, 1], playerId: 0 }],
+        nextActionType: 'token action'
+      }));
+      processInput(state, spy);
+
+      const {finder} = spyArgs(spy)[0];
+      const action = finder(0).first();
+      expect(action.get('verbs').toJS()).toEqual(['born', 'move']);
+      expect(action.get('dice')).toEqual(0);
+      expect(finder(1).isEmpty()).toBe(true);
+    });
+
   });
 
   describe('render', () => {
@@ -142,10 +175,24 @@ describe('game module', () => {
       const action = createAction({ type: 'dice roll', rolled: List.of(1, 2), playerId: 0});
       const state = update(createState(2), action);
       expect(state.get('playerTurn')).toEqual(1);
+      expect(state.get('nextActionType')).toEqual('dice roll');
 
       const action2 = createAction({ type: 'dice roll', rolled: List.of(1, 2), playerId: 1});
       const state2 = update(state, action2);
       expect(state2.get('playerTurn')).toEqual(0);
+      expect(state2.get('nextActionType')).toEqual('dice roll');
+    });
+
+    it('returns the state with the turn not changed when there possible actions', () => {
+      const state = createState(2).mergeDeep(fromJS({
+        tokens: [{ active: true, coord: [7, 14] }]
+      }));
+
+      const action = createAction({ type: 'dice roll', rolled: List.of(5), playerId: 0});
+      const updated = update(state, action);
+
+      expect(updated.get('playerTurn')).toEqual(0);
+      expect(updated.get('nextActionType')).toEqual('token action');
     });
 
     it('returns the state updated with a token born action', () => {
@@ -158,13 +205,14 @@ describe('game module', () => {
         verbs: List.of('born', 'move'),
         moveToCoord: List.of(7, 14),
         tokenId: 0,
-        dice: List.of(0, true)
+        dice: 0
       });
 
       const updated = update(state, action);
       expect(updated.getIn(['tokens', 0, 'active'])).toBe(true);
       expect(updated.getIn(['tokens', 0, 'coord']).equals(List.of(7, 14))).toBe(true);
       expect(updated.get('playerTurn')).toBe(0);
+      expect(updated.get('nextActionType')).toBe('dice roll');
     });
 
     it('returns the state updated with a token move action', () => {
@@ -178,11 +226,12 @@ describe('game module', () => {
         verbs: List.of('move'),
         moveToCoord: List.of(6, 9),
         tokenId: 0,
-        dice: List.of(0, true)
+        dice: 0
       });
 
       const updated = update(state, action);
       expect(updated.getIn(['tokens', 0, 'coord']).equals(List.of(6, 9))).toBe(true);
+      expect(updated.get('nextActionType')).toBe('dice roll');
       expect(updated.get('playerTurn')).toBe(1);
     });
 
@@ -201,7 +250,7 @@ describe('game module', () => {
         moveToCoord: List.of(6, 9),
         tokenId: 0,
         killedTokenId: 4,
-        dice: List.of(0, true)
+        dice: 0
       });
 
       const updated = update(state, action);
@@ -209,6 +258,7 @@ describe('game module', () => {
       expect(updated.getIn(['tokens', 4, 'coord']).equals(List.of(0, 0))).toBe(true);
       expect(updated.getIn(['tokens', 4, 'active'])).toBe(false);
       expect(updated.get('playerTurn')).toBe(1);
+      expect(updated.get('nextActionType')).toBe('dice roll');
     });
 
     it('returns the state updated with ascend action', () => {
@@ -224,7 +274,7 @@ describe('game module', () => {
         verbs: List.of('ascend', 'move'),
         moveToCoord: List.of(8, 9),
         tokenId: 0,
-        dice: List.of(0, true)
+        dice: 0
       });
 
       const updated = update(state, action);
@@ -232,6 +282,7 @@ describe('game module', () => {
       expect(updated.getIn(['tokens', 0, 'active'])).toEqual(false);
       expect(updated.getIn(['tokens', 0, 'ascend'])).toEqual(true);
       expect(updated.get('playerTurn')).toBe(0);
+      expect(updated.get('nextActionType')).toBe('dice roll');
     });
 
     it('returns the state updated with the game won', () => {
@@ -250,7 +301,7 @@ describe('game module', () => {
         verbs: List.of('ascend', 'move'),
         moveToCoord: List.of(8, 9),
         tokenId: 3,
-        dice: List.of(0, true)
+        dice: 0
       });
 
       const updated = update(state, action);
@@ -258,6 +309,23 @@ describe('game module', () => {
       expect(updated.getIn(['tokens', 3, 'active'])).toEqual(false);
       expect(updated.getIn(['tokens', 3, 'ascend'])).toEqual(true);
       expect(updated.get('winner')).toBe(0);
+    });
+
+    it('gives another dice roll if rolled is 6 and there are no more possible actions', () => {
+      const state = createState(2).mergeDeep(fromJS({
+        playerTurn: 1,
+        tokens: [
+          { active: true, coord: [8, 15] }, { active: true, coord: [8, 15] }, {}, {},
+          { active: true, coord: [9, 14] }, { ascend: true, coord: [9, 8] }, { ascend: true, coord: [9, 8] },
+          { ascend: true, coord: [9, 8] }
+        ],
+      }));
+
+      const action = createAction({ type: 'dice roll', rolled: List([2, 6]), playerId: 1 });
+
+      const updated = update(state, action);
+      expect(updated.get('playerTurn')).toBe(1);
+      expect(updated.get('nextActionType')).toBe('dice roll');
     });
   });
 });
