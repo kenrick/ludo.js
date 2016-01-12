@@ -1,7 +1,7 @@
-import { Map, List } from 'immutable';
+import { Map, List, Range } from 'immutable';
 import { TEAMS } from './constants';
-import { range, flatten, assign } from 'lodash';
-import { DICE_ROLL } from './action'
+import { assign } from 'lodash';
+import { DICE_ROLL } from './action';
 
 function createPlayer(spec) {
   return Map(spec);
@@ -16,15 +16,18 @@ function createToken(spec) {
 }
 
 function createPlayers(playerCount) {
-  return range(playerCount).map((id) => (
+  return Range()
+  .take(playerCount)
+  .map((id) => (
     createPlayer({ id: id, team: TEAMS[id] })
   ));
 }
 
 function createTokens(playerCount) {
-  return flatten(range(playerCount).map((id) => (
-    range(4).map(() => createToken({ team: TEAMS[id] }))
-  ))).map((token, id) => token.set('id', id));
+  return Range()
+  .take(playerCount)
+  .flatMap((id) => Range().take(4).map(() => createToken({ team: TEAMS[id] })))
+  .map((token, id) => token.set('id', id));
 }
 
 export function createAction(spec) {
