@@ -90,7 +90,7 @@ function possibleActionFor({token, dice, diceAction, state}) {
     });
   }
 
-  if(coords.includes(undefined) || isPathBlockedFor(token, tokens, coords)) {
+  if(coords.includes(undefined) || isPathBlockedFor(token, tokens, coords)) { // eslint-disable-line
     return;
   }
 
@@ -135,7 +135,6 @@ function changeTurnAndAction(state) {
   const rolledAnySixes = diceAction.get('rolled').some((dice) => dice === 6);
 
   if(anyPossibleActions(diceAction, state)) {
-    console.log('yesssy');
     return state.set('nextActionType', TOKEN_ACTION);
   }
 
@@ -143,7 +142,9 @@ function changeTurnAndAction(state) {
     return state.set('nextActionType', DICE_ROLL);
   }
 
-  return state.set('playerTurn', nextPlayer(state.get('players').size, state.get('playerTurn')));
+  return state
+    .set('playerTurn', nextPlayer(state.get('players').size, state.get('playerTurn')))
+    .set('nextActionType', DICE_ROLL);
 }
 
 function actionPerformers(verb) {
@@ -198,6 +199,21 @@ function checkForWinner(state) {
   return state.set('winner', winner.get('id'));
 }
 
+function validateAction(action, state) {
+  if(action.get('type') !== state.get('nextActionType')) {
+    throw new Error('Unexpected action type');
+  }
+
+  if(action.get('type') === TOKEN_ACTION) {
+    const possibleActions = findPossibleActions(state, action.get('dice'));
+    if(!possibleActions.includes(action)) {
+      throw new Error('Impossible action provided');
+    }
+  }
+
+  return state;
+}
+
 export function processInput(state, input) {
   const type = state.get('nextActionType');
   const roll = diceRollAction(state.get('playerTurn'));
@@ -209,6 +225,7 @@ export function processInput(state, input) {
 
 export function update(state, action) {
   return flow(
+    partial(validateAction, action),
     partial(performAction, action),
     partial(appendAction, action),
     changeTurnAndAction,

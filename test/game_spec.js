@@ -105,7 +105,6 @@ describe('game module', () => {
       expect(finder(0).first().get('tokenId')).toBe(0);
     });
 
-
     it('does not return an action for a token that is blocked', () => {
       const spy = createSpy();
       const state = createState(2).mergeDeep(fromJS({
@@ -197,6 +196,7 @@ describe('game module', () => {
 
     it('returns the state updated with a token born action', () => {
       const state = createState(2).mergeDeep(fromJS({
+        nextActionType: 'token action',
         actions: [{ type: 'dice roll', rolled: [6], playerId: 0}]
       }));
 
@@ -217,6 +217,7 @@ describe('game module', () => {
 
     it('returns the state updated with a token move action', () => {
       const state = createState(2).mergeDeep(fromJS({
+        nextActionType: 'token action',
         tokens: [{ active: true, coord: [7, 14] }],
         actions: [{ type: 'dice roll', rolled: [5], playerId: 0}]
       }));
@@ -237,6 +238,7 @@ describe('game module', () => {
 
     it('returns the state updated with a token kill move action', () => {
       const state = createState(2).mergeDeep(fromJS({
+        nextActionType: 'token action',
         tokens: [
           { active: true, coord: [7, 14] }, {}, {}, {},
           { active: true, coord: [6, 9] }
@@ -263,6 +265,7 @@ describe('game module', () => {
 
     it('returns the state updated with ascend action', () => {
       const state = createState(2).mergeDeep(fromJS({
+        nextActionType: 'token action',
         tokens: [
           { active: true, coord: [8, 15] },
         ],
@@ -287,6 +290,7 @@ describe('game module', () => {
 
     it('returns the state updated with the game won', () => {
       const state = createState(2).mergeDeep(fromJS({
+        nextActionType: 'token action',
         tokens: [
           { active: false, ascend: true, coord: [8, 9] },
           { active: false, ascend: true, coord: [8, 9] },
