@@ -1,300 +1,232 @@
-var debug = require('debug')('ludo:game');
+import { DICE_ROLL, TOKEN_ACTION } from './constants';
+import { createAction } from './state';
+import { startPoint, path, switchCoords, heaven } from './grid';
+import { nextCoordsFrom } from './coordinate';
+import { flow, partial, isUndefined } from 'lodash';
+import { List } from 'immutable';
 
-var EventEmitter = require('eventemitter2').EventEmitter2;
-var Player = require('./player').Player;
-var Dice = require('./dice').Dice;
-var constants = require('./constants');
-var Mode = constants.Mode;
-var clientSync = require('./sync/client');
-var serverSync = require('./sync/server');
-var Events = constants.Events;
-var utils = require('./utils');
-var inherits = require('inherits');
-
-function Game(options) {
-  this.options = (options || {});
-  this.players = [];
-  this.started = false;
-  this.currentPlayersTurn = '';
-  this.mode = (this.options.mode || Mode.OFFLINE);
-  this.won = false;
-  this.numberOfDie = (this.options.numberOfDie || 1);
-  this.localPlayer = (this.options.localPlayer || false);
-  this.isServer = (this.options.isServer || false);
-  this.sync = null;
-
-  EventEmitter.call(this);
-  this._attachEvents(this.options.events);
-
-  if (this.mode === Mode.ONLINE) this.sync = this.options.sync(this, this.options.link);
-
-  if (this.options.state) this.setState(this.options.state);
+function diceRollAction(playerTurn) {
+  return (die) => (
+    createAction({ type: DICE_ROLL, rolled: List(die), playerId: playerTurn })
+  );
 }
 
-inherits(Game, EventEmitter);
+function nextPlayer(count, playerId) {
+  const nextPlayerId = playerId + 1;
 
-exports.Game = Game;
-
-Game.Client = function Client(options) {
-  var opts = (options || {});
-  opts.mode = Mode.ONLINE;
-  opts.sync = clientSync;
-  return new Game(opts);
-};
-
-Game.Server = function Server(options) {
-  var opts = (options || {});
-  opts.mode = Mode.ONLINE;
-  opts.sync = serverSync;
-  opts.isServer = true;
-  return new Game(opts);
-};
-
-Game.prototype.state = function state() {
-  return utils.clone(this._attributes());
-};
-
-Game.prototype.setState = function setState(state) {
-  var _this = this;
-
-  this.started = state.started;
-  this.won = state.won;
-  this.currentPlayersTurn = state.currentPlayersTurn;
-  this.players = state.players.map(function(playerJSON) {
-    return Player.build(playerJSON, _this);
-  });
-
-  if (this.sync) {
-    this.sync.setEvents(state.syncEvents);
+  if(count === nextPlayerId) {
+    return 0;
   }
 
-  if (this.started) this.resumeGame();
-};
+  return nextPlayerId;
+}
 
-Game.prototype._attributes = function _attributes() {
-  var attributes =  {
-    won: this.won,
-    started: this.started,
-    currentPlayersTurn: this.currentPlayersTurn,
-    players: this.players.map(function(player) {
-      return player.attributes();
-    })
+function lastDiceAction(actions, playerId) {
+  return actions.findLast((action) => (
+    action.get('playerId') === playerId
+      && action.get('type') === DICE_ROLL
+  ));
+}
+
+function isAlreadyUsed(dice, diceAction, actions) {
+  if(actions.last().equals(diceAction)) {
+    return false;
+  }
+
+  const reverseActions = actions.reverse();
+
+  return reverseActions
+    .take(reverseActions.indexOf(diceAction))
+    .some((action) => action.get('dice') === dice);
+}
+
+function findEnemyTokenAtCoord(tokens, team, coord) {
+  return tokens
+    .filter((token) => token.get('team') !== team)
+    .find((token) => token.get('coord').equals(coord));
+}
+
+function isMultipleTokensAt(tokens, coords) {
+  return tokens
+    .groupBy((t) => t.get('coord'))
+    .filter((ts) => ts.count() >= 2)
+    .some((ts) => coords.includes(ts.first().get('coord')));
+}
+
+function isPathBlockedFor(token, tokens, coords) {
+  return tokens
+    .filter((t) => t.get('team') !== token.get('team'))
+    .groupBy((t) => t.get('team'))
+    .some((ts) => isMultipleTokensAt(ts, coords));
+}
+
+function possibleActionFor({token, dice, diceAction, state}) {
+  const rolled = diceAction.getIn(['rolled', dice]);
+  const canBorn = token.get('active') === false && rolled === 6;
+  const heavenPath = heaven.get(token.get('team'));
+  const tokens = state.get('tokens');
+
+  if(!canBorn && token.get('active') !== true || token.get('ascend') === true) {
+    return;
+  }
+
+  const action = {
+    type: TOKEN_ACTION,
+    tokenId: token.get('id'),
+    verbs: List(),
+    dice
   };
 
-  if (this.sync) {
-    attributes.syncEvents = this.sync.getEvents();
+  let moveToCoord;
+  let verbs = List();
+  let coords;
+
+  if(canBorn) {
+    verbs = verbs.push('born');
+    coords = List([startPoint.get(token.get('team'))]);
   }
 
-  return attributes;
-};
-
-Game.prototype._attachEvents = function _attachEvents(events) {
-  var event;
-
-  if (typeof events !== undefined) {
-    for (event in events) {
-      this.on(event, events[event]);
-    }
-  }
-};
-
-Game.prototype.pushEvent = function pushEvent(eventType, payload) {
-  var event = JSON.stringify({type: eventType, payload: payload});
-
-  if (this.sync) {
-    this.sync.addEvent(event);
-  }
-
-  this.emit(eventType, payload);
-};
-
-Game.prototype.isOfflineGame = function isOfflineGame() {
-  return this.mode === Mode.OFFLINE;
-};
-
-Game.prototype.addPlayer = function addPlayer(player) {
-  if (this.players.length <= 3) {
-    player.joinGame(this);
-    player.setTeam(constants.Teams[this.players.length]);
-
-    this.players.push(player);
-    this.pushEvent(Events.PLAYER_JOIN, { player: player.attributes(true) });
-  }
-};
-
-Game.prototype.joinGame = function joinGame(playerData) {
-  var player = new Player(playerData);
-  player.readyUp();
-  this.addPlayer(player);
-
-  debug('player joined');
-
-  return player.attributes(true);
-};
-
-Game.prototype.joinGameWithLink = function joinGameWithLink(playerData, link) {
-  var player = this.joinGame(playerData);
-
-  if (constants.isServer) {
-    this.sync.addClient(link, player);
-  }
-};
-
-Game.prototype.start = function start() {
-  var readies = 0;
-
-  if (!this.started) {
-    this.players.forEach(function(player) {
-      if (player.getReady()) readies++;
+  if(token.get('active') === true) {
+    coords = nextCoordsFrom({
+      path,
+      alternate: heavenPath,
+      switchCoord: switchCoords.get(token.get('team')),
+      next: rolled,
+      fromCoord: token.get('coord')
     });
+  }
 
-    if (!this.players.length) {
-      this.emit(Events.ERROR, { message: 'Not enough players to start game' });
-    } else if (this.players.length != readies) {
-      this.emit(Events.ERROR, { message: 'Not all players are ready' });
-    } else {
-      debug('starting game');
+  if(coords.includes(undefined) || isPathBlockedFor(token, tokens, coords)) { // eslint-disable-line
+    return;
+  }
 
-      this.started = true;
-      this.pushEvent(Events.GAME_START);
-      this._loop();
+  moveToCoord = coords.last();
+  const enemyToken = findEnemyTokenAtCoord(tokens, token.get('team'), moveToCoord);
 
-      if (this.sync && this.isServer) {
-        this.sync.startGame();
-      }
+  if(heavenPath.last().equals(moveToCoord)) {
+    verbs = verbs.push('ascend');
+  }
 
+  if(!isUndefined(enemyToken)) {
+    verbs = verbs.push('kill');
+    action.killedTokenId = enemyToken.get('id');
+  }
+
+  action.verbs = verbs.push('move');
+  action.moveToCoord = moveToCoord;
+  return createAction(action); // eslint-disable-line
+}
+function findPossibleActions(state, dice) {
+  const player = state.getIn(['players', state.get('playerTurn')]);
+  const diceAction = lastDiceAction(state.get('actions'), state.get('playerTurn'));
+  const tokens = state.get('tokens');
+
+  return tokens
+    .filter((token) => token.get('team') === player.get('team'))
+    .map((token) => possibleActionFor({token, dice, diceAction, state}))
+    .filterNot((action) => isUndefined(action));
+}
+
+function anyPossibleActions(diceAction, state) {
+  return diceAction
+    .get('rolled')
+    .keySeq()
+    .filterNot((key) => isAlreadyUsed(key, diceAction, state.get('actions')))
+    .some(((key) => !findPossibleActions(state, key).isEmpty()));
+}
+
+function changeTurnAndAction(state) {
+  const diceAction = lastDiceAction(state.get('actions'), state.get('playerTurn'));
+  const rolledAnySixes = diceAction.get('rolled').some((dice) => dice === 6);
+
+  if(anyPossibleActions(diceAction, state)) {
+    return state.set('nextActionType', TOKEN_ACTION);
+  }
+
+  if(rolledAnySixes && !anyPossibleActions(diceAction, state)) {
+    return state.set('nextActionType', DICE_ROLL);
+  }
+
+  return state
+    .set('playerTurn', nextPlayer(state.get('players').size, state.get('playerTurn')))
+    .set('nextActionType', DICE_ROLL);
+}
+
+function actionPerformers(verb) {
+  const performers = {
+    'born'(action, state) {
+      return state.setIn(['tokens', action.get('tokenId'), 'active'], true);
+    },
+    'kill'(action, state) {
+      return state.setIn(['tokens', action.get('killedTokenId'), 'active'], false)
+        .setIn(['tokens', action.get('killedTokenId'), 'coord'], List.of(0, 0));
+    },
+    'ascend'(action, state) {
+      return state.setIn(['tokens', action.get('tokenId'), 'active'], false)
+        .setIn(['tokens', action.get('tokenId'), 'ascend'], true);
+    },
+    'move'(action, state) {
+      return state.setIn(['tokens', action.get('tokenId'), 'coord'], action.get('moveToCoord'));
+    }
+  };
+
+  return performers[verb];
+}
+
+function performAction(action, state) {
+  if(action.get('type') !== TOKEN_ACTION) {
+    return state;
+  }
+
+  return action.get('verbs')
+    .reduce((prevState, verb) => actionPerformers(verb)(action, prevState), state);
+}
+
+function appendAction(action, state) {
+  return state.updateIn(['actions'], (list) => list.push(action));
+}
+
+function checkForWinner(state) {
+  const winningTeam = state.get('tokens')
+    .groupBy((token) => token.get('team'))
+    .filter((teamTokens) => (
+      teamTokens.every((token) => token.get('ascend'))
+    ))
+    .first();
+
+  if(isUndefined(winningTeam)) {
+    return state;
+  }
+
+  const winner = state.get('players')
+    .find((player) => player.get('team') === winningTeam.first().get('team'));
+
+  return state.set('winner', winner.get('id'));
+}
+
+function validateAction(action, state) {
+  if(action.get('type') !== state.get('nextActionType')) {
+    throw new Error('Unexpected action type');
+  }
+
+  if(action.get('type') === TOKEN_ACTION) {
+    const possibleActions = findPossibleActions(state, action.get('dice'));
+    if(!possibleActions.includes(action)) {
+      throw new Error('Impossible action provided');
     }
   }
 
-  return this;
-};
+  return state;
+}
 
-Game.prototype._loop = function _loop() {
-  var playerWon = this.playerTokensAscended();
+function updateState(state, action) {
+  return flow(
+    partial(validateAction, action),
+    partial(performAction, action),
+    partial(appendAction, action),
+    changeTurnAndAction,
+    checkForWinner
+  )(state);
+}
 
-  if (playerWon) {
-    this.emit(Events.GAME_WON, { player: playerWon.attributes() });
-  } else {
-    //Calls the next players turn in line.
-    var player = this.nextPlayersTurn();
-    this.invokeTurn(player);
-  }
-
-};
-
-Game.prototype.continueGame = function continueGame() {
-  this._loop();
-};
-
-Game.prototype.resumeGame = function resumeGame() {
-  var _this = this;
-
-  this.players.some(function(player) {
-    if (player.team === _this.currentPlayersTurn) {
-      player.beginTurn();
-      return player;
-    }
-  });
-};
-
-Game.prototype.invokeTurn = function invokeTurn(player) {
-  this.currentPlayersTurn = player.team;
-  return player.beginTurn();
-};
-
-Game.prototype.nextPlayersTurn = function nextPlayersTurn() {
-  var nextPlayer;
-
-  if (this.currentPlayersTurn) {
-    var playerIndex = this.players.map(function(player) {
-      return player.team;
-    }).indexOf(this.currentPlayersTurn);
-
-    if (playerIndex !== this.players.length - 1) {
-      nextPlayer = this.players[playerIndex + 1];
-    } else {
-      nextPlayer = this.players[0];
-    }
-  }
-  else {
-    nextPlayer = this.players[0];
-  }
-  return nextPlayer;
-};
-
-Game.prototype.findTokenAt = function findTokenAt(cords, excludedPlayer) {
-  var players = this.players;
-  var token = false;
-
-  this.players.some(function(player) {
-    if (excludedPlayer && player.team === excludedPlayer.team) return false;
-    token = player.tokenLocatedAt(cords);
-
-    return token;
-  });
-
-  return token;
-};
-
-Game.prototype.playerTokensAscended = function playerTokensAscended() {
-  var players = this.players;
-  var token;
-  var i;
-
-  for (i = 0; i < players.length; i++) {
-    player = players[i];
-
-    if (player.allTokensAscended()) return player;
-  }
-
-  return false;
-};
-
-Game.prototype.anyBlockadeIn = function anyBlockadeIn(cords, excludedPlayer) {
-  var players = this.players;
-  var blockade;
-  var i;
-
-  for (i = 0; i < players.length; i++) {
-    player = players[i];
-
-    if (excludedPlayer && player.team === excludedPlayer.team) {
-      continue;
-    }
-
-    blockade = player.hasBlockadeAt(cords);
-
-    if (blockade) return blockade;
-  }
-
-  return false;
-};
-
-Game.prototype.processEvent = function processEvent(event) {
-  var payload = event.payload;
-  var team;
-  var index;
-  var player;
-  var token;
-  var action;
-  var dice;
-
-  switch (event.type) {
-    case Events.REG_DICE:
-      team = payload.player.team;
-      index = constants.Teams.indexOf(team);
-      player = this.players[index];
-      player.registerDice(payload.dices[0], payload.dices[1]);
-      break;
-
-    case Events.REG_ACTION:
-      team = payload.team;
-      index = constants.Teams.indexOf(team);
-      player = this.players[index];
-      token = player._tokens[payload.tokenId];
-      dice = player.getDice(payload.dicePosition);
-      action = token.getPossibleAction(dice.rolled);
-      token.registerAction(action, dice);
-      break;
-  }
-};
+export { updateState, findPossibleActions, diceRollAction };
