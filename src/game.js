@@ -1,9 +1,15 @@
-import { DICE_ROLL, TOKEN_ACTION, diceRollAction } from './action';
+import { DICE_ROLL, TOKEN_ACTION } from './constants';
 import { createAction } from './state';
 import { startPoint, path, switchCoords, heaven } from './grid';
 import { nextCoordsFrom } from './coordinate';
 import { flow, partial, isUndefined } from 'lodash';
 import { List } from 'immutable';
+
+function diceRollAction(playerTurn) {
+  return (die) => (
+    createAction({ type: DICE_ROLL, rolled: List(die), playerId: playerTurn })
+  );
+}
 
 function nextPlayer(count, playerId) {
   const nextPlayerId = playerId + 1;
@@ -110,7 +116,6 @@ function possibleActionFor({token, dice, diceAction, state}) {
   action.moveToCoord = moveToCoord;
   return createAction(action); // eslint-disable-line
 }
-
 function findPossibleActions(state, dice) {
   const player = state.getIn(['players', state.get('playerTurn')]);
   const diceAction = lastDiceAction(state.get('actions'), state.get('playerTurn'));
@@ -214,16 +219,7 @@ function validateAction(action, state) {
   return state;
 }
 
-export function processInput(state, input) {
-  const type = state.get('nextActionType');
-  const roll = diceRollAction(state.get('playerTurn'));
-  const finder = partial(findPossibleActions, state);
-  return new Promise((resolve) => {
-    input({ type, roll, finder }, resolve);
-  });
-}
-
-export function update(state, action) {
+function updateState(state, action) {
   return flow(
     partial(validateAction, action),
     partial(performAction, action),
@@ -233,9 +229,4 @@ export function update(state, action) {
   )(state);
 }
 
-export function render(state, output) {
-  return new Promise((resolve) => {
-    output(state, resolve);
-  });
-}
-
+export { updateState, findPossibleActions, diceRollAction };

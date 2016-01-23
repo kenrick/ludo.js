@@ -1,26 +1,28 @@
-import { processInput, update, render } from './src/game';
+import { updateState, findPossibleActions, diceRollAction } from './src/game';
 import { createState } from './src/state';
+import { partial } from 'lodash';
 
-function loop({state, input, output}) {
-  processInput(state, input).then(action => {
-    const updatedState = update(state, action);
-    render(updatedState, output).then(() => {
-      loop({state: updatedState, input, output});
-    });
+export function continueGame(state) {
+  const getState = () => state;
+  const nextActionType = () => state.get('nextActionType');
+  const rollDice = diceRollAction(state.get('playerTurn'));
+  const getPossibleActions = partial(findPossibleActions, state);
+  const update = (action) => continueGame(updateState(state, action));
+
+  return Object.freeze({
+    getState,
+    nextActionType,
+    rollDice,
+    getPossibleActions,
+    update
   });
 }
 
-export function createGame(spec) {
-  const { playerCount, input, output } = spec;
+export function createGame({ playerCount }) {
 
   if (playerCount <= 0 || playerCount >= 5) {
     throw new Error('Cannot create game with the player count specified');
   }
 
-  return loop({state: createState(playerCount), input, output});
-}
-
-export function continueGame(state, spec) {
-  const { input, output } = spec;
-  return loop({state, input, output});
+  return continueGame(createState(playerCount));
 }

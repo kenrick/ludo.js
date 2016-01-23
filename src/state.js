@@ -1,7 +1,6 @@
 import { Map, List, Range } from 'immutable';
-import { TEAMS } from './constants';
+import { TEAMS, DICE_ROLL } from './constants';
 import { assign } from 'lodash';
-import { DICE_ROLL } from './action';
 
 function createPlayer(spec) {
   return Map(spec);
