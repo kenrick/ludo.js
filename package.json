@@ -9,19 +9,17 @@
     "lodash": "^3.10.1"
   },
   "devDependencies": {
-    "babel-eslint": "^4.1.6",
-    "babel-preset-es2015": "^6.3.13",
-    "babel-preset-stage-0": "^6.3.13",
-    "babel-register": "^6.3.13",
-    "eslint": "^1.10.3",
-    "eslint-plugin-babel": "^3.0.0",
-    "eslint-plugin-react": "^3.14.0",
+    "babel-core": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-stage-0": "^6.24.1",
     "expect": "^1.13.4",
     "mocha": "^2.0.1",
+    "parcel-bundler": "^1.6.1",
     "vinyl-transform": "^1.0.0"
   },
   "scripts": {
-    "test": "mocha --compilers js:babel-register"
+    "test": "mocha --compilers js:babel-register",
+    "build": "NODE_ENV=production parcel build entry.js --no-cache -o ludo.js"
   },
   "testling": {
     "harness": "mocha-bdd",
